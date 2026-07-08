@@ -1,0 +1,70 @@
+.dashboard-page{
+
+    max-width:700px;
+    margin:auto;
+    padding:20px;
+
+}
+
+.dashboard-section{
+
+    background:#171717;
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:20px;
+
+}
+
+.passenger-card{
+
+    background:linear-gradient(135deg,#1b1b1b,#2a2a2a);
+    border-radius:24px;
+    padding:24px;
+    color:white;
+    margin-bottom:20px;
+
+}
+
+.quick-actions-grid{
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+
+}
+
+.action-card{
+
+    border:none;
+    border-radius:18px;
+    padding:20px;
+    background:#222;
+    color:white;
+    cursor:pointer;
+
+}
+
+.activity-item{
+
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.bottom-nav{
+
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+
+    display:flex;
+    justify-content:space-around;
+
+    padding:15px;
+
+    background:#111;
+
+}
