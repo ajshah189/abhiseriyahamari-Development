@@ -1,0 +1,276 @@
+.rewards-page {
+  max-width: 900px;
+  margin: auto;
+  padding: var(--s-6) var(--s-6) 140px;
+}
+
+/* ---------- Miles Balance Bar ---------- */
+
+.miles-balance-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-5) var(--s-6);
+  margin-bottom: var(--s-5);
+  box-shadow: var(--shadow-2);
+}
+
+.miles-balance-bar__amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.miles-balance-bar__amount span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cream-dim);
+  margin-left: var(--s-2);
+}
+
+.tier-badge {
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-soft);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ---------- Segmented Control ---------- */
+
+.segment-toggle {
+  display: inline-flex;
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-pill);
+  padding: 4px;
+  margin-bottom: var(--s-6);
+}
+
+.segment-toggle__option {
+  border: none;
+  background: none;
+  color: var(--cream-dim);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s-2) var(--s-5);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+
+.segment-toggle__option--active {
+  background: var(--gold);
+  color: var(--night);
+}
+
+/* ---------- Reward Grid ---------- */
+
+.rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-5);
+}
+
+.reward-card {
+  position: relative;
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-5);
+  box-shadow: var(--shadow-2);
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-card--featured {
+  border-color: var(--gold-soft);
+  box-shadow: var(--shadow-glow);
+}
+
+.reward-card__badge {
+  position: absolute;
+  top: var(--s-4);
+  right: var(--s-4);
+  background: var(--gold);
+  color: var(--night);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-pill);
+}
+
+.reward-card__icon {
+  font-size: 36px;
+  margin-bottom: var(--s-3);
+}
+
+.reward-card__name {
+  margin: 0 0 var(--s-2);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cream);
+}
+
+.reward-card__description {
+  margin: 0 0 var(--s-3);
+  font-size: 13px;
+  color: var(--cream-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reward-card__category {
+  align-self: flex-start;
+  font-size: 11px;
+  color: var(--cream-dim);
+  background: var(--panel-hover);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: var(--s-1) var(--s-3);
+  margin-bottom: var(--s-4);
+}
+
+.reward-card__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.reward-card__cost {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 15px;
+}
+
+.reward-card__redeem {
+  border: none;
+  border-radius: var(--r-pill);
+  padding: var(--s-2) var(--s-4);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--gold);
+  color: var(--night);
+  transition: transform var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.reward-card__redeem:hover {
+  transform: translateY(-2px);
+}
+
+.reward-card__redeem--disabled {
+  background: var(--panel-hover);
+  color: var(--cream-faint);
+  cursor: not-allowed;
+}
+
+.reward-card__redeem--disabled:hover {
+  transform: none;
+}
+
+.reward-card__redeem--confirmed {
+  background: var(--panel-hover);
+  color: var(--gold);
+}
+
+@media (max-width: 650px) {
+  .rewards-page {
+    padding: var(--s-4) var(--s-4) 140px;
+  }
+
+  .rewards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .miles-balance-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-3);
+  }
+}
+
+/* ---------- Leaderboard ---------- */
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-2);
+  border-bottom: 1px solid var(--line);
+  border-left: 3px solid transparent;
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-row--self {
+  border-left-color: var(--gold);
+  background: var(--gold-faint);
+}
+
+.leaderboard-rank {
+  width: 24px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--cream-dim);
+}
+
+.leaderboard-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.leaderboard-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--cream);
+}
+
+.leaderboard-tier {
+  font-size: 11px;
+  color: var(--cream-dim);
+}
+
+.leaderboard-miles {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 14px;
+  white-space: nowrap;
+}

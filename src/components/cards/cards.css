@@ -1,0 +1,188 @@
+/* ---------- Boarding Pass / Passenger Card ---------- */
+
+.passenger-card {
+  background: linear-gradient(135deg, var(--night-3), var(--night-2));
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-6);
+  box-shadow: var(--shadow-2);
+  color: var(--cream);
+}
+
+.boarding-card {
+  display: grid;
+  grid-template-columns: 2fr 1px 1fr;
+  gap: var(--s-8);
+  align-items: center;
+}
+
+.boarding-divider {
+  height: 180px;
+  background: var(--line);
+}
+
+.boarding-label {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: var(--s-3);
+}
+
+.boarding-left h2 {
+  margin: 0 0 var(--s-2);
+  font-size: 32px;
+  font-family: var(--font-display);
+  color: var(--cream);
+}
+
+.boarding-meta {
+  display: flex;
+  gap: var(--s-8);
+  margin-top: var(--s-6);
+}
+
+.boarding-meta span {
+  display: block;
+  font-size: 12px;
+  color: var(--cream-dim);
+  margin-bottom: var(--s-1);
+}
+
+.boarding-meta strong {
+  font-size: 18px;
+  color: var(--cream);
+}
+
+.boarding-right {
+  text-align: right;
+}
+
+.miles-block {
+  margin-bottom: var(--s-6);
+}
+
+.miles-value {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cream);
+}
+
+.miles-title {
+  margin-top: var(--s-2);
+  font-size: 18px;
+  color: var(--cream);
+}
+
+.today-miles {
+  margin-top: var(--s-1);
+  color: var(--gold);
+}
+
+.progress label {
+  display: block;
+  margin-bottom: var(--s-2);
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.progress-track {
+  height: 10px;
+  border-radius: var(--r-pill);
+  background: var(--night);
+  overflow: hidden;
+  margin: var(--s-2) 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  border-radius: var(--r-pill);
+  transition: width var(--t-slow) var(--ease-out);
+}
+
+.progress small {
+  display: block;
+  margin-top: var(--s-2);
+  color: var(--cream-dim);
+}
+
+@media (max-width: 900px) {
+  .boarding-card {
+    grid-template-columns: 1fr;
+  }
+
+  .boarding-divider {
+    display: none;
+  }
+
+  .boarding-right {
+    text-align: left;
+  }
+
+  .miles-block {
+    margin-bottom: var(--s-5);
+  }
+
+  .boarding-meta {
+    justify-content: space-between;
+    gap: var(--s-5);
+  }
+}
+
+/* ---------- Activity Feed ---------- */
+
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.feed-item {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: var(--s-4);
+  align-items: center;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--panel-hover);
+  transition: transform var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+
+.feed-item:hover {
+  transform: translateX(6px);
+  background: var(--night-3);
+}
+
+.feed-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-pill);
+  background: var(--night-3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+}
+
+.feed-content h4 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--cream);
+}
+
+.feed-content p {
+  margin: var(--s-1) 0 0;
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+.feed-miles {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.feed-miles.negative {
+  color: var(--rose);
+}

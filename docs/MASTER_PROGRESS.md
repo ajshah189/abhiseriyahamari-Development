@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-08 July 2026
+09 July 2026
 
 Current Version:
 v0.2
@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-18%
+48%
 
 Project Status:
 🟡 Active Development
@@ -37,14 +37,15 @@ main
 | Interactive Map | 🟢 Completed | 90% |
 | Passenger System | ⚪ Not Started | 0% |
 | Home Dashboard | ⚪ Not Started | 0% |
-| Boarding Pass | ⚪ Not Started | 0% |
-| Passport | ⚪ Not Started | 0% |
-| Events | ⚪ Not Started | 0% |
+| Boarding Pass | 🟢 Completed | 100% |
+| Passport | 🟢 Completed | 100% |
+| Events | 🟢 Completed | 100% |
 | AR Miles | ⚪ Not Started | 0% |
-| Leaderboards | ⚪ Not Started | 0% |
-| Rewards | ⚪ Not Started | 0% |
+| Leaderboards | 🟢 Completed | 100% |
+| Rewards | 🟢 Completed | 100% |
+| Profile | 🟢 Completed | 100% |
 | QR Missions | ⚪ Not Started | 0% |
-| Admin Dashboard | ⚪ Not Started | 0% |
+| Admin Dashboard | 🟢 Completed | 100% |
 | Analytics | ⚪ Not Started | 0% |
 | Final QA | ⚪ Not Started | 0% |
 
@@ -71,6 +72,88 @@ main
 ✅ Smooth Animations
 
 ✅ Country Theme Ready
+
+## Events
+
+✅ Departures-board Events screen (Gate 1/2/3 day tabs)
+
+✅ Flight-card schedule (flight code, tagline, country, venue, dress code, AR Miles reward)
+
+✅ Live status derivation (upcoming / boarding / in-flight / landed) — never hardcoded
+
+✅ Dashboard "Today's Journey" now reads the same live event data
+
+✅ Reusable EventTimeline component (dashboard + future sidebars)
+
+## Boarding Pass / Journey Hub
+
+✅ 5-tab BottomNav restructure (Home / Map / Journey / Rewards / Profile), route-group aware so sub-screens highlight the right parent tab
+
+✅ Journey hub screen: boarding pass + flight schedule preview + passport preview, one scrollable page
+
+✅ Boarding pass card with live passenger name, room/gate/seat, family boarding group, and miles-tier-derived class (Economy/Business/First) — all from PassengerService, nothing hardcoded
+
+✅ Airline-authentic visual design: light card on dark app background, dashed/notched tear line, barcode placeholder strip
+
+✅ Passport preview: country circles derived from event data, visited/locked state from live event status
+
+⬜ Functional QR code on the boarding pass (currently decorative)
+
+## Rewards / Leaderboard
+
+✅ Rewards hub: miles balance bar (always visible) + client-side segmented toggle between Rewards and Leaderboard — no route change, no reload
+
+✅ 8-item reward catalogue (`data/rewards.js`), sorted featured-first then by cost, affordability derived live from balance
+
+✅ Redeem flow shows "opens on 22 Jan 2027" inline confirmation — intentionally does not deduct miles yet (no backend); `RewardService.redeem()` exists and is ledger-correct for when redemption actually opens
+
+✅ Individual + family leaderboards, both fully computed in `leaderboardService` (extended with per-guest tier and per-family member count) — no sorting in UI code
+
+✅ Current guest highlighted on the leaderboard; deep link via the separate "leaderboard" route pre-selects that segment
+
+⬜ Reward redemption is not yet wired to actually spend miles (deliberate, per spec)
+
+## Profile
+
+✅ Single scrollable Profile page — header, journey stats, transaction history, redeemed rewards, quick info — all from PassengerService/MilesService/RewardService/data/events.js, nothing hardcoded
+
+✅ Journey stats (events attended, countries visited) computed live from `getEventStatus()` on the shared wedding schedule
+
+✅ Last 20 ledger transactions shown via `MilesService.getLedger()`, color-coded earn (green) vs redeem (red)
+
+✅ **All 5 BottomNav tabs (Home, Map, Journey, Rewards, Profile) now open real screens.** The "settings" route also resolves (to Profile, since Settings has no dedicated screen yet) instead of 404ing. Only "passport" still falls through to `ComingSoonScreen`.
+
+✅ Guest data model extended with `dietPreference` / `emergencyContact` (documented in DATABASE.md's Guest schema but not yet implemented) — threaded through `models/Guest.js` and `PassengerService`
+
+## Passport
+
+✅ Full passport page: dark "cover" header, 2-column stamp grid, gold journey progress bar — the most visually premium screen in the app so far
+
+✅ 7 country stamps (International, Australia, Morocco, India ×2, Brazil, Italy), each tied to one event via `eventId`; stamp status (`locked`/`boarding`/`stamped`) derived live from `getEventStatus()` — never stored, matches every other status surface in the app (Events, Journey preview)
+
+✅ CSS-only stamp effects: per-country tint/border via a `--stamp-color` custom property threaded from data, alternating ink-stamp rotation via `nth-child` (not random), gold pulse animation while an event is boarding/in-flight
+
+✅ **Every BottomNav-reachable route now has a real screen.** `UPCOMING_ROUTES` in `app.js` is empty — `ComingSoonScreen` is still wired up as the fallback pattern for whatever's next (QR Missions, etc.), just has nothing left to fall back to today. The BottomNav known-issue below about the passport route is now resolved.
+
+## Admin Dashboard
+
+✅ Organiser tool at the `"admin"` route — no BottomNav entry, not in `ComingSoonScreen`, reached only via 5 rapid taps on the Profile avatar (`data-admin-trigger`)
+
+✅ PIN gate (`2727`, sessionStorage-only, no backend) with shake-on-wrong-PIN and session persistence — full-screen numpad, airport-security-checkpoint styling per spec, not alarming
+
+✅ Overview: 4 live stat cards (Total Miles Awarded, Active Guests, Events Today, Rewards Redeemed) + read-only top-10 leaderboard, all recomputed on every visit
+
+✅ Award Miles: searchable guest picker, preset/custom amounts, reason field, goes through `MilesService.earn(..., "AWARD_MANUAL")` — the same ledger choke point the rest of the app uses, never `milesStore` directly from the UI. Verified end-to-end: awarding 500 miles moved a guest's real balance and the leaderboard rank together.
+
+✅ Guests: searchable/filterable table (name, family, room, live balance, tier), expandable rows showing last 5 transactions, "+Miles" shortcut pre-fills Award Miles, check-in toggle (session-scoped override, doesn't mutate the static guest data)
+
+✅ Redemptions: full cross-guest list with a "Mark Fulfilled" toggle (session-scoped)
+
+✅ `data/guests.js` expanded from 2 to 18 guests across 5 families (Shah, Mehta, Jain, Desai, Kothari), spread across the resort map's real zones/destination-city names already used in `data.js`, with varied seed balances (0 to 2,100 AR Miles) so the leaderboard and tier system have something real to show
+
+## Preliminary Cleanup
+
+✅ Deleted `src/services/passportService.js` — confirmed dead by grep (only self-reference) before removing, per this session's explicit instruction. The `COUNTRY_VISIT` transaction kind it depended on is still defined in `Transaction.js` but nothing creates one; left as-is since removing an unused enum entry wasn't asked for.
 
 ---
 
@@ -141,6 +224,8 @@ Minor UI polish.
 Accessibility review pending.
 
 Performance audit pending.
+
+Admin's check-in and redemption-fulfilled overrides live in sessionStorage, same as PIN auth — closing the tab resets them (miles ledger itself is untouched, since that's in localStorage via the normal ledger path). Fine for a 3-day event as specified, but means two organisers on two devices won't see each other's check-in/fulfilled marks — there's no shared backend yet.
 
 ---
 
@@ -220,19 +305,21 @@ Interactive Map
 
 ⬜ Home Dashboard
 
-⬜ Boarding Pass
+✅ Profile
 
-⬜ Passport
+✅ Boarding Pass
 
-⬜ Events
+✅ Passport
+
+✅ Events
 
 ⬜ AR Miles
 
-⬜ Rewards
+✅ Rewards
 
-⬜ Leaderboards
+✅ Leaderboards
 
-⬜ Admin Dashboard
+✅ Admin Dashboard
 
 ⬜ QR Missions
 

@@ -130,6 +130,16 @@ export const APP_CONFIG = {
   },
 
   // ===========================
+  // Admin
+  // ===========================
+  // Organiser convenience gate for a 3-day offline wedding app, not a
+  // security product — PIN lives in config on purpose.
+  admin: {
+    pin: "2727",
+    pinLength: 4,
+  },
+
+  // ===========================
   // Feature Flags
   // ===========================
   features: {
@@ -141,6 +151,6 @@ export const APP_CONFIG = {
     leaderboard: false,
     treasureHunt: false,
     notifications: false,
-    adminPanel: false,
+    adminPanel: true,
   },
 };

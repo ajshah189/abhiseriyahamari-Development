@@ -1,19 +1,72 @@
-export function BottomNav() {
+export function BottomNav(activeRoute = "home"){
 
-    return `
-        <nav class="bottom-nav">
+const items = [
 
-            <button data-route="dashboard">🏠<span>Home</span></button>
+{
+icon:"🏠",
+title:"Home",
+route:"home",
+group:["home"]
+},
 
-            <button data-route="map">🗺️<span>Map</span></button>
+{
+icon:"🗺️",
+title:"Map",
+route:"map",
+group:["map"]
+},
 
-            <button data-route="passport">📘<span>Passport</span></button>
+{
+icon:"✈️",
+title:"Journey",
+route:"journey",
+group:["journey","events","passport"]
+},
 
-            <button data-route="events">🎉<span>Events</span></button>
+{
+icon:"🎁",
+title:"Rewards",
+route:"rewards",
+group:["rewards","leaderboard"]
+},
 
-            <button data-route="profile">👤<span>Profile</span></button>
+{
+icon:"👤",
+title:"Profile",
+route:"profile",
+group:["profile","settings"]
+}
 
-        </nav>
-    `;
+];
+
+return `
+
+<nav class="bottom-nav">
+
+${items.map(item=>`
+
+<button
+class="nav-item ${item.group.includes(activeRoute) ? "active" : ""}"
+data-route="${item.route}">
+
+<div class="nav-icon">
+
+${item.icon}
+
+</div>
+
+<div class="nav-title">
+
+${item.title}
+
+</div>
+
+</button>
+
+`).join("")}
+
+</nav>
+
+`;
 
 }
