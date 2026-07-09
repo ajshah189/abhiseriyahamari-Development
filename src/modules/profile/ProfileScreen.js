@@ -7,6 +7,7 @@
  */
 
 import { ProfilePage } from "./ProfilePage.js";
+import AuthService from "../../services/authService.js";
 import Router from "../../router.js";
 
 let container = null;
@@ -32,12 +33,21 @@ function bindAdminTrigger() {
   });
 }
 
+function bindSignOut() {
+  container.querySelector("[data-signout]")?.addEventListener("click", () => {
+    if (!confirm("Sign out of AR Airways?")) return;
+    AuthService.logout();
+    Router.go("onboarding");
+  });
+}
+
 function bindEvents() {
   container.querySelectorAll("[data-route]").forEach((btn) => {
     btn.addEventListener("click", () => Router.go(btn.dataset.route));
   });
 
   bindAdminTrigger();
+  bindSignOut();
 }
 
 function render() {

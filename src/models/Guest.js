@@ -20,6 +20,7 @@ export function normalizeGuest(raw) {
     roomId: raw.roomId || null,
     passportId: raw.passportId || null,
     boardingPassId: raw.boardingPassId || null,
+    passportNumber: raw.passportNumber || null,
     profilePhoto: raw.profilePhoto || null,
     checkedIn: raw.checkedIn === true,
     dietPreference: raw.dietPreference || null,

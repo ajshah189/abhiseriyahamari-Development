@@ -213,3 +213,37 @@
     flex-direction: column;
   }
 }
+
+/* ---------- Not-logged-in state ---------- */
+
+.profile-avatar--placeholder {
+  background: var(--panel-hover);
+  border: 1px solid var(--line-strong);
+  color: var(--gold);
+  font-size: 32px;
+}
+
+/* ---------- Sign Out ---------- */
+
+.profile-signout {
+  text-align: center;
+  padding: var(--s-4) 0 var(--s-6);
+}
+
+.profile-signout__btn {
+  border: 1px solid var(--line-strong);
+  background: none;
+  color: var(--cream-dim);
+  border-radius: var(--r-pill);
+  padding: var(--s-3) var(--s-6);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+
+.profile-signout__btn:hover {
+  color: var(--rose);
+  border-color: var(--rose);
+}

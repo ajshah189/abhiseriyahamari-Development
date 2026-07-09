@@ -1,7 +1,61 @@
 export function PassengerCard(snapshot = {}) {
 
-    const guest = snapshot.profile?.passengerName || "Abhishek Shah";
-    const room = snapshot.profile?.room || "C204";
+    if (snapshot.isViewer) {
+        return `
+
+<section class="passenger-card boarding-card passenger-card--viewer">
+
+<div class="boarding-left">
+
+    <div class="boarding-label">
+        BOARDING PASS
+    </div>
+
+    <h2>Guest Viewer</h2>
+
+    <div class="boarding-meta">
+
+        <div>
+
+            <span>ROOM</span>
+
+            <strong>—</strong>
+
+        </div>
+
+        <div>
+
+            <span>STATUS</span>
+
+            <strong>—</strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="boarding-divider"></div>
+
+<div class="boarding-right">
+
+    <p class="viewer-prompt">
+        Log in with your passport number to see your AR Miles and journey progress.
+    </p>
+
+    <button class="access-locked__cta" data-route="onboarding">
+        Enter Passport →
+    </button>
+
+</div>
+
+</section>
+
+`;
+    }
+
+    const guest = snapshot.profile?.passengerName || "Guest";
+    const room = snapshot.profile?.room || "—";
 
     const balance = snapshot.balance || 0;
 

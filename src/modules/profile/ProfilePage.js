@@ -13,6 +13,7 @@
 import PassengerService from "../../services/passengerService.js";
 import MilesService from "../../services/milesService.js";
 import RewardService from "../../services/rewardService.js";
+import AuthService from "../../services/authService.js";
 import { EVENTS, getEventStatus } from "../../data/events.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
@@ -137,7 +138,36 @@ function quickInfo(snapshot) {
   `;
 }
 
+function loggedOutState() {
+  return `
+    <section class="profile-header">
+      <div class="profile-avatar profile-avatar--placeholder" data-admin-trigger>✈</div>
+      <h1 class="profile-name">Not Logged In</h1>
+      <p class="profile-family">Log in with your passport number to see your profile</p>
+      <button class="access-locked__cta" data-route="onboarding">Enter Passport →</button>
+    </section>
+  `;
+}
+
+function signOut() {
+  return `
+    <section class="profile-signout">
+      <button class="profile-signout__btn" data-signout>Sign Out</button>
+    </section>
+  `;
+}
+
 export function ProfilePage() {
+  if (!AuthService.isLoggedIn()) {
+    return `
+      ${TopBar()}
+      <main class="profile-page">
+        ${loggedOutState()}
+      </main>
+      ${BottomNav("profile")}
+    `;
+  }
+
   const snapshot = PassengerService.getCurrentSnapshot();
   const guestId = snapshot?.profile?.id;
   const stats = getJourneyStats(snapshot?.balance || 0);
@@ -150,6 +180,7 @@ export function ProfilePage() {
       ${transactionHistory(guestId)}
       ${myRewards(guestId)}
       ${quickInfo(snapshot)}
+      ${signOut()}
     </main>
     ${BottomNav("profile")}
   `;

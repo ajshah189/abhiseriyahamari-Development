@@ -140,6 +140,15 @@ export const APP_CONFIG = {
   },
 
   // ===========================
+  // Auth
+  // ===========================
+  auth: {
+    storageKey: "ar_guest_id",       // localStorage key for persisted login
+    viewerKey: "ar_viewer_mode",     // localStorage key for viewer mode flag
+    sessionKey: "ar_current_guest",  // sessionStorage key for guest snapshot cache
+  },
+
+  // ===========================
   // Feature Flags
   // ===========================
   features: {

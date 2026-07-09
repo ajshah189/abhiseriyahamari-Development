@@ -30,7 +30,15 @@ const KIND_ICONS = {
 
 export function ActivityCard() {
   const passenger = PassengerService.getCurrentPassenger();
-  if (!passenger) return "";
+
+  if (!passenger) {
+    return `
+      <section class="dashboard-section">
+        <h3>Recent Activity</h3>
+        <p class="muted" style="padding:var(--s-4) 0">Log in to see your journey.</p>
+      </section>
+    `;
+  }
 
   const limit = APP_CONFIG.dashboard.recentActivityLimit;
   const transactions = MilesService.getLedger(passenger.id).slice(0, limit);

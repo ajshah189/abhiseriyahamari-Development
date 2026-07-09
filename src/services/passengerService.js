@@ -5,8 +5,14 @@
  * For live miles/tier data, delegates to MilesService —
  * never reads the legacy arMiles field.
  *
- * getCurrentPassenger() is a temporary shortcut until login exists.
- * It returns the first guest in the dataset.
+ * getCurrentPassenger() reflects real login state via AuthService —
+ * returns null in viewer mode. getCurrentSnapshot() falls back to
+ * getViewerSnapshot() in that case, shaped identically to a real
+ * snapshot (still nested under `profile`) so every existing consumer's
+ * `snapshot?.profile?.x` optional-chaining stays crash-safe without
+ * needing to touch every call site; `isViewer` is there for screens
+ * that need to render something deliberately different, not just a
+ * null-safe fallback.
  */
 
 import { guests as rawGuests } from "../data/guests.js";
@@ -14,6 +20,7 @@ import { rooms } from "../data/rooms.js";
 import { families } from "../data/families.js";
 import { normalizeGuest } from "../models/Guest.js";
 import MilesService from "./milesService.js";
+import AuthService from "./authService.js";
 
 const normalized = rawGuests.map(normalizeGuest);
 
@@ -40,10 +47,10 @@ class PassengerService {
   }
 
   /**
-   * Temporary — returns the first guest until login is implemented.
+   * The logged-in guest, or null in viewer mode / before login.
    */
   getCurrentPassenger() {
-    return normalized[0] || null;
+    return AuthService.getCurrentGuest();
   }
 
   /**
@@ -53,18 +60,20 @@ class PassengerService {
    */
   getCurrentSnapshot() {
     const passenger = this.getCurrentPassenger();
-    if (!passenger) return null;
+    if (!passenger) return this.getViewerSnapshot();
 
     const room = this.getPassengerRoom(passenger.id);
     const family = this.getPassengerFamily(passenger.id);
     const miles = MilesService.getSnapshot(passenger.id);
 
     return {
+      isViewer: false,
       profile: {
         id: passenger.id,
         passengerName: passenger.displayName,
         firstName: passenger.firstName,
         lastName: passenger.lastName,
+        passportNumber: passenger.passportNumber,
         room: room ? room.name : passenger.roomId,
         roomCottage: room ? room.cottage : null,
         roomZone: room ? room.zone : null,
@@ -79,6 +88,42 @@ class PassengerService {
         boardingPassId: passenger.boardingPassId,
       },
       ...miles,
+    };
+  }
+
+  /**
+   * Snapshot shape for viewer mode / not-logged-in — no identity, no
+   * miles, no ledger access. Same top-level shape as a real snapshot
+   * (profile + balance/tier/etc keys) so nothing downstream needs a
+   * separate code path just to avoid crashing.
+   */
+  getViewerSnapshot() {
+    return {
+      isViewer: true,
+      profile: {
+        id: null,
+        passengerName: null,
+        firstName: null,
+        lastName: null,
+        passportNumber: null,
+        room: null,
+        roomCottage: null,
+        roomZone: null,
+        family: "—",
+        familyColor: null,
+        photo: null,
+        checkedIn: false,
+        dietPreference: null,
+        emergencyContact: null,
+        role: null,
+        passportId: null,
+        boardingPassId: null,
+      },
+      balance: null,
+      lifetime: null,
+      todayMiles: null,
+      tier: null,
+      recentActivity: [],
     };
   }
 }

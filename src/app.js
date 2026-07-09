@@ -9,6 +9,8 @@
 
 import Router from "./router.js";
 import { initMilesStore } from "./store/milesStore.js";
+import AuthService from "./services/authService.js";
+import { OnboardingScreen } from "./modules/onboarding/OnboardingScreen.js";
 import { GuestAppScreen } from "./modules/dashboard/GuestAppScreen.js";
 import { MapScreen } from "./modules/map/MapScreen.js";
 import { EventsScreen } from "./modules/events/EventsScreen.js";
@@ -27,6 +29,7 @@ class App {
 
         initMilesStore();
 
+        Router.register("onboarding", OnboardingScreen);
         Router.register("home", GuestAppScreen);
         Router.register("map", MapScreen);
         Router.register("events", EventsScreen);
@@ -44,6 +47,14 @@ class App {
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
+        }
+
+        // Auth routing — every screen is registered by this point, so
+        // this decides only where we land, not what exists.
+        if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
+            // First time: show onboarding.
+            Router.go("onboarding");
+            return;
         }
 
         Router.go("home");

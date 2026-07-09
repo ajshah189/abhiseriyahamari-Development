@@ -1,3 +1,6 @@
+import PassengerService from "../../services/passengerService.js";
+import { initials, colorFromName } from "../../modules/leaderboard/LeaderboardCard.js";
+
 export function TopBar() {
 
 const now = new Date();
@@ -9,15 +12,20 @@ now.getHours() < 12
 ? "Good Afternoon"
 : "Good Evening";
 
+const snapshot = PassengerService.getCurrentSnapshot();
+const name = snapshot?.profile?.passengerName || "Guest Viewer";
+const avatarLetter = snapshot?.isViewer ? "✈" : initials(name);
+const avatarColor = snapshot?.isViewer ? "var(--gold)" : colorFromName(name);
+
 return `
 
 <header class="top-bar">
 
 <div class="top-left">
 
-<div class="avatar">
+<div class="avatar" style="background:${avatarColor}">
 
-A
+${avatarLetter}
 
 </div>
 
@@ -31,7 +39,7 @@ ${greeting}
 
 <h2>
 
-Abhishek Shah
+${name}
 
 </h2>
 

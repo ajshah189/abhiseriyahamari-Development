@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-48%
+54%
 
 Project Status:
 🟡 Active Development
@@ -35,7 +35,8 @@ main
 |------|--------|----------|
 | Foundation | 🟡 In Progress | 80% |
 | Interactive Map | 🟢 Completed | 90% |
-| Passenger System | ⚪ Not Started | 0% |
+| Guest Onboarding / Auth | 🟢 Completed | 100% |
+| Passenger System | 🟢 Completed | 100% |
 | Home Dashboard | ⚪ Not Started | 0% |
 | Boarding Pass | 🟢 Completed | 100% |
 | Passport | 🟢 Completed | 100% |
@@ -154,6 +155,22 @@ main
 ## Preliminary Cleanup
 
 ✅ Deleted `src/services/passportService.js` — confirmed dead by grep (only self-reference) before removing, per this session's explicit instruction. The `COUNTRY_VISIT` transaction kind it depended on is still defined in `Transaction.js` but nothing creates one; left as-is since removing an unused enum entry wasn't asked for.
+
+## Guest Onboarding / Auth
+
+✅ Real passport-number login replaces the permanent `Abhishek Shah` hardcode. Every guest now has a unique `passportNumber` (`AR-[cottage]-[FAMILY_INITIAL]`, numeric suffix on collisions), checked case-insensitively and whitespace-trimmed against `data/guests.js`.
+
+✅ Two-tier access via `AuthService` (single source of truth — no screen reads `localStorage` directly): full login, Viewer mode ("browse without a personalised experience"), or neither (first-visit onboarding). Login persists in `localStorage` across reloads; viewer mode does too.
+
+✅ Full-screen onboarding — premium check-in-counter styling, auto-uppercase passport input, Enter-to-submit, inline error state, brief fade before handoff to Home.
+
+✅ Every screen respects the two-tier table: Rewards (catalogue locked, leaderboard read-only for everyone), Passport (all stamps force-locked), Profile (generic "not logged in" state, still carries the hidden admin trigger), Journey's boarding pass (dashes instead of identity, no miles), Dashboard (miles/tier/activity hidden, generic prompt shown instead).
+
+✅ Sign Out (bottom of Profile, confirm dialog) clears auth state and returns to onboarding.
+
+✅ Fixed a real bug this feature exposed: `GuestAppScreen` used to render `HomePage()` once at mount and never again, and `HomePage()` self-subscribed to `miles:changed` on every call with no unsubscribe. Harmless while "current guest" was permanently hardcoded; a real stale-data-plus-listener-leak bug once Sign Out → different login became possible. Fixed by moving the live-update subscription into `GuestAppScreen` (once, at mount) and re-rendering fully on every `show()`, matching every other screen's pattern.
+
+✅ `TopBar.js` (not explicitly in scope, but hardcoded "Abhishek Shah" on every single guest screen) now shows the real current guest or "Guest Viewer", with a dynamic avatar reusing the same deterministic-hue helper as Leaderboard/Profile.
 
 ---
 
@@ -301,7 +318,7 @@ AR Miles
 
 Interactive Map
 
-⬜ Guest Login
+✅ Guest Login
 
 ⬜ Home Dashboard
 

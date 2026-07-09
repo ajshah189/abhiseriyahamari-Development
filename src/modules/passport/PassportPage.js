@@ -6,16 +6,20 @@
  * getStampStatus()/getStampCount() in data/passport.js. Every guest
  * sees the same stamps, because "landed" is a property of the event,
  * not of the guest (there's no per-guest attendance tracking here).
+ *
+ * Viewer mode forces every stamp to render locked regardless of real
+ * event status — the passport itself is a full-mode feature.
  */
 
 import PassengerService from "../../services/passengerService.js";
+import AuthService from "../../services/authService.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 import { EVENTS, getEventStatus } from "../../data/events.js";
 import { PASSPORT_COUNTRIES, getStampStatus, getStampCount } from "../../data/passport.js";
 
-function stampCard(country) {
-  const status = getStampStatus(country, getEventStatus, EVENTS);
+function stampCard(country, hasAccess) {
+  const status = hasAccess ? getStampStatus(country, getEventStatus, EVENTS) : "locked";
   const event = EVENTS.find(e => e.id === country.eventId);
 
   if (status === "locked") {
@@ -44,9 +48,20 @@ function stampCard(country) {
   `;
 }
 
+function accessBanner() {
+  return `
+    <div class="access-locked">
+      <div class="access-locked__icon">🔒</div>
+      <p class="access-locked__message">Your passport stamps are waiting. Log in to collect them.</p>
+      <button class="access-locked__cta" data-route="onboarding">Enter Passport →</button>
+    </div>
+  `;
+}
+
 export function PassportPage() {
   const snapshot = PassengerService.getCurrentSnapshot();
-  const stamped = getStampCount(getEventStatus, EVENTS);
+  const hasAccess = AuthService.hasAccess("passport");
+  const stamped = hasAccess ? getStampCount(getEventStatus, EVENTS) : 0;
   const total = PASSPORT_COUNTRIES.length;
   const percent = Math.round((stamped / total) * 100);
 
@@ -61,8 +76,10 @@ export function PassportPage() {
         <p class="passport-progress-text">${stamped} of ${total} countries visited</p>
       </section>
 
+      ${!hasAccess ? accessBanner() : ""}
+
       <div class="stamp-grid">
-        ${PASSPORT_COUNTRIES.map(stampCard).join("")}
+        ${PASSPORT_COUNTRIES.map(country => stampCard(country, hasAccess)).join("")}
       </div>
 
       <section class="journey-progress">

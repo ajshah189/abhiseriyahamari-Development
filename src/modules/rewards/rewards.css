@@ -34,6 +34,16 @@
   margin-left: var(--s-2);
 }
 
+.miles-balance-bar--viewer {
+  justify-content: center;
+}
+
+.miles-balance-bar--viewer p {
+  margin: 0;
+  color: var(--cream-dim);
+  font-size: 14px;
+}
+
 .tier-badge {
   padding: var(--s-2) var(--s-4);
   border-radius: var(--r-pill);

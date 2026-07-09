@@ -1,0 +1,66 @@
+/**
+ * OnboardingPage — the first screen a guest ever sees.
+ *
+ * Pure render of (state). No TopBar, no BottomNav — this sets the tone
+ * for the whole app before any of that chrome exists. OnboardingScreen
+ * owns the input value, error state, and submit handling; this file
+ * only turns that state into markup.
+ */
+
+import { APP_CONFIG } from "../../config.js";
+
+function hero() {
+  return `
+    <div class="onboarding__hero">
+      <div class="onboarding__wordmark">✈</div>
+      <h1 class="onboarding__title">Welcome to AR Airways</h1>
+      <p class="onboarding__subtitle">${APP_CONFIG.coupleNames.display} — ${APP_CONFIG.weddingDate.display}</p>
+      <p class="onboarding__resort">${APP_CONFIG.resortName}</p>
+    </div>
+  `;
+}
+
+function passportEntry(state) {
+  const disabled = state.passportNumber.trim().length === 0;
+
+  return `
+    <div class="onboarding__input-wrap">
+      <label class="onboarding__label" for="onboarding-passport">Passport Number</label>
+      <input
+        id="onboarding-passport"
+        class="onboarding__input ${state.error ? "onboarding__input--error" : ""}"
+        type="text"
+        placeholder="e.g. AR-501-S"
+        value="${state.passportNumber}"
+        autocomplete="off"
+        data-passport-input />
+      <p class="onboarding__hint">Found on your boarding pass</p>
+      ${state.error ? `<p class="onboarding__error">${state.error}</p>` : ""}
+      <button class="onboarding__cta" ${disabled ? "disabled" : ""} data-board-btn>Board Flight →</button>
+    </div>
+  `;
+}
+
+function divider() {
+  return `<div class="onboarding__divider"><span>or</span></div>`;
+}
+
+function viewerAccess() {
+  return `
+    <div class="onboarding__viewer-wrap">
+      <button class="onboarding__viewer" data-viewer-btn>Continue as Guest Viewer</button>
+      <p class="onboarding__viewer-subtitle">Browse the schedule and venue map without a personalised experience</p>
+    </div>
+  `;
+}
+
+export function OnboardingPage(state) {
+  return `
+    <div class="onboarding ${state.success ? "onboarding--success" : ""}">
+      ${hero()}
+      ${passportEntry(state)}
+      ${divider()}
+      ${viewerAccess()}
+    </div>
+  `;
+}
