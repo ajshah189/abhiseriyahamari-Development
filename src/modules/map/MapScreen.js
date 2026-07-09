@@ -12,9 +12,18 @@
  */
 
 import Router from "../../router.js";
+import { BottomNav } from "../../components/layout/BottomNav.js";
 
 let container = null;
 let homeBtn = null;
+
+function applyAdminVisibility() {
+  const isAdmin = sessionStorage.getItem("ar_admin_auth") === "true";
+  const editorToggle = document.getElementById("editorToggle");
+  const editorDivider = document.getElementById("editorDivider");
+  if (editorToggle) editorToggle.style.display = isAdmin ? "" : "none";
+  if (editorDivider) editorDivider.style.display = isAdmin ? "" : "none";
+}
 
 async function mount() {
   container = document.getElementById("screen-map");
@@ -79,6 +88,23 @@ async function mount() {
   state.closeEntryEdit = navigation.closeEntryEdit;
   state.routeAnchor = navigation.routeAnchor;
 
+  applyAdminVisibility();
+
+  // Inject BottomNav once at mount
+  const navWrapper = document.createElement("div");
+  navWrapper.innerHTML = BottomNav("map");
+  const navEl = navWrapper.firstElementChild;
+  if (navEl) {
+    container.appendChild(navEl);
+    navEl.querySelectorAll("[data-route]").forEach(btn => {
+      btn.addEventListener("click", () => Router.go(btn.dataset.route));
+    });
+  }
+
+  // Push map content above the fixed BottomNav
+  const viewport = document.getElementById("viewport");
+  if (viewport) viewport.style.paddingBottom = "64px";
+
   homeBtn.addEventListener("click", () => Router.go("home"));
 
   console.log("AR Airways map initialized — ledger architecture active");
@@ -87,11 +113,14 @@ async function mount() {
 function show() {
   container.hidden = false;
   homeBtn.hidden = false;
+  applyAdminVisibility();
+  document.body.style.overflow = 'hidden';
 }
 
 function hide() {
   container.hidden = true;
   homeBtn.hidden = true;
+  document.body.style.overflow = '';
 }
 
 export const MapScreen = { mount, show, hide };

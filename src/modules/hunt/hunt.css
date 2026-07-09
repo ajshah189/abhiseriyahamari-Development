@@ -1,0 +1,488 @@
+/* ===================================================================
+   hunt.css — Treasure Hunt module styles
+   Covers: HuntClaimScreen (QR scan reward), HuntPage (hub),
+           confetti animation, admin QR grid
+   =================================================================== */
+
+/* ---------- Claim Screen ---------- */
+
+.hunt-claim {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-8) var(--s-6);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--night);
+}
+
+.hunt-claim__spinner {
+  font-size: 48px;
+  display: block;
+  animation: hunt-spin 1.5s linear infinite;
+  margin-bottom: var(--s-5);
+}
+
+@keyframes hunt-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.hunt-claim__icon {
+  font-size: 80px;
+  display: block;
+  margin-bottom: var(--s-5);
+  line-height: 1;
+}
+
+.hunt-claim__icon--reveal {
+  animation: hunt-reveal 0.4s var(--ease-out) both;
+}
+
+@keyframes hunt-reveal {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.hunt-claim__discovered {
+  font-size: 11px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  margin: 0 0 var(--s-3);
+  text-transform: uppercase;
+}
+
+.hunt-claim__name {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--cream);
+  margin: 0 0 var(--s-5);
+  line-height: 1.15;
+}
+
+.hunt-claim__miles {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--s-6);
+  animation: hunt-reveal 0.4s 0.2s var(--ease-out) both;
+}
+
+.hunt-claim__subtitle {
+  color: var(--cream-dim, #a09070);
+  font-size: 14px;
+  margin: 0 0 var(--s-5);
+}
+
+.hunt-claim__status {
+  color: var(--cream-dim, #a09070);
+  font-size: 14px;
+  margin: 0;
+}
+
+.hunt-claim__clue-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-5);
+  max-width: 380px;
+  margin: 0 auto var(--s-6);
+  animation: hunt-reveal 0.4s 0.4s var(--ease-out) both;
+}
+
+.hunt-claim__clue-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  margin: 0 0 var(--s-2);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.hunt-claim__clue-text {
+  font-size: 15px;
+  color: var(--cream);
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.hunt-claim__cta {
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--gold);
+  color: var(--night);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  padding: var(--s-4) var(--s-8);
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out);
+  animation: hunt-reveal 0.4s 0.6s var(--ease-out) both;
+  letter-spacing: 0.02em;
+}
+
+.hunt-claim__cta:hover {
+  transform: translateY(-2px);
+}
+
+.hunt-claim--found .hunt-claim__cta,
+.hunt-claim--invalid .hunt-claim__cta {
+  background: none;
+  border: 1px solid var(--line-strong, #444);
+  color: var(--cream);
+  animation: none;
+}
+
+/* ---------- Confetti ---------- */
+
+.hunt-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.hunt-claim__icon,
+.hunt-claim__discovered,
+.hunt-claim__name,
+.hunt-claim__miles,
+.hunt-claim__clue-card,
+.hunt-claim__cta {
+  position: relative;
+  z-index: 1;
+}
+
+.hunt-confetti__piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confetti-fall var(--duration, 3s) var(--delay, 0s) linear forwards;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(0)     rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* ---------- Hunt Hub Page ---------- */
+
+.hunt-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: var(--s-6) var(--s-6) 140px;
+}
+
+.hunt-header {
+  padding: var(--s-5) 0 var(--s-4);
+}
+
+.hunt-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--cream);
+  margin: 0 0 var(--s-3);
+}
+
+.hunt-stats {
+  display: flex;
+  gap: var(--s-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.hunt-stat {
+  font-size: 14px;
+  color: var(--cream-dim, #a09070);
+  font-weight: 600;
+}
+
+.hunt-stat--miles {
+  color: var(--gold);
+}
+
+.hunt-day-tabs {
+  display: flex;
+  gap: var(--s-2);
+  margin-bottom: var(--s-5);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-2);
+}
+
+.hunt-day-tab {
+  flex: 1;
+  border: none;
+  background: none;
+  color: var(--cream-dim, #a09070);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+
+.hunt-day-tab--active {
+  background: var(--gold);
+  color: var(--night);
+}
+
+.hunt-location-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-6);
+}
+
+.hunt-location-card {
+  display: flex;
+  gap: var(--s-4);
+  align-items: flex-start;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid transparent;
+  border-radius: var(--r-xl);
+  padding: var(--s-5);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.hunt-location-card--found {
+  border-left-color: var(--gold);
+  background: var(--gold-faint, rgba(212,175,106,0.06));
+}
+
+.hunt-location-card--locked {
+  opacity: 0.65;
+}
+
+.hunt-location-card__icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.hunt-location-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hunt-location-card__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: var(--s-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.hunt-location-card__miles {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hunt-location-card__hint {
+  font-size: 13px;
+  color: var(--cream-dim, #a09070);
+  line-height: 1.4;
+}
+
+.hunt-location-card__reward {
+  font-size: 12px;
+  color: var(--gold);
+  margin-top: var(--s-1);
+}
+
+/* ---------- Top Hunters mini-leaderboard ---------- */
+
+.hunt-leaderboard {
+  display: flex;
+  flex-direction: column;
+}
+
+.hunt-leaderboard__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-2);
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  border-left: 3px solid transparent;
+}
+
+.hunt-leaderboard__row:last-child {
+  border-bottom: none;
+}
+
+.hunt-leaderboard__row--self {
+  border-left-color: var(--gold);
+  background: var(--gold-faint, rgba(212,175,106,0.06));
+}
+
+.hunt-leaderboard__rank {
+  width: 20px;
+  font-weight: 700;
+  color: var(--cream-dim, #a09070);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.hunt-leaderboard__name {
+  flex: 1;
+  color: var(--cream);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hunt-leaderboard__miles {
+  color: var(--gold);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- How to Play ---------- */
+
+.hunt-howto {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+
+.hunt-howto summary.hunt-howto__toggle {
+  padding: var(--s-5);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cream);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.hunt-howto summary.hunt-howto__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.hunt-howto__content {
+  padding: 0 var(--s-5) var(--s-5);
+  font-size: 14px;
+  color: var(--cream-dim, #a09070);
+  line-height: 1.5;
+}
+
+.hunt-howto__content ol {
+  padding-left: var(--s-5);
+  margin: var(--s-3) 0 0;
+}
+
+.hunt-howto__content li {
+  margin-bottom: var(--s-2);
+}
+
+/* ---------- Admin QR Code Grid ---------- */
+
+.admin-qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--s-5);
+  margin-top: var(--s-4);
+}
+
+.admin-qr-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.admin-qr-img {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--r-lg);
+  background: #fff;
+  display: block;
+}
+
+.admin-qr-info {
+  width: 100%;
+  text-align: center;
+}
+
+.admin-qr-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: var(--s-1);
+}
+
+.admin-qr-location {
+  font-size: 11px;
+  color: var(--cream-dim, #a09070);
+  margin-bottom: var(--s-1);
+}
+
+.admin-qr-reward {
+  font-size: 11px;
+  color: var(--gold);
+  margin-bottom: var(--s-3);
+}
+
+.admin-qr-print {
+  border: 1px solid var(--line-strong, #444);
+  background: none;
+  color: var(--cream);
+  border-radius: var(--r-pill);
+  padding: var(--s-2) var(--s-4);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast);
+  width: 100%;
+}
+
+.admin-qr-print:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+@media (max-width: 650px) {
+  .hunt-page {
+    padding: var(--s-4) var(--s-4) 140px;
+  }
+
+  .admin-qr-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hunt-claim__name {
+    font-size: 28px;
+  }
+
+  .hunt-claim__miles {
+    font-size: 40px;
+  }
+}

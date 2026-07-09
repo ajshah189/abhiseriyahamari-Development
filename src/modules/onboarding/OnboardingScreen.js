@@ -65,7 +65,8 @@ function submit() {
   state.success = true;
   render();
 
-  setTimeout(() => Router.go("home"), SUCCESS_FADE_MS);
+  const pendingHunt = sessionStorage.getItem("ar_pending_hunt");
+  setTimeout(() => Router.go(pendingHunt ? "hunt-claim" : "home"), SUCCESS_FADE_MS);
 }
 
 function continueAsViewer() {

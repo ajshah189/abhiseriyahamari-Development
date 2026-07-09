@@ -101,6 +101,7 @@ function bindEvents() {
   bindAwardEvents();
   bindGuestEvents();
   bindRedemptionEvents();
+  bindQrEvents();
 }
 
 // ---------- Award Miles ----------
@@ -221,6 +222,44 @@ function bindRedemptionEvents() {
       state.fulfilled[key] = !state.fulfilled[key];
       writeSessionMap(FULFILLED_KEY, state.fulfilled);
       renderPage();
+    });
+  });
+}
+
+// ---------- QR Codes ----------
+
+function bindQrEvents() {
+  container.querySelectorAll("[data-qr-print]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const { qrName, qrUrl, qrIcon, qrReward } = btn.dataset;
+      const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrUrl)}`;
+
+      const printWin = window.open("", "_blank");
+      if (!printWin) return;
+
+      printWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>AR Airways — ${qrName}</title>
+  <style>
+    body { font-family: Georgia, serif; text-align: center; padding: 40px; background: #fff; color: #0a0a0f; }
+    .brand { font-size: 11px; letter-spacing: 3px; color: #d4af6a; text-transform: uppercase; margin-bottom: 8px; }
+    h1 { font-size: 28px; margin: 12px 0 6px; }
+    p { font-size: 15px; color: #555; margin: 4px 0; }
+    img { margin: 20px auto; display: block; }
+    .url { font-size: 11px; color: #aaa; margin-top: 12px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="brand">AR Airways · Treasure Hunt</div>
+  <h1>${qrIcon} ${qrName}</h1>
+  <p>Scan to discover this location and earn <strong>+${qrReward} AR Miles</strong></p>
+  <img src="${qrSrc}" width="400" height="400" />
+  <p class="url">${qrUrl}</p>
+  <script>window.onload = function() { window.print(); }<\/script>
+</body>
+</html>`);
+      printWin.document.close();
     });
   });
 }

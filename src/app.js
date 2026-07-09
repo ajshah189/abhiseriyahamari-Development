@@ -20,6 +20,8 @@ import { RewardsScreen } from "./modules/rewards/RewardsScreen.js";
 import { ProfileScreen } from "./modules/profile/ProfileScreen.js";
 import { PassportScreen } from "./modules/passport/PassportScreen.js";
 import { AdminScreen } from "./modules/admin/AdminScreen.js";
+import { HuntScreen } from "./modules/hunt/HuntScreen.js";
+import { HuntClaimScreen } from "./modules/hunt/HuntClaimScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
 
 const UPCOMING_ROUTES = {};
@@ -45,9 +47,29 @@ class App {
         // Not in BottomNav, not a ComingSoon fallback — organiser-only,
         // reached via the hidden trigger on the Profile avatar.
         Router.register("admin", AdminScreen);
+        Router.register("hunt", HuntScreen);
+        Router.register("hunt-claim", HuntClaimScreen);
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
+        }
+
+        // Parse URL params once — before any routing decision.
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // ?hunt= from QR code scan — store the ID and route to claim screen.
+        // Works before login: pending hunt survives through onboarding and
+        // OnboardingScreen redirects to hunt-claim after a successful login.
+        const huntId = urlParams.get("hunt");
+        if (huntId) {
+            sessionStorage.setItem("ar_pending_hunt", huntId);
+            if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
+                Router.go("onboarding");
+                return;
+            }
+            Router.go("hunt-claim");
+            initInstallPrompt();
+            return;
         }
 
         // Auth routing — every screen is registered by this point, so
@@ -60,7 +82,6 @@ class App {
 
         // Handle ?route= shortcuts from PWA manifest shortcuts (Events, Map).
         // Only honoured when fully logged in — viewer mode still lands on Home.
-        const urlParams = new URLSearchParams(window.location.search);
         const routeParam = urlParams.get("route");
         if (routeParam && AuthService.isLoggedIn()) {
             Router.go(routeParam);

@@ -55,7 +55,11 @@ export function PassengerCard(snapshot = {}) {
     }
 
     const guest = snapshot.profile?.passengerName || "Guest";
-    const room = snapshot.profile?.room || "—";
+    const roomCottage = snapshot.profile?.roomCottage;
+    const roomZone = snapshot.profile?.roomZone;
+    const room = roomCottage
+      ? `Room ${roomCottage} · ${roomZone ? roomZone + " Zone" : ""}`
+      : (snapshot.profile?.room || "—");
 
     const balance = snapshot.balance || 0;
 
