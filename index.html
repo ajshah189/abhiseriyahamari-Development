@@ -3,12 +3,69 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-<title>Aayush Resort — Wedding Map</title>
+<title>AR Airways</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#d4af6a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AR Airways">
+<link rel="apple-touch-icon" href="/icons/icon.svg">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="src/modules/dashboard/dashboard.css">
+<link rel="stylesheet" href="src/components/cards/cards.css">
+<link rel="stylesheet" href="src/components/layout/layout.css">
+<link rel="stylesheet" href="src/modules/shared/shared.css">
+<link rel="stylesheet" href="src/modules/events/events.css">
+<link rel="stylesheet" href="src/modules/journey/journey.css">
+<link rel="stylesheet" href="src/modules/rewards/rewards.css">
+<link rel="stylesheet" href="src/modules/profile/profile.css">
+<link rel="stylesheet" href="src/modules/passport/passport.css">
+<link rel="stylesheet" href="src/modules/admin/admin.css">
+<link rel="stylesheet" href="src/modules/onboarding/onboarding.css">
+<link rel="stylesheet" href="src/modules/pwa/pwa.css">
+<link rel="stylesheet" href="src/modules/hunt/hunt.css">
 </head>
 <body>
+
+<!-- ONBOARDING — first-visit passport gate. No TopBar/BottomNav. -->
+<div id="screen-onboarding" hidden></div>
+
+<!-- GUEST APP SHELL — dashboard and every guest-facing module mount here -->
+<div id="screen-guest" hidden></div>
+
+<!-- JOURNEY HUB — boarding pass + flight schedule preview + passport preview -->
+<div id="screen-journey" hidden></div>
+
+<!-- REWARDS HUB — rewards catalogue + leaderboard, toggled client-side -->
+<div id="screen-rewards" hidden></div>
+
+<!-- PROFILE PAGE -->
+<div id="screen-profile" hidden></div>
+
+<!-- PASSPORT PAGE -->
+<div id="screen-passport" hidden></div>
+
+<!-- ADMIN (GROUND CREW) — organiser-only, not in BottomNav, PIN-gated -->
+<div id="screen-admin" hidden></div>
+
+<!-- TREASURE HUNT HUB -->
+<div id="screen-hunt" hidden></div>
+
+<!-- TREASURE HUNT CLAIM — shown after scanning a QR code -->
+<div id="screen-hunt-claim" hidden></div>
+
+<!-- EVENTS SCREEN — departures board -->
+<div id="screen-events" hidden></div>
+
+<!-- SHARED "coming soon" screen, reused by every unbuilt route -->
+<div id="screen-placeholder" hidden></div>
+
+<!-- RESORT MAP SCREEN -->
+<div id="screen-map" hidden>
 
   <!-- TOP BAR -->
   <header id="topbar">
@@ -26,6 +83,7 @@
     </div>
 
     <div class="topbar-actions">
+      <button id="homeBtn" class="btn-ghost" title="Back to your dashboard" hidden>🏠 Dashboard</button>
       <button id="navigateBtn" class="btn-ghost" title="Get directions between two points">🧭 Navigate</button>
       <button id="worldModeBtn" class="btn-ghost" title="Toggle continent zones for rooming">🌍 Room Zones</button>
       <button id="labelToggleBtn" class="btn-ghost" title="Toggle reference labels">Labels</button>
@@ -144,8 +202,21 @@
     <button id="editExportAllBtn" style="width:100%;margin-bottom:10px;background:transparent;border:1px solid var(--gold-soft);color:var(--gold);border-radius:6px;padding:8px;font-size:12px;">Export All Shapes (current session)</button>
     <textarea id="editOutput" readonly placeholder="Traced points will appear here as [x, y] pairs…"></textarea>
   </aside>
-  
+
+</div>
+
 <script src="data.js"></script>
 <script type="module" src="script.js"></script>
+
+<!-- PWA: Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('AR Airways SW registered:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+</script>
 </body>
 </html>

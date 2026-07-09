@@ -1,0 +1,95 @@
+.coming-soon {
+  min-height: 100vh;
+  padding: var(--s-8);
+  padding-bottom: 160px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  background: radial-gradient(circle at 50% 20%, var(--night-3), var(--night));
+}
+
+.coming-soon-icon {
+  font-size: 56px;
+  margin-bottom: var(--s-5);
+}
+
+.coming-soon-eyebrow {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: var(--s-3);
+}
+
+.coming-soon h1 {
+  margin: 0 0 var(--s-3);
+  font-family: var(--font-display);
+  font-size: 40px;
+  color: var(--cream);
+}
+
+.coming-soon p {
+  margin: 0 0 var(--s-6);
+  color: var(--cream-dim);
+  max-width: 360px;
+}
+
+.coming-soon .btn-ghost {
+  padding: var(--s-3) var(--s-6);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--panel-hover);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+
+.coming-soon .btn-ghost:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold);
+}
+
+/* ---------- Access Locked ----------
+   Reusable "log in to unlock" pattern embedded WITHIN a screen's own
+   content area (unlike .coming-soon, which is a full-screen takeover).
+   Used by Rewards (rewards tab), Passport (stamp grid), Profile
+   (not-logged-in state), and the viewer boarding pass. */
+
+.access-locked {
+  text-align: center;
+  padding: var(--s-8) var(--s-5);
+}
+
+.access-locked__icon {
+  font-size: 40px;
+  margin-bottom: var(--s-4);
+}
+
+.access-locked__message {
+  margin: 0 auto var(--s-5);
+  max-width: 340px;
+  color: var(--cream-dim);
+  font-size: 14px;
+}
+
+.access-locked__cta {
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--gold);
+  color: var(--night);
+  font-weight: 700;
+  font-size: 14px;
+  padding: var(--s-3) var(--s-6);
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.access-locked__cta:hover {
+  transform: translateY(-2px);
+}

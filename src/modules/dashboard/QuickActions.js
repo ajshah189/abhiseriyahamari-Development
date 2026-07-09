@@ -1,45 +1,95 @@
 export function QuickActions() {
 
+    const actions = [
+
+        {
+            icon: "🗺️",
+            title: "Map",
+            route: "map"
+        },
+
+        {
+            icon: "🛂",
+            title: "Boarding Pass",
+            route: "journey"
+        },
+
+        {
+            icon: "🌍",
+            title: "Passport",
+            route: "passport"
+        },
+
+        {
+            icon: "🎉",
+            title: "Events",
+            route: "events"
+        },
+
+        {
+            icon: "🎁",
+            title: "Rewards",
+            route: "rewards"
+        },
+
+        {
+            icon: "🏆",
+            title: "Leaderboard",
+            route: "leaderboard"
+        },
+
+        {
+            icon: "👤",
+            title: "Profile",
+            route: "profile"
+        },
+
+        {
+            icon: "🗺️",
+            title: "Treasure Hunt",
+            route: "hunt"
+        },
+
+        {
+            icon: "⚙️",
+            title: "Settings",
+            route: "settings"
+        }
+
+    ];
+
     return `
-        <section class="dashboard-section">
 
-            <h3>Quick Actions</h3>
+<section class="dashboard-section">
 
-            <div class="quick-actions-grid">
+    <h3>Quick Actions</h3>
 
-                <button class="action-card" data-route="map">
-                    🗺️
-                    <span>Map</span>
-                </button>
+    <div class="quick-grid">
 
-                <button class="action-card" data-route="passport">
-                    📘
-                    <span>Passport</span>
-                </button>
+        ${actions.map(action => `
 
-                <button class="action-card" data-route="events">
-                    🎉
-                    <span>Events</span>
-                </button>
+        <button class="quick-card" data-route="${action.route}">
 
-                <button class="action-card" data-route="rewards">
-                    🎁
-                    <span>Rewards</span>
-                </button>
+            <div class="quick-icon">
 
-                <button class="action-card" data-route="leaderboard">
-                    🏆
-                    <span>Leaderboard</span>
-                </button>
-
-                <button class="action-card" data-route="profile">
-                    👤
-                    <span>Profile</span>
-                </button>
+                ${action.icon}
 
             </div>
 
-        </section>
-    `;
+            <span>
+
+                ${action.title}
+
+            </span>
+
+        </button>
+
+        `).join("")}
+
+    </div>
+
+</section>
+
+`;
 
 }

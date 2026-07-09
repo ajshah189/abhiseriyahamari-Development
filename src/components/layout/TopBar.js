@@ -1,23 +1,86 @@
+import PassengerService from "../../services/passengerService.js";
+import { initials, colorFromName } from "../../modules/leaderboard/LeaderboardCard.js";
+
 export function TopBar() {
 
-    return `
-        <header class="top-bar">
+const now = new Date();
 
-            <div>
+const greeting =
+now.getHours() < 12
+? "Good Morning"
+: now.getHours() < 17
+? "Good Afternoon"
+: "Good Evening";
 
-                <h2>AR Airways</h2>
+const snapshot = PassengerService.getCurrentSnapshot();
+const name = snapshot?.profile?.passengerName || "Guest Viewer";
+const avatarLetter = snapshot?.isViewer ? "✈" : initials(name);
+const avatarColor = snapshot?.isViewer ? "var(--gold)" : colorFromName(name);
 
-                <small>Wedding Journey</small>
+return `
 
-            </div>
+<header class="top-bar">
 
-            <div>
+<div class="top-left">
 
-                🔔
+<div class="avatar" style="background:${avatarColor}">
 
-            </div>
+${avatarLetter}
 
-        </header>
-    `;
+</div>
+
+<div>
+
+<div class="greeting">
+
+${greeting}
+
+</div>
+
+<h2>
+
+${name}
+
+</h2>
+
+</div>
+
+</div>
+
+<div class="top-center">
+
+<div class="weather">
+
+☀️ 29°C
+
+</div>
+
+<div class="countdown">
+
+🎉 Wedding in 198 Days
+
+</div>
+
+</div>
+
+<div class="top-right">
+
+<button class="top-icon">
+
+🔔
+
+</button>
+
+<button class="top-icon">
+
+⚙️
+
+</button>
+
+</div>
+
+</header>
+
+`;
 
 }

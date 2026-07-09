@@ -130,6 +130,34 @@ export const APP_CONFIG = {
   },
 
   // ===========================
+  // Admin
+  // ===========================
+  // Organiser convenience gate for a 3-day offline wedding app, not a
+  // security product — PIN lives in config on purpose.
+  admin: {
+    pin: "2727",
+    pinLength: 4,
+  },
+
+  // ===========================
+  // Auth
+  // ===========================
+  auth: {
+    storageKey: "ar_guest_id",       // localStorage key for persisted login
+    viewerKey: "ar_viewer_mode",     // localStorage key for viewer mode flag
+    sessionKey: "ar_current_guest",  // sessionStorage key for guest snapshot cache
+  },
+
+  // ===========================
+  // PWA
+  // ===========================
+  pwa: {
+    cacheName: "ar-airways-v1",
+    cacheVersion: 1,
+    installDismissedKey: "ar_install_dismissed",
+  },
+
+  // ===========================
   // Feature Flags
   // ===========================
   features: {
@@ -141,6 +169,6 @@ export const APP_CONFIG = {
     leaderboard: false,
     treasureHunt: false,
     notifications: false,
-    adminPanel: false,
+    adminPanel: true,
   },
 };

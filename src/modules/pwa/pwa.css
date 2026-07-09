@@ -1,0 +1,135 @@
+/* ---------- PWA Install Banner ---------- */
+
+.pwa-install-banner {
+  position: fixed;
+  bottom: 74px; /* clears the 64px BottomNav + margin */
+  left: var(--s-4);
+  right: var(--s-4);
+  z-index: 900;
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-xl);
+  padding: var(--s-4) var(--s-5);
+  box-shadow: var(--shadow-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  animation: pwa-banner-in 0.3s var(--ease-out) both;
+}
+
+.pwa-install-banner--hiding {
+  animation: pwa-banner-out 0.3s var(--ease-out) both;
+}
+
+@keyframes pwa-banner-in {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes pwa-banner-out {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(16px); opacity: 0; }
+}
+
+.pwa-install-banner__body {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.pwa-install-banner__icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.pwa-install-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pwa-install-banner__text strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cream);
+}
+
+.pwa-install-banner__text span {
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+.pwa-install-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  justify-content: flex-end;
+}
+
+.pwa-install-banner__install {
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--gold);
+  color: var(--night);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  padding: var(--s-2) var(--s-5);
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.pwa-install-banner__install:hover {
+  transform: translateY(-1px);
+}
+
+.pwa-install-banner__dismiss {
+  border: none;
+  background: none;
+  color: var(--cream-dim);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  padding: var(--s-2) 0;
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.pwa-install-banner__dismiss:hover {
+  color: var(--cream);
+}
+
+/* ---------- Post-Install Toast ---------- */
+
+.pwa-toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s-3) var(--s-5);
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+  white-space: nowrap;
+  z-index: 901;
+  pointer-events: none;
+}
+
+.pwa-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Onboarding / no-nav adjustment ---------- */
+
+/* When on the onboarding screen the BottomNav isn't rendered,
+   so the banner can sit lower — but we keep the constant offset
+   since beforeinstallprompt fires only after an interaction anyway. */

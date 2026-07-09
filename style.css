@@ -79,6 +79,19 @@ html, body {
   font-feature-settings: "ss01", "cv01";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Each screen fills the viewport and owns its own vertical scroll.
+   MapScreen.js sets body.style.overflow = 'hidden' when the map is
+   active so the pan surface isn't disrupted; hide() restores it. */
+[id^="screen-"] {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#screen-map {
   overflow: hidden;
 }
 
