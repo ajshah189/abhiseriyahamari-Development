@@ -32,7 +32,6 @@ class App {
     start() {
 
         initMilesStore();
-        initBell();
 
         Router.register("onboarding", OnboardingScreen);
         Router.register("home", GuestAppScreen);
@@ -55,6 +54,10 @@ class App {
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
         }
+
+        // Bell wired after all screens are registered so a failure here
+        // cannot prevent routing.
+        initBell();
 
         // Parse URL params once — before any routing decision.
         const urlParams = new URLSearchParams(window.location.search);
