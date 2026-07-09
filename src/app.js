@@ -23,6 +23,7 @@ import { AdminScreen } from "./modules/admin/AdminScreen.js";
 import { HuntScreen } from "./modules/hunt/HuntScreen.js";
 import { HuntClaimScreen } from "./modules/hunt/HuntClaimScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
+import { initBell } from "./modules/notifications/NotificationService.js";
 
 const UPCOMING_ROUTES = {};
 
@@ -31,6 +32,7 @@ class App {
     start() {
 
         initMilesStore();
+        initBell();
 
         Router.register("onboarding", OnboardingScreen);
         Router.register("home", GuestAppScreen);

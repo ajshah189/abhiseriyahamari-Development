@@ -10,6 +10,7 @@
 import { OnboardingPage } from "./OnboardingPage.js";
 import AuthService from "../../services/authService.js";
 import Router from "../../router.js";
+import { requestPermission } from "../notifications/NotificationService.js";
 
 const SUCCESS_FADE_MS = 450;
 
@@ -64,6 +65,9 @@ function submit() {
 
   state.success = true;
   render();
+
+  // Request notification permission after login — non-blocking.
+  requestPermission();
 
   const pendingHunt = sessionStorage.getItem("ar_pending_hunt");
   setTimeout(() => Router.go(pendingHunt ? "hunt-claim" : "home"), SUCCESS_FADE_MS);

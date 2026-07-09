@@ -9,6 +9,7 @@
 import { ProfilePage } from "./ProfilePage.js";
 import AuthService from "../../services/authService.js";
 import Router from "../../router.js";
+import { clearAll as clearNotifications } from "../notifications/NotificationService.js";
 
 let container = null;
 
@@ -36,6 +37,7 @@ function bindAdminTrigger() {
 function bindSignOut() {
   container.querySelector("[data-signout]")?.addEventListener("click", () => {
     if (!confirm("Sign out of AR Airways?")) return;
+    clearNotifications();
     AuthService.logout();
     Router.go("onboarding");
   });
