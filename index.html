@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-<title>Aayush Resort — Wedding Map</title>
+<title>AR Airways</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#d4af6a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AR Airways">
+<link rel="apple-touch-icon" href="/icons/icon.svg">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -17,8 +25,13 @@
 <link rel="stylesheet" href="src/modules/profile/profile.css">
 <link rel="stylesheet" href="src/modules/passport/passport.css">
 <link rel="stylesheet" href="src/modules/admin/admin.css">
+<link rel="stylesheet" href="src/modules/onboarding/onboarding.css">
+<link rel="stylesheet" href="src/modules/pwa/pwa.css">
 </head>
 <body>
+
+<!-- ONBOARDING — first-visit passport gate. No TopBar/BottomNav. -->
+<div id="screen-onboarding" hidden></div>
 
 <!-- GUEST APP SHELL — dashboard and every guest-facing module mount here -->
 <div id="screen-guest" hidden></div>
@@ -187,5 +200,16 @@
 
 <script src="data.js"></script>
 <script type="module" src="script.js"></script>
+
+<!-- PWA: Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('AR Airways SW registered:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+</script>
 </body>
 </html>

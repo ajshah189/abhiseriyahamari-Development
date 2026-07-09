@@ -107,6 +107,32 @@
   color: var(--cream-dim);
 }
 
+/* ---------- Viewer state ---------- */
+
+.passenger-card--viewer .boarding-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-4);
+}
+
+.viewer-prompt {
+  margin: 0;
+  color: var(--cream-dim);
+  font-size: 14px;
+  max-width: 260px;
+}
+
+@media (max-width: 900px) {
+  .passenger-card--viewer .boarding-right {
+    align-items: flex-start;
+  }
+
+  .viewer-prompt {
+    max-width: none;
+  }
+}
+
 @media (max-width: 900px) {
   .boarding-card {
     grid-template-columns: 1fr;

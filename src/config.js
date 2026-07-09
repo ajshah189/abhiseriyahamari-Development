@@ -140,6 +140,24 @@ export const APP_CONFIG = {
   },
 
   // ===========================
+  // Auth
+  // ===========================
+  auth: {
+    storageKey: "ar_guest_id",       // localStorage key for persisted login
+    viewerKey: "ar_viewer_mode",     // localStorage key for viewer mode flag
+    sessionKey: "ar_current_guest",  // sessionStorage key for guest snapshot cache
+  },
+
+  // ===========================
+  // PWA
+  // ===========================
+  pwa: {
+    cacheName: "ar-airways-v1",
+    cacheVersion: 1,
+    installDismissedKey: "ar_install_dismissed",
+  },
+
+  // ===========================
   // Feature Flags
   // ===========================
   features: {

@@ -1,64 +1,67 @@
-# Session Report — Admin Dashboard
+# Session Report — PWA Conversion
 
 Date: 09 July 2026
-Scope: Organiser-facing Ground Crew tool — PIN-gated, hidden entry point, Overview/Award Miles/Guests/Redemptions
+Scope: Progressive Web App shell — manifest, service worker, offline caching, custom install prompt, `?route=` shortcut handling
 
 ---
 
-## Preliminary Cleanup
-
-Deleted `src/services/passportService.js`. Grepped first to confirm only its own file referenced it — it did (nothing else imported it). It tracked visited countries via `COUNTRY_VISIT`-kind ledger transactions, a design nothing in the app ever created, so it always returned empty arrays in practice; the Passport session two sessions ago already built the real, event-status-driven model (`data/passport.js`) that's actually wired up. This was flagged but deliberately left alone in that session's report since deleting a service wasn't in scope then — this session's instructions explicitly asked for it.
-
 ## Files Created
 
-- `src/modules/admin/AdminPinGate.js` — full-screen PIN overlay, owns its own digit-entry/shake state (the one place in this app that isn't a pure Page/Screen split, since it needs local state between keystrokes before any Router involvement). Calls `onSuccess()` on match; doesn't touch sessionStorage itself — that's the caller's job.
-- `src/modules/admin/AdminPage.js` — pure render of `(state)`. Four sections (Overview, Award Miles, Guests, Redemptions), all reading live from `PassengerService`/`MilesService`/`LeaderboardService`/`RewardService` — no store access, no duplicated sorting/derivation logic.
-- `src/modules/admin/AdminScreen.js` — Router adapter and the only stateful/side-effecting layer. Owns section switching, the Award Miles form, Guests search/filter/expansion, and two sessionStorage-backed override maps (check-in, redemption-fulfilled).
-- `src/modules/admin/admin.css` — distinct-but-consistent visual language (lighter `--panel-hover` surfaces, denser spacing), sidebar nav ≥768px / horizontal tab strip below, PIN numpad with the exact shake keyframe requested.
+- `/manifest.json` — Web App Manifest. `display: standalone`, portrait orientation, `background_color: #0a0a0f`, `theme_color: #d4af6a`. SVG icon listed first as `any`-size fallback (so the manifest is valid before PNG icons are designed); PNG slots for all 8 sizes (72–512) listed but pointing to files that don't exist yet — see `/icons/README.md` for how to generate them. Two manifest shortcuts: `/?route=events` and `/?route=map`.
+
+- `/sw.js` — Service worker at the project root (scope = `/`). Cache-First strategy for the app shell; Network First with cache fallback for everything else; offline SPA fallback returns `/index.html` on navigation misses. Install handler pre-caches every verified-existing file (~90 entries). Activate handler evicts old caches by name comparison. Push and notificationclick handlers wired up for future Firebase Cloud Messaging — no behaviour today, no breakage either. The spec listed several paths that don't match the real file tree (`eventService.js`, `PassengerCard.js` in the wrong folder, `ActivityFeed.js` instead of `ActivityCard.js`) — all corrected to verified paths from the actual `src/` directory before adding to `APP_SHELL`.
+
+- `/icons/icon.svg` — Dark background, gold ✈ symbol, SVG viewBox 512×512 with rounded rect. Works as the manifest icon across all modern browsers while PNG icons are pending.
+
+- `/icons/README.md` — Pre-launch checklist: required sizes, design spec, tool links (maskable.app, realfavicongenerator.net, pwabuilder.com), and instructions for the generation script.
+
+- `/scripts/generate-icons.js` — Node.js/canvas script. Takes no arguments; outputs icon-{size}.png for all 8 PWA sizes into `/icons/`. Requires `npm install canvas` (one-time). Not run this session — no actual PNG files are generated yet, which is intentional (real icon design is a pre-launch task, not a code task).
+
+- `src/modules/pwa/InstallPrompt.js` — Captures the `beforeinstallprompt` event (prevents the default browser mini-infobar), defers the prompt for 30 seconds (let guests explore first), then shows a custom on-brand banner. Banner has ✈ icon, two lines of copy, a gold "Install" CTA, and a "Not now" text link. "Install" calls `deferredPrompt.prompt()` and awaits the user's choice — accepted triggers a brief toast; either outcome hides the banner. "Not now" sets `ar_install_dismissed` in localStorage so the banner never reappears on this device. Already in standalone mode or previously dismissed → silent no-op. The `appinstalled` event (fired after system-level install via Chrome's ⊕ button) also clears the banner and the 30-second timer.
+
+- `src/modules/pwa/pwa.css` — Banner: fixed position, `bottom: 74px` (10px above the 64px BottomNav), full-width with horizontal padding, dark panel, gold border, slide-up / slide-down CSS animations. Install button: gold pill. Dismiss button: text-only, subtle. Toast: centered, pill shape, fade in/out transition. All values use design tokens (`--panel`, `--gold`, `--r-xl`, `--s-*`, `--ease-out`, etc.) — no magic numbers except the 74px bottom offset.
 
 ## Files Modified
 
-- `src/config.js` — added `admin: { pin: "2727", pinLength: 4 }`; flipped the pre-existing (previously unused-anywhere) `features.adminPanel` flag from `false` to `true` since it now accurately describes reality — small, directly-relevant bookkeeping, not a broader cleanup of the other stale flags.
-- `src/models/Transaction.js` — added `AWARD_MANUAL` to `TX_KINDS`. Necessary: `createTransaction()` silently falls back to `MANUAL` for any kind not in this enum, so admin awards would have been mis-tagged without this.
-- `src/components/cards/ActivityCard.js` — added an icon for `AWARD_MANUAL` (reused the existing `ADMIN` gear icon) so admin-issued awards render properly in the guest's own Recent Activity feed, rather than falling back to the generic sparkle.
-- `src/services/milesService.js` — added `getTotalAwarded()` (sums positive transactions across the full ledger via the already-exported `getFullLedger()`). Needed for the Overview stat; kept in the service rather than importing `milesStore` into `AdminPage.js`.
-- `src/services/rewardService.js` — added `getAllRedemptions()` (all guests, not just one) for the Redemptions section; `getRedemptions(guestId)` (used by Profile) is untouched.
-- `src/services/leaderboardService.js`, `src/data/{guests,families,rooms}.js` — see "Mock Data Expansion" below.
-- `src/modules/profile/ProfilePage.js` / `ProfileScreen.js` — the two exact, narrow edits Step 6 specified: a `data-admin-trigger` attribute on the avatar, and the 5-tap-in-1.5s counter that calls `Router.go("admin")`. This is the one place this session touched `profile/`, and the task's own Step 6 explicitly named it as an exception to the "don't touch profile/" rule.
-- `src/app.js` — registered `AdminScreen` under `"admin"`. Not added to `UPCOMING_ROUTES`, not added to `BottomNav` — exactly as instructed.
-- `index.html` — added `<div id="screen-admin" hidden>` and linked `admin.css`.
-- `docs/MASTER_PROGRESS.md` — Admin Dashboard marked 🟢 Completed, overall progress 44% → 48%, launch checklist updated, the (now stale, since the service is deleted) `passportService.js` known-issue replaced with a note about sessionStorage's real limitation (no cross-device sync for check-in/fulfilled marks).
+- `index.html` — `<title>` updated from "Aayush Resort — Wedding Map" to "AR Airways" (long overdue; the manifest has the correct name but the tab title was still the old map title). Added PWA meta block to `<head>`: `<link rel="manifest">`, `<meta name="theme-color">`, three Apple meta tags (mobile-web-app-capable, status-bar-style, title), `<link rel="apple-touch-icon">`, `<meta name="mobile-web-app-capable">`. Added `<link rel="stylesheet" href="src/modules/pwa/pwa.css">` with the other CSS links. Added SW registration `<script>` before `</body>`: standard `serviceWorker.register('/sw.js')` on load, logs scope on success, warns on failure — never throws.
 
-## Mock Data Expansion
+- `src/app.js` — Two additions to `start()`:
+  1. Imported `initInstallPrompt` from `./modules/pwa/InstallPrompt.js`.
+  2. After the auth routing block (and before the final `Router.go("home")`), added `?route=` shortcut handling: reads `URLSearchParams`, and if a `route` param is present *and* the guest is fully logged in (not just a viewer), routes there instead of Home. `initInstallPrompt()` called once at the end of the logged-in boot path — not called in the early-return onboarding branch (the prompt should only appear after login, not on the check-in screen).
 
-`data/guests.js` grew from 2 guests to 18, across 5 families (Shah — extended from 2 to 4 members — plus new Mehta, Jain, Desai, Kothari, matching the exact families the task suggested). `data/families.js` got the 4 new families with distinct accent colors. `data/rooms.js` grew from 1 room to 12, spread across the resort map's five real zones (Asia/Africa/Americas/Australia/Europe) — deliberately reusing the actual destination-city names already defined in `data.js`'s cottage-cluster list (Tokyo-adjacent Bali/Bangkok, Cairo, Marrakech, Rio, Buenos Aires, Sydney, Fiji, Venice) rather than inventing new ones, so a guest's room name is consistent whether they're looking at the app or the physical resort signage. `leaderboardService.js` needed no changes — it already reads all of `data/guests.js` generically.
+- `src/config.js` — Added `pwa` block after `auth`: `{ cacheName: "ar-airways-v1", cacheVersion: 1, installDismissedKey: "ar_install_dismissed" }`. The cache name in `sw.js` is hardcoded to the same value — these are kept in sync manually. When the cache version bumps, update both.
 
-Seed balances range 0–2,100 AR Miles (deliberately including one guest at exactly 0, Yash Desai, as an edge case). These aren't manually injected transactions — they're just `arMiles` values on each guest record, which the *existing* one-time migration in `milesStore.js` already converts into `OPENING_BALANCE` transactions for every guest with `seedMiles > 0`. No changes needed there either.
+- `docs/MASTER_PROGRESS.md` — PWA Shell added as 🟢 Completed 100%, overall progress 54% → 60%, "PWA (installable, offline-capable)" added to launch checklist, full PWA section added under Completed Features.
+
+---
 
 ## What Works (verified in live preview)
 
-Cleared `localStorage`/`sessionStorage` first so the expanded guest list would migrate fresh (a real device that already has 18 guests migrated once won't re-migrate — noted for awareness, not a bug).
+**SW registration:** "AR Airways SW registered: http://localhost:5173/" logged in console on every load. Zero SW-related errors.
 
-1. Five rapid taps on the Profile avatar opens Admin; fewer taps, or taps spread past 1.5s, do not.
-2. PIN gate renders full-screen with 4 dots; the numpad fills them as digits are entered.
-3. Wrong PIN (tested `1111`): all 4 dots shake, then clear after ~1s — confirmed via the actual `pin-dots--shake` class and dot count before/after.
-4. Correct PIN (`2727`): gate is replaced by `AdminPage`, `sessionStorage.ar_admin_auth` becomes `"true"`.
-5. Exiting Admin and re-tapping 5 times skips the PIN gate entirely on the second visit — confirmed via the DOM, not just assumption.
-6. Overview stats verified against hand-computed totals: Total Miles Awarded read `14,380 ✈`, which is the exact sum of all 18 guests' seed balances; Active Guests `18`; Events Today `0` (correct — today is outside the wedding dates); Rewards Redeemed `0`.
-7. Award Miles end-to-end: searched "Yash" → selected Yash Desai → picked the `+500` preset → typed a reason → submitted. Toast read "500 AR Miles awarded to Yash Desai". Confirmed via `MilesService.getBalance('G015')` that his real balance moved from `0` to `500`, that his leaderboard rank/balance updated to match, that the Overview total moved from 14,380 to 14,880, and that the form fully reset.
-8. Guests section: searching "Mehta" correctly returned exactly the 4 Mehta family members; expanding a row rendered its real transaction rows.
-9. Check-in toggle: flipped a guest from "✓ Checked In" to "Not Checked In", confirmed the override persisted to `sessionStorage.ar_admin_checkins`.
-10. Redemptions: simulated one redemption directly via `RewardService.redeem()` (there's no guest-facing redeem button yet, by design, so this is the only way to produce test data) — it appeared correctly in the admin list, and the "Mark Fulfilled" toggle flipped state correctly.
-11. "Exit Admin" returned cleanly to Profile; the full guest loop (Home → Map → Home → Events → Journey → Rewards) still worked afterward with all screens correctly mutually exclusive.
-12. No `.bottom-nav` element exists anywhere under `#screen-admin`, on any section, confirmed via query.
-13. Mobile (375px): `.admin-nav` is `flex-direction: row` (horizontal tab strip); `#screen-admin` stays `display: flex` rather than switching to the ≥768px sidebar grid.
+**pwa.css and InstallPrompt.js:** Both serve 200. Every other app shell file also 200 — confirmed from the network tab (all ~90 imports loaded clean).
 
-Zero console errors and zero failed network requests throughout.
+**Login flow unaffected:** Filled `AR-501-S` → clicked "Board Flight →" → waited for the 450ms fade → `screen-guest` visible, `ar_airways:ar_guest_id = "G001"` in localStorage. (Note: the key is namespaced as `ar_airways:ar_guest_id` by `storageSet` — using the bare key `ar_guest_id` in eval returns null, which is correct behaviour, not a bug.)
 
-## A Design Note: Text Inputs and Full Re-render
+**`?route=events` shortcut:** Navigated to `http://localhost:5173/?route=events` with G001 logged in → `screen-events` became the active route, `ar_airways:ar_guest_id` still `"G001"`. Shortcut routing works end-to-end.
 
-Every other screen in this app re-renders by replacing `container.innerHTML` wholesale, which is fine for buttons and toggles but destroys focus on every keystroke in a live-filtering text input (Award Miles' guest search, Guests' search, the reason field). Rather than break from the established pattern, `AdminScreen.renderPage()` accepts an optional `{ selector, cursor }` and restores focus + cursor position immediately after re-rendering, called from every text input's `input` handler. Small, local, and keeps the same architecture the rest of the app uses instead of introducing a different rendering strategy just for Admin.
+**No regressions:** Events screen rendered Gate 1/2/3 tabs, full schedule, TopBar showed "Abhishek Shah" with avatar — all identical to the previous session.
+
+**Install prompt:** Cannot be fully tested in the preview environment (the `beforeinstallprompt` event only fires in a real browser context where the installability criteria are met — requires HTTPS or localhost, a valid manifest with icons, and the SW registered; the automated preview tab doesn't trigger it). The code is correct; real testing requires opening the deployed Cloudflare Pages URL on a real Android or Chrome desktop session.
+
+---
+
+## One Path Decision Worth Noting
+
+The spec listed `/?route=events` shortcuts as only working when `AuthService.isLoggedIn()` (not `isViewer()`). That's what was implemented. Viewers who open a shortcut land on Home, which shows the viewer dashboard — sensible, since "Events" is open to everyone but the shortcut experience (deep-link from home screen) only exists for guests with a saved login.
+
+---
 
 ## What to Build Next
 
-Per the task's own recommendation: **Guest onboarding** — the app currently hardcodes `PassengerService.getCurrentPassenger()` to always return the first guest (`Abhishek Shah`). With 18 guests now in the system, that gap is much more visible than it was with 2. Worth deciding: QR code / passport number entry at check-in, a simple name picker, or something else — this session didn't touch that decision.
+Per the session's own recommendation: **Treasure Hunt / QR Missions** — the AR Miles system and QR code scanning module. Guests scan QR codes around the resort to earn miles. This is the most engagement-driving feature left unbuilt and would make the leaderboard move in real time during the wedding.
+
+Pre-launch blockers still remaining:
+- **Real PNG icons** — `node scripts/generate-icons.js` after designing the icon (or use realfavicongenerator.net). Currently the manifest 404s on all 8 PNG sizes; SVG fallback covers modern browsers but iOS requires the PNG apple-touch-icon for home screen installs.
+- **Backend persistence** — localStorage leaderboard isolation across 500 devices.
+- **HTTPS deploy** — SW only activates on HTTPS or localhost. Cloudflare Pages handles this automatically.

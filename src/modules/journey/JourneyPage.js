@@ -56,11 +56,16 @@ function getCountries() {
 }
 
 function boardingPass(snapshot) {
+  const isViewer = snapshot?.isViewer;
   const room = snapshot?.profile?.room || "TBD";
   const zone = snapshot?.profile?.roomZone;
   const cottage = snapshot?.profile?.roomCottage;
-  const family = snapshot?.profile?.family || "—";
+  const family = isViewer ? "—" : (snapshot?.profile?.family || "—");
   const tierName = snapshot?.tier?.current?.name || "Explorer";
+  const passengerName = isViewer ? "—" : (snapshot?.profile?.passengerName || "Guest");
+  const gate = isViewer ? "—" : (zone ? zone.toUpperCase() : "TBD");
+  const seat = isViewer ? "—" : (cottage || room);
+  const flightClass = isViewer ? "—" : classFromTier(tierName);
 
   return `
     <div class="boarding-pass">
@@ -97,18 +102,18 @@ function boardingPass(snapshot) {
 
       <div class="boarding-pass-right">
         <div class="boarding-pass__label">Passenger</div>
-        <div class="boarding-pass__name">${snapshot?.profile?.passengerName || "Guest"}</div>
+        <div class="boarding-pass__name">${passengerName}</div>
         <div class="boarding-pass__row">
           <div>
             <div class="boarding-pass__label">Gate</div>
-            <div class="boarding-pass__value">${zone ? zone.toUpperCase() : "TBD"}</div>
+            <div class="boarding-pass__value">${gate}</div>
           </div>
           <div>
             <div class="boarding-pass__label">Seat</div>
-            <div class="boarding-pass__value">${cottage || room}</div>
+            <div class="boarding-pass__value">${seat}</div>
           </div>
         </div>
-        <div class="boarding-pass__class">${classFromTier(tierName)}</div>
+        <div class="boarding-pass__class">${flightClass}</div>
       </div>
 
       <div class="boarding-pass__barcode"></div>

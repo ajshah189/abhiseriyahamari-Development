@@ -9,6 +9,9 @@
 
 import Router from "./router.js";
 import { initMilesStore } from "./store/milesStore.js";
+import AuthService from "./services/authService.js";
+import { initInstallPrompt } from "./modules/pwa/InstallPrompt.js";
+import { OnboardingScreen } from "./modules/onboarding/OnboardingScreen.js";
 import { GuestAppScreen } from "./modules/dashboard/GuestAppScreen.js";
 import { MapScreen } from "./modules/map/MapScreen.js";
 import { EventsScreen } from "./modules/events/EventsScreen.js";
@@ -27,6 +30,7 @@ class App {
 
         initMilesStore();
 
+        Router.register("onboarding", OnboardingScreen);
         Router.register("home", GuestAppScreen);
         Router.register("map", MapScreen);
         Router.register("events", EventsScreen);
@@ -46,7 +50,25 @@ class App {
             Router.register(route, createComingSoonScreen(route, meta));
         }
 
-        Router.go("home");
+        // Auth routing — every screen is registered by this point, so
+        // this decides only where we land, not what exists.
+        if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
+            // First time: show onboarding.
+            Router.go("onboarding");
+            return;
+        }
+
+        // Handle ?route= shortcuts from PWA manifest shortcuts (Events, Map).
+        // Only honoured when fully logged in — viewer mode still lands on Home.
+        const urlParams = new URLSearchParams(window.location.search);
+        const routeParam = urlParams.get("route");
+        if (routeParam && AuthService.isLoggedIn()) {
+            Router.go(routeParam);
+        } else {
+            Router.go("home");
+        }
+
+        initInstallPrompt();
 
     }
 
