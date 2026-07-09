@@ -15,12 +15,14 @@ import LeaderboardService from "../../services/leaderboardService.js";
 import RewardService from "../../services/rewardService.js";
 import { EVENTS } from "../../data/events.js";
 import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
+import { HUNT_LOCATIONS } from "../../data/treasureHunt.js";
 
 const NAV_ITEMS = [
   { id: "overview", label: "Overview" },
   { id: "award", label: "Award Miles" },
   { id: "guests", label: "Guests" },
   { id: "redemptions", label: "Redemptions" },
+  { id: "qrcodes", label: "QR Codes" },
 ];
 
 const AMOUNT_PRESETS = [50, 100, 200, 500, 1000];
@@ -256,6 +258,45 @@ function redemptionsSection(state) {
   `;
 }
 
+// ---------- QR Codes ----------
+
+const BASE_URL = "https://abhiseriyahamari.in";
+
+function qrCodesSection() {
+  return `
+    <section class="dashboard-section">
+      <h3>QR Codes</h3>
+      <p class="muted" style="margin-bottom:var(--s-5)">Print and hide these at each location. Guests scan to earn AR Miles.</p>
+      <div class="admin-qr-grid">
+        ${HUNT_LOCATIONS.map(loc => {
+          const url = `${BASE_URL}/?hunt=${loc.id}`;
+          const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+          return `
+            <div class="admin-qr-card">
+              <img class="admin-qr-img" src="${qrSrc}" alt="QR for ${loc.name}" loading="lazy" />
+              <div class="admin-qr-info">
+                <div class="admin-qr-name">${loc.icon} ${loc.name}</div>
+                <div class="admin-qr-location">${loc.location}</div>
+                <div class="admin-qr-reward">+${loc.milesReward} ✈ · Day ${loc.day}</div>
+                <button
+                  class="admin-qr-print"
+                  data-qr-print
+                  data-qr-id="${loc.id}"
+                  data-qr-name="${loc.name.replace(/"/g, "&quot;")}"
+                  data-qr-url="${url}"
+                  data-qr-icon="${loc.icon}"
+                  data-qr-reward="${loc.milesReward}">
+                  Print
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
@@ -263,6 +304,7 @@ const SECTION_RENDERERS = {
   award: awardSection,
   guests: guestsSection,
   redemptions: redemptionsSection,
+  qrcodes: qrCodesSection,
 };
 
 export function AdminPage(state) {

@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-60%
+72%
 
 Project Status:
 🟡 Active Development
@@ -46,7 +46,8 @@ main
 | Leaderboards | 🟢 Completed | 100% |
 | Rewards | 🟢 Completed | 100% |
 | Profile | 🟢 Completed | 100% |
-| QR Missions | ⚪ Not Started | 0% |
+| QR Missions / Treasure Hunt | 🟢 Completed | 100% |
+| Map Polish | 🟢 Completed | 100% |
 | Admin Dashboard | 🟢 Completed | 100% |
 | Analytics | ⚪ Not Started | 0% |
 | Final QA | ⚪ Not Started | 0% |
@@ -156,6 +157,42 @@ main
 ## Preliminary Cleanup
 
 ✅ Deleted `src/services/passportService.js` — confirmed dead by grep (only self-reference) before removing, per this session's explicit instruction. The `COUNTRY_VISIT` transaction kind it depended on is still defined in `Transaction.js` but nothing creates one; left as-is since removing an unused enum entry wasn't asked for.
+
+## Treasure Hunt / QR Missions
+
+✅ `src/data/treasureHunt.js` — 15 hunt locations across 3 days (5/day), each with id, name, day, location, icon, hint, clueToNext, and milesReward (100–300 ✈). Helper functions: `getHuntLocation()`, `getFoundLocations()`, `alreadyFound()`, `markLocationFound()` — all stored in localStorage per guest (`ar_hunt_found_{guestId}`).
+
+✅ `src/modules/hunt/HuntClaimScreen.js` — full-screen QR claim handler, 4 states: loading spinner (1 second), discovery (confetti + clue card + Claim button), already-found, invalid. Miles go through `MilesService.earn()`. Double-claim prevented by `alreadyFound()` before rendering. Viewers see discovery state but click → onboarding redirect (pending hunt survives auth flow).
+
+✅ `src/modules/hunt/HuntPage.js` — hub page with header stats ("X / 15 found"), day tabs (Day 1 / Day 2 / Day 3), location cards (locked/found state), top-hunters mini-leaderboard (device-local, same architecture as main leaderboard), collapsible "How to play" section.
+
+✅ `src/modules/hunt/HuntScreen.js` — router adapter. Manages active day tab state, resets to Day 1 on each fresh `show()`.
+
+✅ `src/modules/hunt/hunt.css` — full module styles: claim screen (dark bg, gold typography, confetti keyframe animation for 20 pieces with varied delays/colors), hub page (day tab pill switcher, location cards with gold left-border on found state), top-hunters leaderboard, how-to-play `<details>` block, admin QR grid.
+
+✅ `TX_KINDS.HUNT_DISCOVERY` added to `src/models/Transaction.js` — ledger-correct, immediately filterable.
+
+✅ `🗺️ HUNT_DISCOVERY` icon added to `ActivityCard.js` KIND_ICONS — shows on the recent activity feed when a location is discovered.
+
+✅ "Treasure Hunt" added to `QuickActions.js` — 9th quick action card with 🗺️ icon routing to `"hunt"`.
+
+✅ QR code flow in `app.js` — `?hunt=HUNT-NNN` param stores hunt ID in `sessionStorage.ar_pending_hunt`, routes logged-in/viewer guests to `hunt-claim` immediately, routes unauthenticated guests to `onboarding` (pending hunt survives the flow).
+
+✅ `OnboardingScreen.js` post-login redirect — after successful passport login, checks `ar_pending_hunt` in sessionStorage; if set, routes to `hunt-claim` instead of `home`.
+
+✅ Admin QR Codes section (`AdminPage.js` + `AdminScreen.js`) — 5th nav item "QR Codes" in Ground Crew tool. Renders a grid of 15 cards each with a live QR image from `api.qrserver.com`, location info, and a "Print" button that opens a print-optimized popup (name, reward, QR at 400px, URL, auto-triggers `window.print()`).
+
+✅ `index.html` — `screen-hunt` and `screen-hunt-claim` containers added; `hunt.css` linked.
+
+## Map Polish
+
+✅ Fix 1: Editor tools (`#editorToggle`, `#editorDivider`) hidden via `style.display = "none"` for all non-admin sessions. Check runs in both `mount()` and `show()` so it re-evaluates if admin auth changes during the session.
+
+✅ Fix 2: Boarding pass `class` field now shows the guest's real tier name ("Explorer", "Silver Traveller", etc.) instead of the airline-class translation ("Economy"). Removed the `classFromTier()` indirection in `JourneyPage.js`.
+
+✅ Fix 3: PassengerCard room field now formats as "Room 501 · Asia Zone" using `snapshot.profile.roomCottage` and `snapshot.profile.roomZone` (both already in the snapshot from PassengerService). Falls back to `room.name` if cottage is missing.
+
+✅ Fix 4: BottomNav injected into `#screen-map` at mount — Map tab active, click handlers wired to Router. `#viewport` gets `paddingBottom: 64px` to prevent zoom controls from hiding behind the nav.
 
 ## PWA Shell
 
@@ -365,7 +402,7 @@ Interactive Map
 
 ✅ PWA (installable, offline-capable)
 
-⬜ QR Missions
+✅ QR Missions / Treasure Hunt
 
 ⬜ Analytics
 

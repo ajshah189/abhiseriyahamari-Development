@@ -45,6 +45,12 @@ export function QuickActions() {
         },
 
         {
+            icon: "🗺️",
+            title: "Treasure Hunt",
+            route: "hunt"
+        },
+
+        {
             icon: "⚙️",
             title: "Settings",
             route: "settings"

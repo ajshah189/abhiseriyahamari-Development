@@ -1,67 +1,86 @@
-# Session Report — PWA Conversion
+# Session Report — Treasure Hunt + Map Polish
 
 Date: 09 July 2026
-Scope: Progressive Web App shell — manifest, service worker, offline caching, custom install prompt, `?route=` shortcut handling
+Scope: 15-location QR code treasure hunt with full claim flow, admin QR printing, 4 map/dashboard polish fixes
 
 ---
 
 ## Files Created
 
-- `/manifest.json` — Web App Manifest. `display: standalone`, portrait orientation, `background_color: #0a0a0f`, `theme_color: #d4af6a`. SVG icon listed first as `any`-size fallback (so the manifest is valid before PNG icons are designed); PNG slots for all 8 sizes (72–512) listed but pointing to files that don't exist yet — see `/icons/README.md` for how to generate them. Two manifest shortcuts: `/?route=events` and `/?route=map`.
+- `src/data/treasureHunt.js` — 15 hunt locations across the 3 wedding days (5 per day), each with a unique `id` (`HUNT-001` through `HUNT-015`), icon, thematic hint, clue-to-next, and AR Miles reward (100–300). Four helper functions: `getHuntLocation(huntId)`, `getFoundLocations(guestId)`, `alreadyFound(guestId, huntId)`, `markLocationFound(guestId, huntId)`. Found state stored in `localStorage` under `ar_hunt_found_{guestId}` (not namespaced — intentional, these are hunt-specific keys that don't need the global `ar_airways:` prefix).
 
-- `/sw.js` — Service worker at the project root (scope = `/`). Cache-First strategy for the app shell; Network First with cache fallback for everything else; offline SPA fallback returns `/index.html` on navigation misses. Install handler pre-caches every verified-existing file (~90 entries). Activate handler evicts old caches by name comparison. Push and notificationclick handlers wired up for future Firebase Cloud Messaging — no behaviour today, no breakage either. The spec listed several paths that don't match the real file tree (`eventService.js`, `PassengerCard.js` in the wrong folder, `ActivityFeed.js` instead of `ActivityCard.js`) — all corrected to verified paths from the actual `src/` directory before adding to `APP_SHELL`.
+- `src/modules/hunt/HuntClaimScreen.js` — full-screen claim handler shown immediately after scanning a QR code. Reads `sessionStorage.ar_pending_hunt` (set by app.js before routing here). One-second loading spinner, then resolves to one of four states: discovery (first find — gold confetti, icon, clue card, Claim button), already-found (if `alreadyFound()` returns true), invalid (unknown hunt ID), or redirects home if no pending hunt at all. Claim calls `MilesService.earn(guestId, reward, reason, "HUNT_DISCOVERY")` then `markLocationFound()`, clears the pending hunt, and routes to the Hunt hub. Viewers who try to claim are redirected to onboarding (pending hunt survives).
 
-- `/icons/icon.svg` — Dark background, gold ✈ symbol, SVG viewBox 512×512 with rounded rect. Works as the manifest icon across all modern browsers while PNG icons are pending.
+- `src/modules/hunt/HuntPage.js` — the Treasure Hunt hub. Pure render function. Shows total found/total + hunt miles earned. Day 1/2/3 tab switcher. Location cards: locked state shows hint + mile reward; found state reveals name, ✅ icon, and miles earned. Top Hunters mini-leaderboard (device-local, same architecture as the main leaderboard — sums `HUNT_DISCOVERY` transactions per guest from `MilesService.getLedger()`). Collapsible "How to play" section via `<details>`. Viewers see a `.access-locked` login prompt.
 
-- `/icons/README.md` — Pre-launch checklist: required sizes, design spec, tool links (maskable.app, realfavicongenerator.net, pwabuilder.com), and instructions for the generation script.
+- `src/modules/hunt/HuntScreen.js` — router adapter. Manages `activeDay` state (resets to Day 1 on each `show()`). Wires `data-route` clicks and `data-hunt-day` tab switches.
 
-- `/scripts/generate-icons.js` — Node.js/canvas script. Takes no arguments; outputs icon-{size}.png for all 8 PWA sizes into `/icons/`. Requires `npm install canvas` (one-time). Not run this session — no actual PNG files are generated yet, which is intentional (real icon design is a pre-launch task, not a code task).
+- `src/modules/hunt/hunt.css` — all Treasure Hunt styles. Claim screen: dark bg, centered flex column, gold spinner animation (`hunt-spin`), `hunt-reveal` keyframe for icon/miles/clue-card staggered entrance, 20-piece CSS confetti with JS-generated inline `--delay`/`--duration`/`background` custom properties. Hub: day-tab pill switcher matching the admin nav style, location cards with gold left-border on found state, hunt-leaderboard rows, admin QR grid (`auto-fill minmax(200px,1fr)`).
 
-- `src/modules/pwa/InstallPrompt.js` — Captures the `beforeinstallprompt` event (prevents the default browser mini-infobar), defers the prompt for 30 seconds (let guests explore first), then shows a custom on-brand banner. Banner has ✈ icon, two lines of copy, a gold "Install" CTA, and a "Not now" text link. "Install" calls `deferredPrompt.prompt()` and awaits the user's choice — accepted triggers a brief toast; either outcome hides the banner. "Not now" sets `ar_install_dismissed` in localStorage so the banner never reappears on this device. Already in standalone mode or previously dismissed → silent no-op. The `appinstalled` event (fired after system-level install via Chrome's ⊕ button) also clears the banner and the 30-second timer.
-
-- `src/modules/pwa/pwa.css` — Banner: fixed position, `bottom: 74px` (10px above the 64px BottomNav), full-width with horizontal padding, dark panel, gold border, slide-up / slide-down CSS animations. Install button: gold pill. Dismiss button: text-only, subtle. Toast: centered, pill shape, fade in/out transition. All values use design tokens (`--panel`, `--gold`, `--r-xl`, `--s-*`, `--ease-out`, etc.) — no magic numbers except the 74px bottom offset.
+---
 
 ## Files Modified
 
-- `index.html` — `<title>` updated from "Aayush Resort — Wedding Map" to "AR Airways" (long overdue; the manifest has the correct name but the tab title was still the old map title). Added PWA meta block to `<head>`: `<link rel="manifest">`, `<meta name="theme-color">`, three Apple meta tags (mobile-web-app-capable, status-bar-style, title), `<link rel="apple-touch-icon">`, `<meta name="mobile-web-app-capable">`. Added `<link rel="stylesheet" href="src/modules/pwa/pwa.css">` with the other CSS links. Added SW registration `<script>` before `</body>`: standard `serviceWorker.register('/sw.js')` on load, logs scope on success, warns on failure — never throws.
+- `src/models/Transaction.js` — added `HUNT_DISCOVERY: "HUNT_DISCOVERY"` to `TX_KINDS`. Now filterable in `MilesService.getLedger()` and shown in the activity feed with the 🗺️ icon.
 
-- `src/app.js` — Two additions to `start()`:
-  1. Imported `initInstallPrompt` from `./modules/pwa/InstallPrompt.js`.
-  2. After the auth routing block (and before the final `Router.go("home")`), added `?route=` shortcut handling: reads `URLSearchParams`, and if a `route` param is present *and* the guest is fully logged in (not just a viewer), routes there instead of Home. `initInstallPrompt()` called once at the end of the logged-in boot path — not called in the early-return onboarding branch (the prompt should only appear after login, not on the check-in screen).
+- `src/components/cards/ActivityCard.js` — added `HUNT_DISCOVERY: "🗺️"` to `KIND_ICONS`. Appears automatically in the Recent Activity feed when a location is discovered.
 
-- `src/config.js` — Added `pwa` block after `auth`: `{ cacheName: "ar-airways-v1", cacheVersion: 1, installDismissedKey: "ar_install_dismissed" }`. The cache name in `sw.js` is hardcoded to the same value — these are kept in sync manually. When the cache version bumps, update both.
+- `src/modules/dashboard/QuickActions.js` — added Treasure Hunt as the 9th quick action (`data-route="hunt"`, icon 🗺️), between Leaderboard and Settings.
 
-- `docs/MASTER_PROGRESS.md` — PWA Shell added as 🟢 Completed 100%, overall progress 54% → 60%, "PWA (installable, offline-capable)" added to launch checklist, full PWA section added under Completed Features.
+- `src/modules/onboarding/OnboardingScreen.js` — after a successful login, `submit()` now checks `sessionStorage.getItem("ar_pending_hunt")` and routes to `"hunt-claim"` instead of `"home"` if a hunt is pending. The 450ms success-fade timing is unchanged.
+
+- `src/modules/map/MapScreen.js` — two fixes in one:
+  1. `applyAdminVisibility()` helper hides `#editorToggle` and `#editorDivider` for non-admin sessions (`sessionStorage.ar_admin_auth !== "true"`). Called in both `mount()` and `show()` so it re-evaluates if admin auth changes during the session.
+  2. BottomNav injected as the last child of `#screen-map` at the end of `mount()`, with `data-route` click handlers wired to `Router.go()`. `#viewport` gets `paddingBottom: 64px` inline. Imported `BottomNav` from `../../components/layout/BottomNav.js`.
+
+- `src/modules/journey/JourneyPage.js` — removed `classFromTier()` indirection on the boarding pass. `flightClass` is now set directly to `tierName` ("Explorer", "Silver Traveller", etc.) instead of the airline-class translation ("Economy", "Business", "First"). The `classFromTier()` function is left defined but unreferenced — can be deleted in a future cleanup pass.
+
+- `src/components/cards/PassengerCard.js` — room display fixed. Now reads `snapshot.profile.roomCottage` and `snapshot.profile.roomZone` (both already in the PassengerService snapshot) and formats them as "Room 501 · Asia Zone". Falls back to `snapshot.profile.room` (the destination city name, e.g. "Japan") only if `roomCottage` is null.
+
+- `src/modules/admin/AdminPage.js` — added 5th nav item `{ id: "qrcodes", label: "QR Codes" }`, imported `HUNT_LOCATIONS`, added `qrCodesSection()` render function (15-card grid, each with a live `api.qrserver.com` QR image, location metadata, and a `data-qr-print` button), added `qrcodes: qrCodesSection` to `SECTION_RENDERERS`.
+
+- `src/modules/admin/AdminScreen.js` — added `bindQrEvents()` called from `bindEvents()`. Print handler opens a new window, writes a minimal HTML print page (brand header, location name, "scan to earn X miles", 400px QR image, URL in small text), closes the document, and auto-calls `window.print()` via `window.onload`.
+
+- `src/app.js` — two additions:
+  1. Imported `HuntScreen` and `HuntClaimScreen`; registered `"hunt"` and `"hunt-claim"` routes.
+  2. `?hunt=` URL param handling before all other routing: stores the ID in `sessionStorage.ar_pending_hunt`, routes unauthed guests to onboarding, routes authed/viewer guests directly to `hunt-claim`.
+
+- `index.html` — added `<div id="screen-hunt" hidden>` and `<div id="screen-hunt-claim" hidden>` containers; added `<link rel="stylesheet" href="src/modules/hunt/hunt.css">`.
 
 ---
 
 ## What Works (verified in live preview)
 
-**SW registration:** "AR Airways SW registered: http://localhost:5173/" logged in console on every load. Zero SW-related errors.
+**Fix 2 — Boarding pass tier:** Journey screen shows "Explorer" (the real tier name) instead of "ECONOMY". Verified with G001 (Abhishek Shah, seed balance 1250 → Explorer tier). ✅
 
-**pwa.css and InstallPrompt.js:** Both serve 200. Every other app shell file also 200 — confirmed from the network tab (all ~90 imports loaded clean).
+**Fix 3 — Room format:** Dashboard PassengerCard shows "Room 501 · Asia Zone" for G001 (room R101, cottage 501, Asia zone). Previously showed "Japan" (the destination city name). ✅
 
-**Login flow unaffected:** Filled `AR-501-S` → clicked "Board Flight →" → waited for the 450ms fade → `screen-guest` visible, `ar_airways:ar_guest_id = "G001"` in localStorage. (Note: the key is namespaced as `ar_airways:ar_guest_id` by `storageSet` — using the bare key `ar_guest_id` in eval returns null, which is correct behaviour, not a bug.)
+**Fix 1 — Editor tools hidden:** `#editorToggle` and `#editorDivider` have `display: none` for non-admin sessions. `sessionStorage.ar_admin_auth` is null for regular guests. ✅
 
-**`?route=events` shortcut:** Navigated to `http://localhost:5173/?route=events` with G001 logged in → `screen-events` became the active route, `ar_airways:ar_guest_id` still `"G001"`. Shortcut routing works end-to-end.
+**Fix 4 — Map BottomNav:** `.bottom-nav` present inside `#screen-map`. `#viewport` has `paddingBottom: 64px`. ✅
 
-**No regressions:** Events screen rendered Gate 1/2/3 tabs, full schedule, TopBar showed "Abhishek Shah" with avatar — all identical to the previous session.
+**Hunt claim — discovery state:** Navigating to `/?hunt=HUNT-003` routes to `screen-hunt-claim`, loads loading spinner for 1s, then renders discovery state with 🏊 icon, "The Main Pool", "+150 ✈", clue card ("Something sacred awaits..."), and "Claim Miles ✈" button. 20 confetti pieces generated with correct inline styles. ✅
 
-**Install prompt:** Cannot be fully tested in the preview environment (the `beforeinstallprompt` event only fires in a real browser context where the installability criteria are met — requires HTTPS or localhost, a valid manifest with icons, and the SW registered; the automated preview tab doesn't trigger it). The code is correct; real testing requires opening the deployed Cloudflare Pages URL on a real Android or Chrome desktop session.
+**Hunt claim — miles credited:** Clicking "Claim Miles ✈" records `{ kind: "HUNT_DISCOVERY", amount: 150, reason: "Discovered: The Main Pool", guestId: "G001" }` in the ledger at `ar_airways:miles_ledger`. G001 balance moves from 1250 to 1400. Location written to `ar_hunt_found_G001 = ["HUNT-003"]`. `ar_pending_hunt` cleared from sessionStorage. Routes to `screen-hunt`. ✅
+
+**Hunt hub — found state:** After claiming, hub shows "1 / 15 found" and "+150 ✈ earned" in the stats bar. The Main Pool card shows ✅ icon, revealed name, and "+150 ✈". 4 other Day 1 cards remain locked. ✅
+
+**Double-claim prevention:** Scanning `/?hunt=HUNT-003` again renders `hunt-claim--found` state ("Already Discovered, You already claimed +150 AR Miles here ✈") with no Claim button — only "Back to Hunt". ✅
 
 ---
 
-## One Path Decision Worth Noting
+## One Architecture Note
 
-The spec listed `/?route=events` shortcuts as only working when `AuthService.isLoggedIn()` (not `isViewer()`). That's what was implemented. Viewers who open a shortcut land on Home, which shows the viewer dashboard — sensible, since "Events" is open to everyone but the shortcut experience (deep-link from home screen) only exists for guests with a saved login.
+The QR flow has a subtle but important piece: `?hunt=` is handled by `app.js` BEFORE the standard auth check. This means the hunt ID is stored in sessionStorage BEFORE any routing decision, so it survives through the onboarding screen. `OnboardingScreen.js` then reads it after a successful login and redirects to `hunt-claim` instead of `home`. Viewers (who skip login) go directly to the claim screen and are only redirected to onboarding when they actually click "Claim Miles" — they can still see the discovery state and read the clue. This was a deliberate choice: showing guests the discovery excitement even before they log in creates a stronger incentive to complete login.
 
 ---
 
 ## What to Build Next
 
-Per the session's own recommendation: **Treasure Hunt / QR Missions** — the AR Miles system and QR code scanning module. Guests scan QR codes around the resort to earn miles. This is the most engagement-driving feature left unbuilt and would make the leaderboard move in real time during the wedding.
+Per spec recommendation: **Local Notifications** — push/local notification stubs in the SW are already wired. The next step is wiring Firebase Cloud Messaging so that organizers can broadcast event reminders ("Garba starts in 30 minutes!") to all installed PWA instances. This requires a Firebase project, a server-side key, and updating `sw.js`'s push handler from the current stub to actual notification display.
 
-Pre-launch blockers still remaining:
-- **Real PNG icons** — `node scripts/generate-icons.js` after designing the icon (or use realfavicongenerator.net). Currently the manifest 404s on all 8 PNG sizes; SVG fallback covers modern browsers but iOS requires the PNG apple-touch-icon for home screen installs.
-- **Backend persistence** — localStorage leaderboard isolation across 500 devices.
-- **HTTPS deploy** — SW only activates on HTTPS or localhost. Cloudflare Pages handles this automatically.
+Pre-launch items still outstanding:
+- **Real PNG icons** — `node scripts/generate-icons.js` after designing the actual AR Airways icon.
+- **SW cache update** — new hunt module files (`src/modules/hunt/*`, `src/data/treasureHunt.js`) need to be added to `APP_SHELL` in `/sw.js` and `CACHE_NAME` bumped to `ar-airways-v2` before the wedding.
+- **Backend persistence** — localStorage leaderboard isolation means each device only sees its own data; a real-time leaderboard requires a backend.
+- **QR code printing** — admin should print all 15 QR cards and laminate them for placement around the resort 1–2 days before the wedding.

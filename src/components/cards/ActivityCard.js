@@ -18,6 +18,7 @@ const KIND_ICONS = {
   QR_SCAN: "📱",
   SOCIAL: "📸",
   TREASURE: "🗝️",
+  HUNT_DISCOVERY: "🗺️",
   COUNTRY_VISIT: "🌍",
   ACHIEVEMENT: "🏅",
   MISSION: "🔎",

@@ -65,7 +65,7 @@ function boardingPass(snapshot) {
   const passengerName = isViewer ? "—" : (snapshot?.profile?.passengerName || "Guest");
   const gate = isViewer ? "—" : (zone ? zone.toUpperCase() : "TBD");
   const seat = isViewer ? "—" : (cottage || room);
-  const flightClass = isViewer ? "—" : classFromTier(tierName);
+  const flightClass = isViewer ? "—" : tierName;
 
   return `
     <div class="boarding-pass">
