@@ -3,11 +3,14 @@
    panel surfaces and tighter spacing than the guest app — data-dense,
    organiser tooling rather than a guest experience. */
 
+#screen-admin:not([hidden]) {
+    display: flex;
+}
+
 #screen-admin {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--night-2);
+    min-height: 100vh;
+    flex-direction: column;
+    background: var(--night-2);
 }
 
 .admin-toast {
