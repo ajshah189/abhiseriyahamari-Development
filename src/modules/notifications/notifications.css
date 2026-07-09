@@ -1,0 +1,120 @@
+/* v2 */
+/* ---------- Bell button badge ---------- */
+
+[data-notif-toggle] {
+  position: relative;
+}
+
+.notif-bell-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--rose, #e05c6e);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* ---------- Notification panel ---------- */
+
+.notif-panel {
+  position: fixed;
+  width: min(360px, calc(100vw - 2 * var(--s-4, 16px)));
+  max-height: 480px;
+  background: var(--panel-solid, #151a22);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-3);
+  z-index: 1100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: notif-panel-in 0.18s var(--ease-out, ease) both;
+}
+
+@keyframes notif-panel-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.notif-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+  background: var(--panel-solid, #151a22);
+  position: sticky;
+  top: 0;
+}
+
+.notif-panel__heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: 0.02em;
+}
+
+.notif-panel__count {
+  font-size: 11px;
+  color: var(--cream-faint);
+}
+
+.notif-panel__list {
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.notif-panel__item {
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--line);
+  transition: background var(--t-fast, 0.12s) ease;
+}
+
+.notif-panel__item:last-child {
+  border-bottom: none;
+}
+
+.notif-panel__item:hover {
+  background: var(--panel-hover);
+}
+
+.notif-panel__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 3px;
+}
+
+.notif-panel__body {
+  font-size: 12px;
+  color: var(--cream-dim);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.notif-panel__time {
+  font-size: 11px;
+  color: var(--cream-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.notif-panel__empty {
+  padding: var(--s-7, 32px) var(--s-5);
+  text-align: center;
+  font-size: 13px;
+  color: var(--cream-dim);
+  line-height: 1.55;
+}
