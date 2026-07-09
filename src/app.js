@@ -10,6 +10,7 @@
 import Router from "./router.js";
 import { initMilesStore } from "./store/milesStore.js";
 import AuthService from "./services/authService.js";
+import { initInstallPrompt } from "./modules/pwa/InstallPrompt.js";
 import { OnboardingScreen } from "./modules/onboarding/OnboardingScreen.js";
 import { GuestAppScreen } from "./modules/dashboard/GuestAppScreen.js";
 import { MapScreen } from "./modules/map/MapScreen.js";
@@ -57,7 +58,17 @@ class App {
             return;
         }
 
-        Router.go("home");
+        // Handle ?route= shortcuts from PWA manifest shortcuts (Events, Map).
+        // Only honoured when fully logged in — viewer mode still lands on Home.
+        const urlParams = new URLSearchParams(window.location.search);
+        const routeParam = urlParams.get("route");
+        if (routeParam && AuthService.isLoggedIn()) {
+            Router.go(routeParam);
+        } else {
+            Router.go("home");
+        }
+
+        initInstallPrompt();
 
     }
 

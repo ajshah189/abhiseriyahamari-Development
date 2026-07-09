@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-54%
+60%
 
 Project Status:
 🟡 Active Development
@@ -37,6 +37,7 @@ main
 | Interactive Map | 🟢 Completed | 90% |
 | Guest Onboarding / Auth | 🟢 Completed | 100% |
 | Passenger System | 🟢 Completed | 100% |
+| PWA Shell | 🟢 Completed | 100% |
 | Home Dashboard | ⚪ Not Started | 0% |
 | Boarding Pass | 🟢 Completed | 100% |
 | Passport | 🟢 Completed | 100% |
@@ -155,6 +156,30 @@ main
 ## Preliminary Cleanup
 
 ✅ Deleted `src/services/passportService.js` — confirmed dead by grep (only self-reference) before removing, per this session's explicit instruction. The `COUNTRY_VISIT` transaction kind it depended on is still defined in `Transaction.js` but nothing creates one; left as-is since removing an unused enum entry wasn't asked for.
+
+## PWA Shell
+
+✅ Web App Manifest (`/manifest.json`) — name, short_name, description, standalone display, portrait orientation, dark background, gold theme colour, `lang: en`
+
+✅ SVG icon fallback (`/icons/icon.svg`) — dark background, gold ✈ symbol, works in all modern browsers as the `any`-size manifest icon
+
+✅ Icon generation script (`/scripts/generate-icons.js`) — Node.js/canvas script ready to run when real PNG icons are designed; outputs all 8 sizes (72–512px) into `/icons/`
+
+✅ README in `/icons/` documenting the required sizes, design spec, and tools (maskable.app, realfavicongenerator.net)
+
+✅ Service Worker (`/sw.js`) — Cache First for the entire app shell (~90 files), Network First with cache fallback for everything else, offline SPA fallback returns `/index.html` for navigation requests; push notification handlers wired up and ready for Firebase
+
+✅ SW registration in `index.html` — standard `load` event listener, logs scope on success
+
+✅ PWA meta tags in `index.html` — manifest link, theme-color, Apple mobile meta tags (apple-mobile-web-app-capable, status-bar-style, title), apple-touch-icon, mobile-web-app-capable
+
+✅ Custom install prompt (`src/modules/pwa/InstallPrompt.js`) — captures `beforeinstallprompt`, delays 30 seconds, shows on-brand banner (dark panel, gold Install button, "Not now" link); "Install" triggers the deferred prompt, "Not now" sets `ar_install_dismissed` in localStorage; post-install toast; no-op if already standalone or previously dismissed
+
+✅ `pwa.css` — banner slide-up/slide-down animations using CSS keyframes and design tokens; post-install toast with fade transition; correctly positioned 74px above the BottomNav
+
+✅ `?route=` shortcut handling in `app.js` — `/?route=events` and `/?route=map` deep-link directly to those screens for logged-in guests; viewers land on Home as usual
+
+✅ `config.js` — `pwa` block with `cacheName`, `cacheVersion`, `installDismissedKey`
 
 ## Guest Onboarding / Auth
 
@@ -337,6 +362,8 @@ Interactive Map
 ✅ Leaderboards
 
 ✅ Admin Dashboard
+
+✅ PWA (installable, offline-capable)
 
 ⬜ QR Missions
 

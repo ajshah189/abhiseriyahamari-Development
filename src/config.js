@@ -149,6 +149,15 @@ export const APP_CONFIG = {
   },
 
   // ===========================
+  // PWA
+  // ===========================
+  pwa: {
+    cacheName: "ar-airways-v1",
+    cacheVersion: 1,
+    installDismissedKey: "ar_install_dismissed",
+  },
+
+  // ===========================
   // Feature Flags
   // ===========================
   features: {
