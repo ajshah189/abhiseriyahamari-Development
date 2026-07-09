@@ -114,11 +114,13 @@ function show() {
   container.hidden = false;
   homeBtn.hidden = false;
   applyAdminVisibility();
+  document.body.style.overflow = 'hidden';
 }
 
 function hide() {
   container.hidden = true;
   homeBtn.hidden = true;
+  document.body.style.overflow = '';
 }
 
 export const MapScreen = { mount, show, hide };
