@@ -1,3 +1,4 @@
+/* v2 */
 /* Semantic flight-status colors. Distinct from the gold/cream brand
    palette by necessity — status indicators need universal meaning
    (grey/amber/green), not brand color. Scoped as tokens so every rule
