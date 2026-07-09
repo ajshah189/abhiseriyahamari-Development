@@ -1,0 +1,291 @@
+.journey-page {
+  max-width: 900px;
+  margin: auto;
+  padding: var(--s-6) var(--s-6) 140px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+
+/* ---------- Boarding Pass ---------- */
+
+.boarding-pass {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  background: #faf9f6;
+  color: #1a1a1a;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-3);
+}
+
+.boarding-pass-left,
+.boarding-pass-right {
+  padding: var(--s-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.boarding-pass-right {
+  position: relative;
+  border-left: 2px dashed rgba(26, 26, 26, 0.2);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.boarding-pass-right::before,
+.boarding-pass-right::after {
+  content: "";
+  position: absolute;
+  left: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--night);
+}
+
+.boarding-pass-right::before { top: -11px; }
+.boarding-pass-right::after { bottom: -11px; }
+
+.boarding-pass__airline {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+
+.boarding-pass__route {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.boarding-pass__plane {
+  color: var(--gold);
+  font-size: 18px;
+}
+
+.boarding-pass__row {
+  display: flex;
+  gap: var(--s-6);
+}
+
+.boarding-pass__label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.5);
+  margin-bottom: var(--s-1);
+}
+
+.boarding-pass__value {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.boarding-pass__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  color: #1a1a1a;
+}
+
+.boarding-pass__class {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: auto;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--gold);
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.boarding-pass__barcode {
+  grid-column: 1 / -1;
+  height: 40px;
+  background: repeating-linear-gradient(
+    90deg,
+    #1a1a1a 0,
+    #1a1a1a 2px,
+    transparent 2px,
+    transparent 5px,
+    #1a1a1a 5px,
+    #1a1a1a 6px,
+    transparent 6px,
+    transparent 10px
+  );
+  opacity: 0.8;
+  margin: 0 var(--s-6) var(--s-5);
+}
+
+@media (max-width: 600px) {
+  .boarding-pass {
+    grid-template-columns: 1fr;
+  }
+
+  .boarding-pass-right {
+    border-left: none;
+    border-top: 2px dashed rgba(26, 26, 26, 0.2);
+  }
+
+  .boarding-pass-right::before,
+  .boarding-pass-right::after {
+    left: auto;
+    top: -11px;
+  }
+
+  .boarding-pass-right::before { left: -11px; }
+  .boarding-pass-right::after { right: -11px; left: auto; }
+
+  .boarding-pass__barcode {
+    margin: 0 var(--s-4) var(--s-4);
+  }
+}
+
+/* ---------- Section header (Flight Schedule / Passport) ---------- */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--s-5);
+}
+
+.section-header h3 {
+  margin: 0;
+}
+
+.section-link {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.section-link:hover {
+  opacity: 0.75;
+}
+
+/* ---------- Flight Schedule preview ---------- */
+
+.journey-flight-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.journey-flight-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--panel-hover);
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+
+.journey-flight-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold-soft);
+}
+
+.journey-flight-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cream);
+  min-width: 46px;
+}
+
+.journey-flight-body h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.journey-flight-body p {
+  margin: var(--s-1) 0 0;
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+/* ---------- Passport preview ---------- */
+
+.country-scroll {
+  display: flex;
+  gap: var(--s-5);
+  overflow-x: auto;
+  padding-bottom: var(--s-2);
+  scrollbar-width: none;
+}
+
+.country-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.country-circle {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  width: 72px;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.country-circle__flag {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-pill);
+  background: var(--panel-hover);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.country-circle__name {
+  font-size: 11px;
+  color: var(--cream-dim);
+  text-align: center;
+}
+
+.country-circle--visited .country-circle__flag {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-glow);
+}
+
+.country-circle--locked {
+  opacity: 0.35;
+}
+
+.country-circle--locked .country-circle__flag {
+  filter: grayscale(1);
+}
+
+@media (max-width: 650px) {
+  .journey-page {
+    padding: var(--s-4) var(--s-4) 140px;
+  }
+}

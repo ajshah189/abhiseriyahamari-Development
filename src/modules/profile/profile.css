@@ -1,0 +1,215 @@
+.profile-page {
+  max-width: 700px;
+  margin: auto;
+  padding: var(--s-6) var(--s-6) 140px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+}
+
+/* ---------- Header ---------- */
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--s-6) 0 var(--s-2);
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--r-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: var(--s-4);
+  box-shadow: var(--shadow-2);
+}
+
+.profile-name {
+  margin: 0 0 var(--s-3);
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.profile-header .tier-badge {
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-pill);
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-soft);
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: var(--s-3);
+}
+
+.profile-family {
+  margin: 0 0 var(--s-1);
+  color: var(--cream-dim);
+  font-size: 14px;
+}
+
+.profile-room {
+  margin: 0;
+  color: var(--cream-dim);
+  font-size: 13px;
+}
+
+/* ---------- Journey Stats ---------- */
+
+.profile-stats {
+  display: flex;
+  gap: var(--s-4);
+}
+
+.stat-card {
+  flex: 1;
+  text-align: center;
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-5) var(--s-3);
+  box-shadow: var(--shadow-2);
+}
+
+.stat-card__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--s-1);
+}
+
+.stat-card__label {
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+/* ---------- Transaction History ---------- */
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.transaction-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.transaction-row:last-child {
+  border-bottom: none;
+}
+
+.transaction-row__date {
+  flex: 0 0 auto;
+  width: 90px;
+  font-size: 12px;
+  color: var(--cream-faint);
+}
+
+.transaction-row__desc {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--cream);
+}
+
+.transaction-row__amount {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.transaction-row--earn .transaction-row__amount {
+  color: #10b981;
+}
+
+.transaction-row--redeem .transaction-row__amount {
+  color: #ef4444;
+}
+
+/* ---------- My Rewards ---------- */
+
+.redeemed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.redeemed-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-1);
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--cream);
+}
+
+.redeemed-row:last-child {
+  border-bottom: none;
+}
+
+.redeemed-row__cost {
+  color: var(--gold);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Quick Info ---------- */
+
+.quick-info-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-1);
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.quick-info-row span {
+  color: var(--cream-dim);
+}
+
+.quick-info-row strong {
+  color: var(--cream);
+  font-weight: 600;
+  text-align: right;
+}
+
+.quick-info-help {
+  margin: var(--s-4) 0 0;
+  font-size: 13px;
+  color: var(--cream-faint);
+  text-align: center;
+}
+
+@media (max-width: 650px) {
+  .profile-page {
+    padding: var(--s-4) var(--s-4) 140px;
+  }
+
+  .profile-stats {
+    flex-direction: column;
+  }
+}

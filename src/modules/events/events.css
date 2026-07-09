@@ -1,0 +1,268 @@
+/* Semantic flight-status colors. Distinct from the gold/cream brand
+   palette by necessity — status indicators need universal meaning
+   (grey/amber/green), not brand color. Scoped as tokens so every rule
+   below references one source instead of repeating hex values. */
+:root {
+  --status-upcoming: #6b7280;
+  --status-boarding: #f59e0b;
+  --status-inflight: #10b981;
+  --status-landed: #6b7280;
+}
+
+@keyframes boarding-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ---------- Events Page ---------- */
+
+.events-page {
+  max-width: 900px;
+  margin: auto;
+  padding: var(--s-6) var(--s-6) 140px;
+}
+
+.gate-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-6);
+}
+
+.gate-tab {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  color: var(--cream-dim);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s-4) var(--s-2);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
+}
+
+.gate-tab:hover {
+  color: var(--cream);
+  transform: translateY(-2px);
+}
+
+.gate-tab.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ---------- Flight Cards ---------- */
+
+.flight-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.flight-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--s-5);
+  align-items: start;
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-5);
+  box-shadow: var(--shadow-2);
+}
+
+.flight-time {
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--cream);
+  min-width: 62px;
+}
+
+.flight-code {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--cream-faint);
+  text-transform: uppercase;
+  margin-bottom: var(--s-1);
+}
+
+.flight-name {
+  margin: 0 0 var(--s-1);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.flight-tagline {
+  margin: 0 0 var(--s-2);
+  color: var(--cream-dim);
+  font-size: 13px;
+}
+
+.flight-country {
+  font-size: 13px;
+  color: var(--cream-dim);
+  margin-bottom: var(--s-1);
+}
+
+.flight-venue {
+  font-size: 13px;
+  color: var(--cream-dim);
+  margin-bottom: var(--s-3);
+}
+
+.dresscode-chip {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--gold);
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-pill);
+  padding: var(--s-1) var(--s-3);
+}
+
+.flight-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-3);
+  text-align: right;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}
+
+.status-badge.status-upcoming {
+  color: var(--status-upcoming);
+  background: rgba(107, 114, 128, 0.15);
+}
+
+.status-badge.status-boarding {
+  color: var(--status-boarding);
+  background: rgba(245, 158, 11, 0.15);
+  animation: boarding-pulse 1.6s ease-in-out infinite;
+}
+
+.status-badge.status-in-flight {
+  color: var(--status-inflight);
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.status-badge.status-landed {
+  color: var(--status-landed);
+  background: rgba(107, 114, 128, 0.15);
+  opacity: 0.5;
+}
+
+.miles-reward {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .events-page {
+    padding: var(--s-4) var(--s-4) 140px;
+  }
+
+  .flight-card {
+    grid-template-columns: 1fr;
+    gap: var(--s-3);
+  }
+
+  .flight-status {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+/* ---------- Event Timeline (compact, reused on dashboard) ---------- */
+
+.event-timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 46px 16px 1fr;
+  align-items: start;
+  position: relative;
+  padding-bottom: var(--s-5);
+}
+
+.timeline-row:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 53px;
+  top: 20px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--line-strong);
+}
+
+.timeline-row-time {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream-dim);
+  padding-top: 3px;
+}
+
+.timeline-row-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-pill);
+  background: var(--cream-faint);
+  margin-top: 5px;
+  justify-self: center;
+}
+
+.timeline-row-body h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cream);
+}
+
+.timeline-row-body p {
+  margin: var(--s-1) 0 0;
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+.timeline-row.landed {
+  opacity: 0.55;
+}
+
+.timeline-row.landed .timeline-row-body h4 {
+  text-decoration: line-through;
+  text-decoration-color: var(--cream-faint);
+}
+
+.timeline-row.current .timeline-row-dot {
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--gold-faint), 0 0 12px var(--glow);
+}
+
+.timeline-row.current .timeline-row-body h4 {
+  color: var(--gold);
+  font-weight: 700;
+}

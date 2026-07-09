@@ -6,9 +6,46 @@
 <title>Aayush Resort — Wedding Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="src/modules/dashboard/dashboard.css">
+<link rel="stylesheet" href="src/components/cards/cards.css">
+<link rel="stylesheet" href="src/components/layout/layout.css">
+<link rel="stylesheet" href="src/modules/shared/shared.css">
+<link rel="stylesheet" href="src/modules/events/events.css">
+<link rel="stylesheet" href="src/modules/journey/journey.css">
+<link rel="stylesheet" href="src/modules/rewards/rewards.css">
+<link rel="stylesheet" href="src/modules/profile/profile.css">
+<link rel="stylesheet" href="src/modules/passport/passport.css">
+<link rel="stylesheet" href="src/modules/admin/admin.css">
 </head>
 <body>
+
+<!-- GUEST APP SHELL — dashboard and every guest-facing module mount here -->
+<div id="screen-guest" hidden></div>
+
+<!-- JOURNEY HUB — boarding pass + flight schedule preview + passport preview -->
+<div id="screen-journey" hidden></div>
+
+<!-- REWARDS HUB — rewards catalogue + leaderboard, toggled client-side -->
+<div id="screen-rewards" hidden></div>
+
+<!-- PROFILE PAGE -->
+<div id="screen-profile" hidden></div>
+
+<!-- PASSPORT PAGE -->
+<div id="screen-passport" hidden></div>
+
+<!-- ADMIN (GROUND CREW) — organiser-only, not in BottomNav, PIN-gated -->
+<div id="screen-admin" hidden></div>
+
+<!-- EVENTS SCREEN — departures board -->
+<div id="screen-events" hidden></div>
+
+<!-- SHARED "coming soon" screen, reused by every unbuilt route -->
+<div id="screen-placeholder" hidden></div>
+
+<!-- RESORT MAP SCREEN -->
+<div id="screen-map" hidden>
 
   <!-- TOP BAR -->
   <header id="topbar">
@@ -26,6 +63,7 @@
     </div>
 
     <div class="topbar-actions">
+      <button id="homeBtn" class="btn-ghost" title="Back to your dashboard" hidden>🏠 Dashboard</button>
       <button id="navigateBtn" class="btn-ghost" title="Get directions between two points">🧭 Navigate</button>
       <button id="worldModeBtn" class="btn-ghost" title="Toggle continent zones for rooming">🌍 Room Zones</button>
       <button id="labelToggleBtn" class="btn-ghost" title="Toggle reference labels">Labels</button>
@@ -144,7 +182,9 @@
     <button id="editExportAllBtn" style="width:100%;margin-bottom:10px;background:transparent;border:1px solid var(--gold-soft);color:var(--gold);border-radius:6px;padding:8px;font-size:12px;">Export All Shapes (current session)</button>
     <textarea id="editOutput" readonly placeholder="Traced points will appear here as [x, y] pairs…"></textarea>
   </aside>
-  
+
+</div>
+
 <script src="data.js"></script>
 <script type="module" src="script.js"></script>
 </body>
