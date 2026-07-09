@@ -1053,7 +1053,9 @@ button {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-.module[hidden] { display: none; }
+[hidden] {
+    display: none !important;
+}
 .module-inner {
   max-width: 720px;
   margin: 0 auto;
