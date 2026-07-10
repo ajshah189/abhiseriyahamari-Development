@@ -63,8 +63,13 @@ class Router {
     }
 
     this._pending = this._transition(name, next, params);
-    await this._pending;
-    this._pending = null;
+    try {
+      await this._pending;
+    } catch (err) {
+      console.error(`[Router] transition to "${name}" failed:`, err);
+    } finally {
+      this._pending = null;
+    }
   }
 
   async _transition(name, next, params) {
