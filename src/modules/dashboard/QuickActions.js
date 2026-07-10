@@ -54,6 +54,12 @@ export function QuickActions() {
             icon: "⚙️",
             title: "Settings",
             route: "settings"
+        },
+
+        {
+            icon: "👥",
+            title: "Guest Directory",
+            route: "directory"
         }
 
     ];

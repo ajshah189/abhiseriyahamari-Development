@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-10 July 2026
+10 July 2026 (Session 2)
 
 Current Version:
 v0.2
@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-72%
+78%
 
 Project Status:
 🟡 Active Development
@@ -49,6 +49,8 @@ main
 | QR Missions / Treasure Hunt | 🟢 Completed | 100% |
 | Map Polish | 🟢 Completed | 100% |
 | Admin Dashboard | 🟢 Completed | 100% |
+| Guest Directory | 🟢 Completed | 100% |
+| Map Navigation UX | 🟢 Completed | 100% |
 | Analytics | ⚪ Not Started | 0% |
 | Final QA | ⚪ Not Started | 0% |
 
@@ -183,6 +185,32 @@ main
 ✅ Admin QR Codes section (`AdminPage.js` + `AdminScreen.js`) — 5th nav item "QR Codes" in Ground Crew tool. Renders a grid of 15 cards each with a live QR image from `api.qrserver.com`, location info, and a "Print" button that opens a print-optimized popup (name, reward, QR at 400px, URL, auto-triggers `window.print()`).
 
 ✅ `index.html` — `screen-hunt` and `screen-hunt-claim` containers added; `hunt.css` linked.
+
+## Guest Directory + "Take Me There" Navigation
+
+✅ Guest Directory screen (`src/modules/directory/`) — searchable alphabetical list of all 18 guests; avatar circle with deterministic hue from `colorFromName()`, bold name, family label, gold room name + zone badge, "🗺 Map" button per card
+
+✅ Viewer mode privacy: room and zone hidden (shown as "—"), no "Find on Map" button — names and families still visible so guests can greet each other
+
+✅ Live search filter: case-insensitive match across name, family, and room fields; updates on every keystroke; "No guests found" empty state if no match
+
+✅ "Find on Map 🗺" button: stores `room.name` in `sessionStorage.ar_map_highlight`, routes to map screen — works whether map was already mounted or is being visited for the first time
+
+✅ Map highlight flow: `MapScreen.show()` reads and clears `ar_map_highlight`, matches room name against navFromSelect option text (e.g. "Bali" → "C29–C34 — Bali"), pans/zooms to polygon centroid via `flyTo()`, pulses a `drop-shadow` filter animation, clicks the polygon to open the popup — all within 750ms of `show()` firing
+
+✅ Navigate FAB auto-fill: when the nav bottom sheet opens (via FAB), `#navFromSelect` is automatically set to the logged-in guest's own room cluster; "Your room · auto-filled" muted-gold label appears below. Viewer/unmatched room: label stays hidden, picker stays manual
+
+✅ "Navigate Here" also auto-fills From on open (same `autoFillNavFrom()` helper)
+
+✅ "Take Me There ✈" button in popup bottom sheet — logged-in only (hidden for viewers); closes popup, pre-fills both From (auto) and To (current hotspot), opens nav panel, fires `navGoBtn.click()` after 60ms — one-tap route from your room to any location on the map
+
+✅ Map guest search: typing a name in the map search bar appends a "GUESTS" section below location results (after core `initSearch` results), showing up to 5 matches with room names and locIds; tapping a result closes the search bar, pans/zooms to the room polygon, opens the popup
+
+✅ Dashboard Quick Actions: "👥 Guest Directory" tile added (10th action, routes to `"directory"`)
+
+✅ Profile page: "👥 Browse Guest Directory" button above Sign Out; also present in the logged-out (viewer) state
+
+✅ App wiring: `DirectoryScreen` registered in `app.js`; `#screen-directory` in `index.html`; `directory.css` linked; service worker bumped to `ar-airways-v6` with all 3 new directory files in `APP_SHELL`
 
 ## Map UI Remake
 

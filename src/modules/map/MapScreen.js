@@ -8,8 +8,61 @@
 
 import Router from "../../router.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
+import PassengerService from "../../services/passengerService.js";
 
 let container = null;
+
+// Stored during mount() so show() can pan/highlight without re-importing
+let _hotspotEls = {};
+let _flyTo = null;
+
+// Average of polygon point pairs → [cx, cy] in map-image coordinate space
+function polygonCentroid(el) {
+  const raw = el.getAttribute("points") || "";
+  const nums = raw.trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+  let sx = 0, sy = 0, n = nums.length / 2;
+  for (let i = 0; i < nums.length; i += 2) { sx += nums[i]; sy += nums[i + 1]; }
+  return n > 0 ? [sx / n, sy / n] : [500, 400];
+}
+
+// Match a room name (e.g. "Bali") against navFromSelect option display text
+// (options are formatted as "C29–C34 — Bali" by navigation.js)
+function findNavLocId(roomName) {
+  if (!roomName) return null;
+  const sel = document.getElementById("navFromSelect");
+  const opt = Array.from(sel?.options || []).find(o =>
+    o.textContent.toLowerCase().includes(roomName.toLowerCase())
+  );
+  return opt?.value || null;
+}
+
+// Auto-fill #navFromSelect with the logged-in guest's room and show the
+// "Your room · auto-filled" label. Safe to call multiple times (idempotent).
+function autoFillNavFrom() {
+  const navFromSelect = document.getElementById("navFromSelect");
+  const autoFillLabel = document.getElementById("navFromAutoFill");
+  if (!navFromSelect) return;
+
+  const passenger = PassengerService.getCurrentPassenger();
+  if (!passenger) {
+    if (autoFillLabel) autoFillLabel.hidden = true;
+    return;
+  }
+
+  const room = PassengerService.getPassengerRoom(passenger.id);
+  if (!room) {
+    if (autoFillLabel) autoFillLabel.hidden = true;
+    return;
+  }
+
+  const locId = findNavLocId(room.name);
+  if (locId) {
+    navFromSelect.value = locId;
+    if (autoFillLabel) autoFillLabel.hidden = false;
+  } else {
+    if (autoFillLabel) autoFillLabel.hidden = true;
+  }
+}
 
 function applyAdminVisibility() {
   const isAdmin = sessionStorage.getItem("ar_admin_auth") === "true";
@@ -64,6 +117,10 @@ async function mount() {
   const popup = initPopup({ state, hotspotEls });
   const map = initMap({ data, state, popup });
   Object.assign(hotspotEls, map.hotspotEls);
+
+  // Store module-level so show() can use them for highlight/pan
+  _hotspotEls = map.hotspotEls;
+  _flyTo = map.flyTo;
 
   const zones = initZones({ data, zoneLayer: map.zoneLayer, state });
 
@@ -138,13 +195,29 @@ async function mount() {
     navPanel?.classList.add("hidden");
   });
 
+  // ── Auto-fill "From" when FAB opens the nav panel ────────────────────────
+  // Core's onclick fires first (toggling .hidden), then this listener checks
+  // the resulting state — if the panel is now visible, auto-fill From.
+  document.getElementById("navigateBtn")?.addEventListener("click", () => {
+    if (!navPanel?.classList.contains("hidden")) {
+      autoFillNavFrom();
+    }
+  });
+
   // ── "Navigate Here" in popup ─────────────────────────────────────────────
   let currentPopupLocId = null;
 
-  // Add secondary listeners to hotspot polygons to track which loc is open.
-  // stopPropagation in map.js only stops bubbling — sibling listeners still fire.
+  // Track which hotspot the popup is showing. stopPropagation in map.js
+  // blocks bubbling but NOT sibling listeners on the same element.
   Object.entries(map.hotspotEls).forEach(([id, el]) => {
-    el.addEventListener("click", () => { currentPopupLocId = id; });
+    el.addEventListener("click", () => {
+      currentPopupLocId = id;
+      // Show "Take Me There" only for logged-in guests
+      const takeMeThereBtn = document.getElementById("popupTakeMeThereBtn");
+      if (takeMeThereBtn) {
+        takeMeThereBtn.hidden = !PassengerService.getCurrentPassenger();
+      }
+    });
   });
 
   document.getElementById("popupNavBtn")?.addEventListener("click", () => {
@@ -152,6 +225,72 @@ async function mount() {
     const navToSelect = document.getElementById("navToSelect");
     if (navToSelect && currentPopupLocId) navToSelect.value = currentPopupLocId;
     navPanel?.classList.remove("hidden");
+    autoFillNavFrom();
+  });
+
+  // ── "Take Me There ✈" — one-tap route for logged-in guests ───────────────
+  document.getElementById("popupTakeMeThereBtn")?.addEventListener("click", () => {
+    document.getElementById("popupOverlay")?.classList.add("hidden");
+    const navToSelect = document.getElementById("navToSelect");
+    if (navToSelect && currentPopupLocId) navToSelect.value = currentPopupLocId;
+    navPanel?.classList.remove("hidden");
+    autoFillNavFrom();
+    // Allow selects to settle before firing the route calculation
+    setTimeout(() => document.getElementById("navGoBtn")?.click(), 60);
+  });
+
+  // ── Guest search extension ───────────────────────────────────────────────
+  // Appended after core search results; searches by display name or last name.
+  searchInput?.addEventListener("input", () => {
+    searchResults?.querySelector(".search-guests")?.remove();
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q || q.length < 2) return;
+
+    const all = PassengerService.getAllPassengers();
+    const matches = all
+      .filter(p =>
+        p.displayName.toLowerCase().includes(q) ||
+        p.lastName.toLowerCase().includes(q)
+      )
+      .slice(0, 5);
+
+    if (!matches.length) return;
+
+    const section = document.createElement("div");
+    section.className = "search-guests";
+    section.innerHTML = `
+      <div class="search-section-label">GUESTS</div>
+      ${matches.map(p => {
+        const room = PassengerService.getPassengerRoom(p.id);
+        const locId = room ? (findNavLocId(room.name) || "") : "";
+        return `<div class="search-result search-guest-result" data-guest-loc="${locId}">
+          <span class="search-result__icon">👤</span>
+          <div class="search-result__body">
+            <div class="search-result__name">${p.displayName}</div>
+            ${room ? `<div class="search-result__room">${room.name}</div>` : ""}
+          </div>
+        </div>`;
+      }).join("")}
+    `;
+
+    section.querySelectorAll(".search-guest-result").forEach(el => {
+      el.addEventListener("click", () => {
+        const locId = el.dataset.guestLoc;
+        if (!locId) return;
+        if (mapSearchBar) mapSearchBar.hidden = true;
+        if (searchInput) searchInput.value = "";
+        searchResults?.classList.add("hidden");
+        const polygon = _hotspotEls[locId];
+        if (polygon && _flyTo) {
+          const [cx, cy] = polygonCentroid(polygon);
+          _flyTo(cx, cy, 2.5);
+          setTimeout(() => polygon.click(), 400);
+        }
+      });
+    });
+
+    searchResults?.classList.remove("hidden");
+    searchResults?.appendChild(section);
   });
 
   console.log("AR Airways map initialized — ledger architecture active");
@@ -161,6 +300,27 @@ function show() {
   container.hidden = false;
   applyAdminVisibility();
   document.body.style.overflow = "hidden";
+
+  // ── "Find on Map" highlight from Guest Directory ─────────────────────────
+  // DirectoryPage sets ar_map_highlight = room.name (e.g. "Bali").
+  // We match it against navFromSelect option text to get the cluster locId.
+  const roomName = sessionStorage.getItem("ar_map_highlight");
+  if (roomName) {
+    sessionStorage.removeItem("ar_map_highlight");
+    setTimeout(() => {
+      const locId = findNavLocId(roomName);
+      const polygon = locId ? _hotspotEls[locId] : null;
+      if (polygon && _flyTo) {
+        const [cx, cy] = polygonCentroid(polygon);
+        _flyTo(cx, cy, 2.5);
+        setTimeout(() => {
+          polygon.classList.add("map-highlight-pulse");
+          polygon.click();
+          setTimeout(() => polygon.classList.remove("map-highlight-pulse"), 3200);
+        }, 450);
+      }
+    }, 300);
+  }
 }
 
 function hide() {

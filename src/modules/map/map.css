@@ -386,3 +386,81 @@
   color: var(--night);
   transform: translateY(-1px);
 }
+
+/* "Take Me There ✈" — gold-filled variant for logged-in one-tap nav */
+.map-popup-take-me-there {
+  background: linear-gradient(135deg, #e8c97a, var(--gold));
+  border-color: var(--gold);
+  color: #2a2113;
+  font-weight: 700;
+  margin-top: var(--s-2);
+}
+.map-popup-take-me-there:hover {
+  background: linear-gradient(135deg, #f0d48a, #e8c97a);
+  color: #1a1409;
+}
+
+/* ==========================================================
+   Auto-fill label under "My Room" select in nav panel
+   ========================================================== */
+.nav-autofill-label {
+  font-size: 11px;
+  color: var(--gold);
+  opacity: 0.75;
+  margin-top: var(--s-1);
+  margin-bottom: var(--s-2);
+  padding-left: var(--s-1);
+}
+.nav-autofill-label[hidden] { display: none !important; }
+
+/* ==========================================================
+   Guest section in search dropdown
+   ========================================================== */
+.search-section-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.65;
+  padding: var(--s-2) var(--s-3) var(--s-1);
+  border-top: 1px solid var(--line);
+  margin-top: var(--s-1);
+}
+
+.search-guest-result {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  cursor: pointer;
+}
+
+.search-result__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.search-result__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cream);
+}
+
+.search-result__room {
+  font-size: 11px;
+  color: var(--gold);
+  opacity: 0.75;
+}
+
+/* ==========================================================
+   Highlight pulse — applied to SVG polygon on "Find on Map"
+   Uses filter (not fill) so it doesn't conflict with engine fill
+   ========================================================== */
+@keyframes highlightPulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(212,175,106,0.85)); }
+  50%       { filter: drop-shadow(0 0 18px rgba(212,175,106,1.0)); }
+}
+
+.map-highlight-pulse {
+  animation: highlightPulse 0.75s ease-in-out 4;
+}
