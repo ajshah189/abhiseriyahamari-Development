@@ -7,69 +7,36 @@
    ============================================================ */
 
 /* ==========================================================
-   Map TopBar — shared .top-bar component, fixed for map context
+   Map TopBar — standard .top-bar, needs position:fixed override
+   (layout.css uses sticky; map needs fixed so it stays above the
+   absolutely-positioned map viewport)
    ========================================================== */
 #screen-map .top-bar {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 72px;
+  padding: 0 var(--s-6);
   z-index: 50;
-  padding: 0 var(--s-3);
-  background: linear-gradient(180deg, rgba(12,15,20,0.97), rgba(12,15,20,0.82));
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(var(--blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.2);
-  /* override layout.css sticky */
-  position: fixed;
-}
-
-/* Back arrow button */
-#screen-map .top-bar__back {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
-  color: var(--cream-dim);
-  transition: color var(--t-fast) var(--ease-out),
-              border-color var(--t-fast) var(--ease-out),
-              background var(--t-fast) var(--ease-out);
-}
-#screen-map .top-bar__back:hover {
-  color: var(--gold);
-  border-color: var(--gold-soft);
-  background: var(--gold-faint);
-}
-
-/* Title and subtitle in map context */
-#screen-map .top-bar .top-left h2 {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--cream);
-  line-height: 1.1;
-  margin: 0;
-}
-#screen-map .top-bar .greeting {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: 0.85;
+  /* All other styles (background, border, fonts) from layout.css */
 }
 
 /* ==========================================================
-   Map viewport — fill full viewport width, no centering
+   Map screen background + viewport — fill full width, clear TopBar
    ========================================================== */
+#screen-map {
+  background: var(--night);
+}
+
 #screen-map,
 #screen-map #viewport,
 #screen-map #mapWrap {
   max-width: none;
   width: 100%;
+}
+
+/* Push the map canvas below the fixed 72px TopBar */
+#screen-map #viewport {
+  top: 72px;
 }
 
 /* ==========================================================
@@ -95,7 +62,7 @@
 #screen-map #editorTools[hidden] { display: none !important; }
 
 /* ==========================================================
-   Search bar (slides down from topbar on demand)
+   Search bar (slides down from below TopBar on demand)
    ========================================================== */
 .map-search-bar {
   position: fixed;
@@ -106,7 +73,7 @@
   align-items: flex-start;
   gap: var(--s-2);
   padding: var(--s-3) var(--s-4);
-  background: rgba(12,15,20,0.97);
+  background: var(--panel-solid);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
@@ -142,19 +109,18 @@
 .map-search-close:hover { color: var(--cream); border-color: var(--line-strong); }
 
 /* ==========================================================
-   Navigate FAB (repurpose #navigateBtn, override .btn-ghost)
-   #screen-map scope beats .btn-ghost class specificity
+   Navigate FAB — gold pill button, bottom-right above BottomNav
    ========================================================== */
 #screen-map #navigateBtn {
   position: fixed;
   right: var(--s-5);
-  bottom: calc(64px + var(--s-4));
+  bottom: calc(64px + var(--s-6));
   z-index: 45;
   /* reset .btn-ghost */
   border: none;
-  color: #2a2113;
-  background: linear-gradient(135deg, #e8c97a, var(--gold));
-  /* FAB sizing */
+  background: var(--gold);
+  color: var(--night);
+  /* sizing */
   min-width: 130px;
   height: 50px;
   padding: 0 var(--s-5);
@@ -169,19 +135,25 @@
   gap: var(--s-2);
   box-shadow: 0 4px 18px rgba(212,175,106,0.40), 0 2px 6px rgba(0,0,0,0.45);
   transition: transform var(--t-fast) var(--ease-out),
-              box-shadow var(--t-fast) var(--ease-out);
+              box-shadow var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out);
 }
 #screen-map #navigateBtn:hover {
+  background: var(--gold-bright);
   transform: translateY(-2px);
   box-shadow: 0 6px 24px rgba(212,175,106,0.52), 0 3px 9px rgba(0,0,0,0.5);
 }
 #screen-map #navigateBtn:active { transform: scale(0.97); }
 
-/* Move zoom controls to left so they don't overlap the FAB */
+/* ==========================================================
+   Zoom controls — dark panel, right side, stacked above FAB
+   Base panel/border/color/radius already defined in style.css
+   ========================================================== */
 #screen-map #zoomControls {
-  right: auto;
-  left: var(--s-4);
-  bottom: calc(64px + var(--s-4));
+  left: auto;
+  right: var(--s-5);
+  /* 64px BottomNav + 24px gap + 50px FAB height + 12px gap */
+  bottom: calc(64px + var(--s-6) + 50px + var(--s-3));
 }
 
 /* ==========================================================
@@ -292,9 +264,11 @@
 
 /* ==========================================================
    Popup → bottom sheet (override centered modal from style.css)
+   Card sits above BottomNav with left/right margin
    ========================================================== */
 #screen-map #popupOverlay:not(.hidden) {
   align-items: flex-end;
+  padding: 0 var(--s-4) 64px;   /* left/right margin + above BottomNav */
   background: rgba(6,8,11,0.45);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -303,15 +277,18 @@
 #screen-map #popupCard {
   width: 100%;
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 65vh;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border-radius: var(--r-xl) var(--r-xl) 0 0;
-  padding: var(--s-6) var(--s-5) calc(64px + var(--s-6));
+  /* App card style */
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: var(--s-6) var(--s-5) var(--s-6);
   animation: sheetUp var(--t-slow) var(--ease-spring);
 }
 
-/* Replace perforated top strip with drag handle */
+/* Drag handle replaces perforated strip */
 #screen-map #popupCard::before {
   top: 12px;
   left: 50%;
@@ -326,7 +303,11 @@
 
 #screen-map #popupName { font-size: 26px; margin-top: var(--s-5); }
 
-.map-popup-nav-btn {
+/* Gold accent on meta values (room number, zone) */
+#screen-map #popupMeta span b { color: var(--gold); }
+
+/* "Take Me There ✈" — gold filled, full width, only action button */
+.map-popup-take-me-there {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,35 +315,22 @@
   width: 100%;
   margin-top: var(--s-5);
   padding: var(--s-3) var(--s-4);
-  background: var(--gold-faint);
-  border: 1px solid var(--gold-soft);
+  background: var(--gold);
+  border: none;
   border-radius: var(--r-pill);
-  color: var(--gold);
+  color: var(--night);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: background var(--t-fast) var(--ease-out),
-              color var(--t-fast) var(--ease-out),
               transform var(--t-fast) var(--ease-out);
 }
-.map-popup-nav-btn:hover {
-  background: var(--gold-soft);
-  color: var(--night);
+.map-popup-take-me-there:hover {
+  background: var(--gold-bright);
   transform: translateY(-1px);
 }
-
-/* "Take Me There ✈" — gold-filled variant for logged-in one-tap nav */
-.map-popup-take-me-there {
-  background: linear-gradient(135deg, #e8c97a, var(--gold));
-  border-color: var(--gold);
-  color: #2a2113;
-  font-weight: 700;
-  margin-top: var(--s-2);
-}
-.map-popup-take-me-there:hover {
-  background: linear-gradient(135deg, #f0d48a, #e8c97a);
-  color: #1a1409;
-}
+.map-popup-take-me-there:active { transform: scale(0.97); }
 
 /* ==========================================================
    Auto-fill label under "My Room" select in nav panel

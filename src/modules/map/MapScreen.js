@@ -65,17 +65,11 @@ function autoFillNavFrom() {
   }
 }
 
-function applyAdminVisibility() {
-  const isAdmin = sessionStorage.getItem("ar_admin_auth") === "true";
-  const editorToggle = document.getElementById("editorToggle");
-  if (editorToggle) editorToggle.style.display = isAdmin ? "" : "none";
-}
-
 async function mount() {
   container = document.getElementById("screen-map");
 
-  // Inject shared TopBar (map variant) — replaces the old static HTML in index.html
-  container.insertAdjacentHTML("afterbegin", TopBar({ map: true }));
+  // Inject shared TopBar — identical to Dashboard, Events, Journey, Rewards, Profile
+  container.insertAdjacentHTML("afterbegin", TopBar());
 
   // Reveal the container before the core map modules run — they measure
   // #viewport's live layout size to compute the initial zoom-to-fit
@@ -139,8 +133,6 @@ async function mount() {
   state.closeEntryEdit = navigation.closeEntryEdit;
   state.routeAnchor = navigation.routeAnchor;
 
-  applyAdminVisibility();
-
   // ── BottomNav ────────────────────────────────────────────────────────────
   const navWrapper = document.createElement("div");
   navWrapper.innerHTML = BottomNav("map");
@@ -163,22 +155,10 @@ async function mount() {
     viewport.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
   }
 
-  // ── Back button ──────────────────────────────────────────────────────────
-  document.getElementById("mapBackBtn")?.addEventListener("click", () => {
-    Router.go("home");
-  });
-
-  // ── Search bar toggle ────────────────────────────────────────────────────
+  // ── Search bar ───────────────────────────────────────────────────────────
   const mapSearchBar = document.getElementById("mapSearchBar");
   const searchInput = document.getElementById("searchInput");
   const searchResults = document.getElementById("searchResults");
-
-  document.getElementById("mapSearchToggle")?.addEventListener("click", () => {
-    if (mapSearchBar) {
-      mapSearchBar.hidden = false;
-      searchInput?.focus();
-    }
-  });
 
   document.getElementById("mapSearchClose")?.addEventListener("click", () => {
     if (mapSearchBar) mapSearchBar.hidden = true;
@@ -208,28 +188,18 @@ async function mount() {
     }
   });
 
-  // ── "Navigate Here" in popup ─────────────────────────────────────────────
+  // ── Popup hotspot tracking ────────────────────────────────────────────────
   let currentPopupLocId = null;
 
-  // Track which hotspot the popup is showing. stopPropagation in map.js
-  // blocks bubbling but NOT sibling listeners on the same element.
   Object.entries(map.hotspotEls).forEach(([id, el]) => {
     el.addEventListener("click", () => {
       currentPopupLocId = id;
-      // Show "Take Me There" only for logged-in guests
+      // "Take Me There" only for logged-in guests
       const takeMeThereBtn = document.getElementById("popupTakeMeThereBtn");
       if (takeMeThereBtn) {
         takeMeThereBtn.hidden = !PassengerService.getCurrentPassenger();
       }
     });
-  });
-
-  document.getElementById("popupNavBtn")?.addEventListener("click", () => {
-    document.getElementById("popupOverlay")?.classList.add("hidden");
-    const navToSelect = document.getElementById("navToSelect");
-    if (navToSelect && currentPopupLocId) navToSelect.value = currentPopupLocId;
-    navPanel?.classList.remove("hidden");
-    autoFillNavFrom();
   });
 
   // ── "Take Me There ✈" — one-tap route for logged-in guests ───────────────
@@ -302,7 +272,6 @@ async function mount() {
 
 function show() {
   container.hidden = false;
-  applyAdminVisibility();
   document.body.style.overflow = "hidden";
 
   // ── "Find on Map" highlight from Guest Directory ─────────────────────────
