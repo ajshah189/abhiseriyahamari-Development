@@ -16,6 +16,7 @@
 import { HomePage } from "./HomePage.js";
 import AppStore from "../../store/appStore.js";
 import Router from "../../router.js";
+import { pullToRefresh } from "../../utils/pullToRefresh.js";
 
 let container = null;
 let refreshTimer = null;
@@ -40,6 +41,8 @@ function mount() {
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(render, 80);
   });
+
+  pullToRefresh(container, async () => { render(); });
 }
 
 function show() {

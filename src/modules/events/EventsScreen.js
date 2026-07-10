@@ -10,6 +10,7 @@
 import { EventsPage } from "./EventsPage.js";
 import { EVENTS } from "../../data/events.js";
 import Router from "../../router.js";
+import { pullToRefresh } from "../../utils/pullToRefresh.js";
 
 const REFRESH_INTERVAL_MS = 60 * 1000;
 
@@ -46,6 +47,7 @@ function mount() {
   container = document.getElementById("screen-events");
   selectedDay = computeDefaultDay();
   render();
+  pullToRefresh(container, async () => { render(); });
 }
 
 function show() {

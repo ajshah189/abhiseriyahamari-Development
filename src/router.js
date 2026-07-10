@@ -17,6 +17,15 @@
 
 import AppStore from "./store/appStore.js";
 
+// Routes where the screen container ID doesn't follow screen-{name}
+const CONTAINER_IDS = {
+  home: 'screen-guest',
+  leaderboard: 'screen-rewards',
+};
+
+// Routes that skip the fade animation (map has its own init/display logic)
+const NO_ANIM_ROUTES = new Set(['map']);
+
 class Router {
   constructor() {
     this._screens = new Map();
@@ -74,13 +83,52 @@ class Router {
 
   async _transition(name, next, params) {
     const previous = this._current ? this._screens.get(this._current) : null;
+
+    const reduceMotion =
+      document.documentElement.classList.contains('reduce-motion') ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const skipAnim =
+      NO_ANIM_ROUTES.has(name) ||
+      NO_ANIM_ROUTES.has(this._current) ||
+      reduceMotion;
+
+    // ── Fade out current ──────────────────────────────────────────────
+    if (previous && !skipAnim) {
+      const prevEl = document.querySelector('[id^="screen-"]:not([hidden])');
+      if (prevEl) {
+        prevEl.style.transition = 'opacity 0.15s ease';
+        prevEl.style.opacity = '0';
+        await new Promise(r => setTimeout(r, 150));
+        prevEl.style.transition = '';
+        prevEl.style.opacity = '';
+      }
+    }
     previous?.hide?.();
 
+    // ── Mount on first visit ──────────────────────────────────────────
     if (!next.mounted) {
       await next.mount?.(params);
       next.mounted = true;
     }
-    next.show?.(params);
+
+    // ── Fade in next ──────────────────────────────────────────────────
+    if (!skipAnim) {
+      const id = CONTAINER_IDS[name] ?? `screen-${name}`;
+      const nextEl = document.getElementById(id);
+      if (nextEl) nextEl.style.opacity = '0';
+      next.show?.(params);
+      if (nextEl) {
+        nextEl.style.transition = 'opacity 0.2s ease';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          nextEl.style.opacity = '1';
+        }));
+        await new Promise(r => setTimeout(r, 200));
+        nextEl.style.transition = '';
+        nextEl.style.opacity = '';
+      }
+    } else {
+      next.show?.(params);
+    }
 
     this._current = name;
     AppStore.emit("route:changed", { route: name, params });

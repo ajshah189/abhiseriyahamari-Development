@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 5)
+11 July 2026 (Session 6)
 
 Current Version:
-v0.4
+v0.5
 
 Current Phase:
 Phase 1 – Foundation
@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-88%
+92%
 
 Project Status:
 🟡 Active Development
@@ -53,6 +53,10 @@ main
 | Map Navigation UX | 🟢 Completed | 100% |
 | CSV Guest Import | 🟢 Completed | 100% |
 | PWA Icons | 🟢 Completed | 100% |
+| Splash Screen | 🟢 Completed | 100% |
+| Page Transitions | 🟢 Completed | 100% |
+| Error Handler | 🟢 Completed | 100% |
+| Pull-to-Refresh | 🟢 Completed | 100% |
 | Settings | 🟢 Completed | 100% |
 | Guest Search in Navigate | 🟢 Completed | 100% |
 | Directory Prominence | 🟢 Completed | 100% |
@@ -236,6 +240,20 @@ main
 ✅ Profile page: "👥 Browse Guest Directory" button above Sign Out; also present in the logged-out (viewer) state
 
 ✅ App wiring: `DirectoryScreen` registered in `app.js`; `#screen-directory` in `index.html`; `directory.css` linked; service worker bumped to `ar-airways-v6` with all 3 new directory files in `APP_SHELL`
+
+## Foundation Polish
+
+✅ **Splash Screen** — branded full-viewport loading screen injected synchronously at top of `script.js` (before dynamic `import('./src/app.js')`) so it appears during module resolution. ✈ emoji with `splash-float` keyframe animation, Cormorant Garamond title, Inter subtitle, 200px gold progress bar that fills over 1.5s. Fades out 300ms after `App.start()` returns. `prefers-reduced-motion` disables animations and pre-fills the bar.
+
+✅ **Page Transitions** — router's `_transition()` now fades out the current screen (opacity 0 over 150ms), calls `hide()`, then fades the next screen in (opacity 0→1 over 200ms via double-rAF). Inline style cleaned up after each transition so no CSS bleed. Map route skipped via `NO_ANIM_ROUTES` set (`name === 'map'` or `_current === 'map'`). Also skips when `prefers-reduced-motion` or `.reduce-motion` class is active. `CONTAINER_IDS` map handles the `home → screen-guest` and `leaderboard → screen-rewards` naming exceptions.
+
+✅ **Global Error Handler** — `window.addEventListener('error', ...)` + `window.addEventListener('unhandledrejection', ...)` at top of `script.js`. `showErrorScreen()` renders a branded "Technical Delay" full-viewport fallback with a gold "Refresh Flight ↻" button. Only fires before app screens mount (checks `document.querySelectorAll('[id^="screen-"]').length > 0` to avoid clobbering a running app). Unhandled rejections only trigger it when `e.reason?.critical` is truthy — notification permissions, icon 404s, and other minor rejections are silently skipped.
+
+✅ **Pull-to-Refresh** — `src/utils/pullToRefresh.js` utility: `touchstart` detects scroll-at-top, `touchmove` shows gold ✈ indicator with progressive opacity + `translateY` + rotation, `touchend` triggers `onRefresh()` when pulled ≥40% of threshold and then spins the indicator before removing. Guard flag `_pullToRefreshBound` prevents double-wiring. Wired in `mount()` (once) on Dashboard, Events, Rewards. `.pull-indicator` CSS in `src/utils/utils.css`.
+
+✅ `script.js` converted from static import to `await import('./src/app.js')` (dynamic) so synchronous splash injection runs before module resolution.
+
+✅ SW bumped to `v14`; `SplashScreen.js`, `splash.css`, `pullToRefresh.js`, `utils.css` added to `APP_SHELL`.
 
 ## Settings Page
 
