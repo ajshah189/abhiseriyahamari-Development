@@ -1,0 +1,388 @@
+/* ============================================================
+   Map Screen — UI skin for new design-system chrome
+   Core engine CSS (hotspots, viewport, zoom controls, tooltip,
+   popupCard base, editPanel, navPanel base) stays in style.css.
+   This file overrides layout chrome and adds new elements:
+   map topbar, search bar, FAB, navigate + popup bottom sheets.
+   ============================================================ */
+
+/* ==========================================================
+   Map TopBar (replaces old #topbar inside #screen-map)
+   ========================================================== */
+.map-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 72px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--s-3);
+  background: linear-gradient(180deg, rgba(12,15,20,0.97), rgba(12,15,20,0.82));
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(var(--blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.2);
+}
+
+.map-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.map-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-shrink: 0;
+}
+
+.map-topbar__back {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--cream-dim);
+  transition: color var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out);
+}
+.map-topbar__back:hover {
+  color: var(--gold);
+  border-color: var(--gold-soft);
+  background: var(--gold-faint);
+}
+
+.map-topbar__brand { min-width: 0; }
+
+.map-topbar__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--cream);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-topbar__sub {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-top: 2px;
+  opacity: 0.75;
+}
+
+.map-topbar__icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--cream-dim);
+  font-size: 17px;
+  transition: color var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out),
+              transform var(--t-med) var(--ease-out);
+}
+.map-topbar__icon:hover {
+  color: var(--gold);
+  border-color: var(--gold-soft);
+  background: var(--gold-faint);
+}
+.map-topbar__icon.active {
+  color: var(--gold);
+  border-color: var(--gold-soft);
+  transform: rotate(45deg);
+}
+
+/* ==========================================================
+   Admin edit toolbar (strip below topbar, organiser-only)
+   #editorTools — toggled by initOrganizerToggle in utilities.js
+   ========================================================== */
+#screen-map #editorTools {
+  position: fixed;
+  top: 72px;
+  left: 0; right: 0;
+  z-index: 48;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-4);
+  background: var(--night-3);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#screen-map #editorTools::-webkit-scrollbar { display: none; }
+#screen-map #editorTools[hidden] { display: none !important; }
+
+/* ==========================================================
+   Search bar (slides down from topbar on demand)
+   ========================================================== */
+.map-search-bar {
+  position: fixed;
+  top: 72px;
+  left: 0; right: 0;
+  z-index: 49;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  background: rgba(12,15,20,0.97);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  animation: searchBarDown var(--t-med) var(--ease-out);
+}
+.map-search-bar[hidden] { display: none !important; }
+
+@keyframes searchBarDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.map-search-bar .search-wrap {
+  flex: 1;
+  max-width: none;
+}
+
+.map-search-close {
+  flex-shrink: 0;
+  width: 40px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--cream-dim);
+  font-size: 14px;
+  transition: color var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+}
+.map-search-close:hover { color: var(--cream); border-color: var(--line-strong); }
+
+/* ==========================================================
+   Navigate FAB (repurpose #navigateBtn, override .btn-ghost)
+   #screen-map scope beats .btn-ghost class specificity
+   ========================================================== */
+#screen-map #navigateBtn {
+  position: fixed;
+  right: var(--s-5);
+  bottom: calc(64px + var(--s-4));
+  z-index: 45;
+  /* reset .btn-ghost */
+  border: none;
+  color: #2a2113;
+  background: linear-gradient(135deg, #e8c97a, var(--gold));
+  /* FAB sizing */
+  min-width: 130px;
+  height: 50px;
+  padding: 0 var(--s-5);
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  box-shadow: 0 4px 18px rgba(212,175,106,0.40), 0 2px 6px rgba(0,0,0,0.45);
+  transition: transform var(--t-fast) var(--ease-out),
+              box-shadow var(--t-fast) var(--ease-out);
+}
+#screen-map #navigateBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(212,175,106,0.52), 0 3px 9px rgba(0,0,0,0.5);
+}
+#screen-map #navigateBtn:active { transform: scale(0.97); }
+
+/* Move zoom controls to left so they don't overlap the FAB */
+#screen-map #zoomControls {
+  right: auto;
+  left: var(--s-4);
+  bottom: calc(64px + var(--s-4));
+}
+
+/* ==========================================================
+   Navigate panel → full-screen bottom sheet modal
+   Override style.css: #navPanel { position:fixed; top:88px; left:...  }
+   Only active when .hidden is absent (core engine toggles that class)
+   ========================================================== */
+#screen-map #navPanel:not(.hidden) {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 60;
+  background: rgba(6,8,11,0.60);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  animation: none;
+}
+
+.map-nav-sheet {
+  background: linear-gradient(180deg, var(--night-3), var(--night-2));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: var(--s-3) var(--s-5) calc(var(--s-8) + 64px);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-3);
+  animation: sheetUp var(--t-slow) var(--ease-spring);
+}
+
+@keyframes sheetUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.map-nav-sheet__handle {
+  width: 36px;
+  height: 4px;
+  background: var(--line-strong);
+  border-radius: var(--r-pill);
+  margin: 0 auto var(--s-4);
+}
+
+.map-nav-sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-4);
+}
+
+.map-nav-sheet__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.map-nav-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold-faint);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--cream-dim);
+  font-size: 13px;
+  transition: color var(--t-fast) var(--ease-out);
+}
+.map-nav-close:hover { color: var(--cream); }
+
+/* Override style.css nav selects to fit the sheet layout */
+#screen-map #navFromSelect,
+#screen-map #navToSelect {
+  margin-top: var(--s-2);
+  margin-bottom: 0;
+  border-radius: var(--r-md);
+  padding: var(--s-3);
+}
+
+/* Override navEta margin */
+#screen-map #navEta { margin-top: var(--s-3); }
+
+/* Nav action row */
+.map-nav-actions {
+  display: flex;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+}
+
+/* Override style.css #navGoBtn, #navClearBtn margin-top + radius */
+#screen-map #navGoBtn,
+#screen-map #navClearBtn {
+  margin-top: 0;
+  border-radius: var(--r-pill);
+  padding: 12px var(--s-4);
+}
+
+/* ==========================================================
+   Popup → bottom sheet (override centered modal from style.css)
+   ========================================================== */
+#screen-map #popupOverlay:not(.hidden) {
+  align-items: flex-end;
+  background: rgba(6,8,11,0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+#screen-map #popupCard {
+  width: 100%;
+  max-width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: var(--s-6) var(--s-5) calc(64px + var(--s-6));
+  animation: sheetUp var(--t-slow) var(--ease-spring);
+}
+
+/* Replace perforated top strip with drag handle */
+#screen-map #popupCard::before {
+  top: 12px;
+  left: 50%;
+  right: auto;
+  width: 36px;
+  height: 4px;
+  transform: translateX(-50%);
+  background: var(--line-strong);
+  border-radius: var(--r-pill);
+  opacity: 1;
+}
+
+#screen-map #popupName { font-size: 26px; margin-top: var(--s-5); }
+
+.map-popup-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  width: 100%;
+  margin-top: var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-pill);
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out),
+              color var(--t-fast) var(--ease-out),
+              transform var(--t-fast) var(--ease-out);
+}
+.map-popup-nav-btn:hover {
+  background: var(--gold-soft);
+  color: var(--night);
+  transform: translateY(-1px);
+}

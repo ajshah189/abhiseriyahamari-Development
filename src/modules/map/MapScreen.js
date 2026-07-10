@@ -1,38 +1,28 @@
 /**
  * MapScreen — Router adapter for the resort map.
  *
- * The map itself (src/modules/core) is complete, self-contained and
- * untouched here. This file only owns the boundary between the Router
- * and that subsystem: it lazily bootstraps the map into #screen-map on
- * first visit, then toggles visibility on every visit after that.
- *
- * A full re-init is deliberately avoided — 500 guests on resort wifi
- * should pay the map's asset/import cost once per session, not once
- * per navigation.
+ * The map engine (src/modules/core) is complete and self-contained.
+ * This file owns only the boundary between the Router and that subsystem:
+ * it lazily bootstraps the map on first visit, then toggles visibility.
  */
 
 import Router from "../../router.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 
 let container = null;
-let homeBtn = null;
 
 function applyAdminVisibility() {
   const isAdmin = sessionStorage.getItem("ar_admin_auth") === "true";
   const editorToggle = document.getElementById("editorToggle");
-  const editorDivider = document.getElementById("editorDivider");
   if (editorToggle) editorToggle.style.display = isAdmin ? "" : "none";
-  if (editorDivider) editorDivider.style.display = isAdmin ? "" : "none";
 }
 
 async function mount() {
   container = document.getElementById("screen-map");
-  homeBtn = document.getElementById("homeBtn");
 
-  // Reveal the container before the core map modules run. They measure
+  // Reveal the container before the core map modules run — they measure
   // #viewport's live layout size to compute the initial zoom-to-fit
-  // transform — under a `hidden` ancestor that measurement collapses
-  // to 0x0, so this can't wait until Router calls show() afterwards.
+  // transform. Under a `hidden` ancestor that measurement collapses to 0×0.
   container.hidden = false;
 
   const [
@@ -90,7 +80,7 @@ async function mount() {
 
   applyAdminVisibility();
 
-  // Inject BottomNav once at mount
+  // ── BottomNav ────────────────────────────────────────────────────────────
   const navWrapper = document.createElement("div");
   navWrapper.innerHTML = BottomNav("map");
   const navEl = navWrapper.firstElementChild;
@@ -105,22 +95,77 @@ async function mount() {
   const viewport = document.getElementById("viewport");
   if (viewport) viewport.style.paddingBottom = "64px";
 
-  homeBtn.addEventListener("click", () => Router.go("home"));
+  // ── Prevent page scroll during map touch pan ─────────────────────────────
+  // map.js touch handlers are passive (can't call preventDefault there).
+  // This non-passive listener on the same element fills the gap.
+  if (viewport) {
+    viewport.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+  }
+
+  // ── Back button ──────────────────────────────────────────────────────────
+  document.getElementById("mapBackBtn")?.addEventListener("click", () => {
+    Router.go("home");
+  });
+
+  // ── Search bar toggle ────────────────────────────────────────────────────
+  const mapSearchBar = document.getElementById("mapSearchBar");
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
+
+  document.getElementById("mapSearchToggle")?.addEventListener("click", () => {
+    if (mapSearchBar) {
+      mapSearchBar.hidden = false;
+      searchInput?.focus();
+    }
+  });
+
+  document.getElementById("mapSearchClose")?.addEventListener("click", () => {
+    if (mapSearchBar) mapSearchBar.hidden = true;
+    if (searchInput) searchInput.value = "";
+    searchResults?.classList.add("hidden");
+  });
+
+  // ── Navigate panel backdrop / close button ───────────────────────────────
+  const navPanel = document.getElementById("navPanel");
+
+  navPanel?.addEventListener("click", (e) => {
+    if (!e.target.closest(".map-nav-sheet")) {
+      navPanel.classList.add("hidden");
+    }
+  });
+
+  document.getElementById("navPanelClose")?.addEventListener("click", () => {
+    navPanel?.classList.add("hidden");
+  });
+
+  // ── "Navigate Here" in popup ─────────────────────────────────────────────
+  let currentPopupLocId = null;
+
+  // Add secondary listeners to hotspot polygons to track which loc is open.
+  // stopPropagation in map.js only stops bubbling — sibling listeners still fire.
+  Object.entries(map.hotspotEls).forEach(([id, el]) => {
+    el.addEventListener("click", () => { currentPopupLocId = id; });
+  });
+
+  document.getElementById("popupNavBtn")?.addEventListener("click", () => {
+    document.getElementById("popupOverlay")?.classList.add("hidden");
+    const navToSelect = document.getElementById("navToSelect");
+    if (navToSelect && currentPopupLocId) navToSelect.value = currentPopupLocId;
+    navPanel?.classList.remove("hidden");
+  });
 
   console.log("AR Airways map initialized — ledger architecture active");
 }
 
 function show() {
   container.hidden = false;
-  homeBtn.hidden = false;
   applyAdminVisibility();
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow = "hidden";
 }
 
 function hide() {
   container.hidden = true;
-  homeBtn.hidden = true;
-  document.body.style.overflow = '';
+  document.body.style.overflow = "";
 }
 
 export const MapScreen = { mount, show, hide };

@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-09 July 2026
+10 July 2026
 
 Current Version:
 v0.2
@@ -34,7 +34,7 @@ main
 | Epic | Status | Progress |
 |------|--------|----------|
 | Foundation | 🟡 In Progress | 80% |
-| Interactive Map | 🟢 Completed | 90% |
+| Interactive Map | 🟢 Completed | 100% |
 | Guest Onboarding / Auth | 🟢 Completed | 100% |
 | Passenger System | 🟢 Completed | 100% |
 | PWA Shell | 🟢 Completed | 100% |
@@ -183,6 +183,34 @@ main
 ✅ Admin QR Codes section (`AdminPage.js` + `AdminScreen.js`) — 5th nav item "QR Codes" in Ground Crew tool. Renders a grid of 15 cards each with a live QR image from `api.qrserver.com`, location info, and a "Print" button that opens a print-optimized popup (name, reward, QR at 400px, URL, auto-triggers `window.print()`).
 
 ✅ `index.html` — `screen-hunt` and `screen-hunt-claim` containers added; `hunt.css` linked.
+
+## Map UI Remake
+
+✅ New map-specific TopBar: left arrow (→ home), "Aayush Resort" / "Journey Map" center, search icon right — replaces the old bespoke `#topbar` that clashed with the guest app's design system
+
+✅ Search bar slides down from the TopBar on demand (`#mapSearchBar`), auto-focuses `#searchInput`, X button clears and hides it — `search.js` engine unchanged, `.search-wrap` selector contract preserved
+
+✅ Navigate FAB: `#navigateBtn` repurposed as a gold floating button (`position: fixed`, bottom-right above BottomNav) via CSS overrides — `navigation.js` onclick handler intact, no core change
+
+✅ Navigate panel restyled as a bottom-sheet modal overlay: full-screen backdrop, `.map-nav-sheet` slides up from bottom, handle + title + close button. Backdrop click also closes. Destination pre-filled when opened via "Navigate Here" from popup.
+
+✅ "Navigate Here" button added inside `#popupCard` — `MapScreen.js` tracks current popup location via secondary click listener on each hotspot polygon; clicking the button closes popup, pre-fills `#navToSelect`, opens nav modal
+
+✅ Info popup (`#popupOverlay` / `#popupCard`) restyled as a bottom sheet via `map.css` overrides — drag handle replaces perforated strip, slides up, scrollable if content overflows
+
+✅ Admin edit toolbar (`#editorTools`) moved from inline topbar to a full-width strip below the map TopBar — gear icon `#editorToggle` in TopBar right; `initOrganizerToggle()` contract unchanged
+
+✅ Zoom controls repositioned to left side (`left: 16px`) to avoid overlapping the Navigate FAB on the right
+
+✅ Filter panel (`#legend`) removed from visible UI; `.filter-chip` stubs kept in a hidden container so `initCategoryFilters` querySelectorAll returns the full set without throwing
+
+✅ `#labelToggleBtn`, `#worldModeBtn`, `#homeBtn`, `#editorDivider` retained as hidden DOM stubs — `labels.js` / `zones.js` / `utilities.js` hold live references and would throw without them
+
+✅ Touch scroll prevention: non-passive `touchmove` listener on `#viewport` prevents page bounce during map pan (complements the passive touch handlers already in `map.js`)
+
+✅ `src/modules/map/map.css` created — all new chrome, zero changes to `src/modules/core/`
+
+✅ Service worker bumped to `ar-airways-v5`; `map.css` added to `APP_SHELL`
 
 ## Map Polish
 
