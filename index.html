@@ -29,6 +29,7 @@
 <link rel="stylesheet" href="src/modules/pwa/pwa.css?v=3">
 <link rel="stylesheet" href="src/modules/hunt/hunt.css?v=3">
 <link rel="stylesheet" href="src/modules/notifications/notifications.css?v=3">
+<link rel="stylesheet" href="src/modules/map/map.css?v=1">
 </head>
 <body>
 
@@ -68,51 +69,83 @@
 <!-- RESORT MAP SCREEN -->
 <div id="screen-map" hidden>
 
-  <!-- TOP BAR -->
-  <header id="topbar">
-    <div class="brand">
-      <span class="brand-mark">✈</span>
-      <div class="brand-text">
-        <div class="brand-title">Aayush Resort</div>
-        <div class="brand-sub">Journey Map · 22–24 Jan 2027</div>
+  <!-- MAP TOPBAR -->
+  <header class="map-topbar">
+    <div class="map-topbar__left">
+      <button class="map-topbar__back" id="mapBackBtn" aria-label="Back to dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
+      </button>
+      <div class="map-topbar__brand">
+        <div class="map-topbar__title">Aayush Resort</div>
+        <div class="map-topbar__sub">Journey Map</div>
       </div>
     </div>
-
-    <div class="search-wrap">
-      <input id="searchInput" type="text" placeholder="Search a room or venue… (e.g. C7, Palace)" autocomplete="off" />
-      <div id="searchResults" class="search-results hidden"></div>
-    </div>
-
-    <div class="topbar-actions">
-      <button id="homeBtn" class="btn-ghost" title="Back to your dashboard" hidden>🏠 Dashboard</button>
-      <button id="navigateBtn" class="btn-ghost" title="Get directions between two points">🧭 Navigate</button>
-      <button id="worldModeBtn" class="btn-ghost" title="Toggle continent zones for rooming">🌍 Room Zones</button>
-      <button id="labelToggleBtn" class="btn-ghost" title="Toggle reference labels">Labels</button>
-      <span class="toolbar-divider" id="editorDivider" hidden></span>
-      <span class="editor-tools" id="editorTools" hidden>
-        <button id="editModeBtn" class="btn-ghost btn-editor" title="Edit venue/room shapes">Edit Mode</button>
-        <button id="editZonesBtn" class="btn-ghost btn-editor" title="Edit continent zone areas">Edit Zones</button>
-        <button id="editRoadsBtn" class="btn-ghost btn-editor" title="Edit the road network for navigation">🛣️ Edit Roads</button>
-        <button id="entryPointsBtn" class="btn-ghost btn-editor" title="Edit where routes connect to each destination">📍 Entry Points</button>
-      </span>
-      <button id="editorToggle" class="btn-icon" title="Organiser tools" aria-label="Toggle organiser tools">⚙</button>
+    <div class="map-topbar__right">
+      <button class="map-topbar__icon" id="mapSearchToggle" aria-label="Search map">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <!-- Admin-only gear: hidden for guests, shown by applyAdminVisibility() -->
+      <button class="map-topbar__icon" id="editorToggle" aria-label="Organiser tools" style="display:none">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
   </header>
 
-  <!-- NAVIGATE PANEL -->
-  <aside id="navPanel" class="hidden">
-    <div class="legend-title">Navigate</div>
-    <p class="edit-help">Pick your room and a destination — the map draws a flight path and flies you there.</p>
-    <label class="nav-label">My Room</label>
-    <select id="navFromSelect"></select>
-    <label class="nav-label">Take Me To</label>
-    <select id="navToSelect"></select>
-    <div class="edit-buttons">
-      <button id="navGoBtn">Go</button>
-      <button id="navClearBtn">Clear</button>
+  <!-- Admin edit toolbar — hidden by default, gear-toggled via initOrganizerToggle -->
+  <div id="editorTools" hidden>
+    <button class="btn-ghost btn-editor" id="editModeBtn" title="Edit venue/room shapes">Edit Mode</button>
+    <button class="btn-ghost btn-editor" id="editZonesBtn" title="Edit continent zone areas">Edit Zones</button>
+    <button class="btn-ghost btn-editor" id="editRoadsBtn" title="Edit the road network">🛣️ Roads</button>
+    <button class="btn-ghost btn-editor" id="entryPointsBtn" title="Edit entry points">📍 Entries</button>
+  </div>
+
+  <!-- Hidden stubs: core engine holds references to these IDs — keep in DOM -->
+  <span id="editorDivider" hidden></span>
+  <button id="labelToggleBtn" hidden aria-hidden="true"></button>
+  <button id="worldModeBtn" hidden aria-hidden="true"></button>
+  <button id="homeBtn" hidden aria-hidden="true"></button>
+
+  <!-- Filter chips: initCategoryFilters uses querySelectorAll('.filter-chip') -->
+  <div hidden aria-hidden="true">
+    <button class="filter-chip active" data-cat="rooms"></button>
+    <button class="filter-chip active" data-cat="events"></button>
+    <button class="filter-chip active" data-cat="food"></button>
+    <button class="filter-chip active" data-cat="pools"></button>
+    <button class="filter-chip active" data-cat="photo"></button>
+    <button class="filter-chip active" data-cat="parking"></button>
+    <button class="filter-chip active" data-cat="temple"></button>
+    <button class="filter-chip active" data-cat="building"></button>
+  </div>
+
+  <!-- Search bar — slides down from topbar when search icon is tapped -->
+  <div class="map-search-bar" id="mapSearchBar" hidden>
+    <div class="search-wrap">
+      <input id="searchInput" type="text" placeholder="Search rooms, venues… (e.g. C7, Palace)" autocomplete="off" />
+      <div id="searchResults" class="search-results hidden"></div>
     </div>
-    <div id="navEta"></div>
-  </aside>
+    <button class="map-search-close" id="mapSearchClose" aria-label="Close search">✕</button>
+  </div>
+
+  <!-- Navigate panel — restyled as a bottom-sheet modal -->
+  <!-- core engine toggles .hidden via navigateBtn.onclick -->
+  <div id="navPanel" class="hidden">
+    <div class="map-nav-sheet">
+      <div class="map-nav-sheet__handle"></div>
+      <div class="map-nav-sheet__header">
+        <div class="map-nav-sheet__title">Navigate</div>
+        <button class="map-nav-close" id="navPanelClose" aria-label="Close">✕</button>
+      </div>
+      <label class="admin-field-label">My Room</label>
+      <select id="navFromSelect"></select>
+      <label class="admin-field-label">Take Me To</label>
+      <select id="navToSelect"></select>
+      <div id="navEta" class="map-nav-eta"></div>
+      <div class="map-nav-actions">
+        <button id="navGoBtn">Find Route ✈</button>
+        <button id="navClearBtn">Clear</button>
+      </div>
+    </div>
+  </div>
 
   <!-- EDIT ROADS PANEL -->
   <aside id="roadPanel" class="hidden">
@@ -145,6 +178,9 @@
     </div>
   </main>
 
+  <!-- Navigate FAB — ID preserved; core engine assigns onclick in initNavigation -->
+  <button class="btn-ghost" id="navigateBtn" title="Get directions between two points">🧭 Navigate</button>
+
   <!-- ZOOM CONTROLS -->
   <div id="zoomControls">
     <button id="zoomIn" title="Zoom in">+</button>
@@ -155,29 +191,17 @@
   <!-- HOVER TOOLTIP -->
   <div id="tooltip" class="hidden"></div>
 
-  <!-- LEGEND / FILTERS -->
-  <aside id="legend">
-    <div class="legend-title">Show on map</div>
-    <button class="filter-chip active" data-cat="rooms">🏨 Rooms</button>
-    <button class="filter-chip active" data-cat="events">🎉 Events</button>
-    <button class="filter-chip active" data-cat="food">🍽 Food</button>
-    <button class="filter-chip active" data-cat="pools">🏊 Pools</button>
-    <button class="filter-chip active" data-cat="photo">📸 Photo Spots</button>
-    <button class="filter-chip active" data-cat="parking">🚗 Parking</button>
-    <button class="filter-chip active" data-cat="temple">🛕 Temple</button>
-    <button class="filter-chip active" data-cat="building">🏛 Buildings</button>
-  </aside>
-
-  <!-- INFO POPUP -->
+  <!-- INFO POPUP — restyled as bottom sheet via map.css overrides -->
   <div id="popupOverlay" class="hidden">
     <div id="popupCard">
-      <button id="popupClose">✕</button>
+      <button id="popupClose" aria-label="Close">✕</button>
       <div id="popupIcon"></div>
       <div id="popupName"></div>
       <div id="popupSubtitle"></div>
       <div id="popupMeta"></div>
       <div id="popupDescription"></div>
       <div id="popupExtra"></div>
+      <button class="map-popup-nav-btn" id="popupNavBtn">🧭 Navigate Here</button>
     </div>
   </div>
 
