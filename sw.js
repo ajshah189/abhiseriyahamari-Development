@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: "ar-airways-v{N}".
  */
 
-const CACHE_NAME = "ar-airways-v6";
+const CACHE_NAME = "ar-airways-v10";
 
 // Every file listed here must return HTTP 200 — a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -30,6 +30,14 @@ const APP_SHELL = [
   "/script.js",
   "/manifest.json",
   "/icons/icon.svg",
+  "/icons/icon-72.png",
+  "/icons/icon-96.png",
+  "/icons/icon-128.png",
+  "/icons/icon-144.png",
+  "/icons/icon-152.png",
+  "/icons/icon-192.png",
+  "/icons/icon-384.png",
+  "/icons/icon-512.png",
 
   // Core entry points
   "/src/app.js",
@@ -44,6 +52,7 @@ const APP_SHELL = [
   // Services
   "/src/services/authService.js",
   "/src/services/passengerService.js",
+  "/src/services/guestDatabaseService.js",
   "/src/services/milesService.js",
   "/src/services/leaderboardService.js",
   "/src/services/rewardService.js",
@@ -53,6 +62,7 @@ const APP_SHELL = [
   "/src/utils/storage.js",
   "/src/utils/dom.js",
   "/src/utils/geometry.js",
+  "/src/utils/csvParser.js",
 
   // Static data
   "/src/data/events.js",

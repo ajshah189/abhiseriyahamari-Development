@@ -13,6 +13,7 @@ import PassengerService from "../../services/passengerService.js";
 import MilesService from "../../services/milesService.js";
 import LeaderboardService from "../../services/leaderboardService.js";
 import RewardService from "../../services/rewardService.js";
+import GuestDatabaseService from "../../services/guestDatabaseService.js";
 import { EVENTS } from "../../data/events.js";
 import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
 import { HUNT_LOCATIONS } from "../../data/treasureHunt.js";
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { id: "guests", label: "Guests" },
   { id: "redemptions", label: "Redemptions" },
   { id: "qrcodes", label: "QR Codes" },
+  { id: "import", label: "Import Guests" },
 ];
 
 const AMOUNT_PRESETS = [50, 100, 200, 500, 1000];
@@ -297,6 +299,115 @@ function qrCodesSection() {
   `;
 }
 
+// ---------- Import Guests ----------
+
+function formatImportDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function importSection(state) {
+  const imp = state.import;
+  const hasLive = GuestDatabaseService.hasImportedData();
+  const meta = GuestDatabaseService.getImportMeta();
+  const guestCount = GuestDatabaseService.getAll().length;
+
+  const dropzoneHTML = `
+    <div class="import-dropzone" data-import-dropzone>
+      <input type="file" id="importFileInput" accept=".csv" hidden />
+      <div class="import-dropzone__icon">📋</div>
+      <div class="import-dropzone__label">Drop CSV here or <button class="import-browse-btn" data-import-browse>browse files</button></div>
+      <div class="import-dropzone__hint">Required headers: name, family, room, zone · Optional: phone, diet, passportNumber</div>
+    </div>`;
+
+  const previewHTML = imp.preview ? `
+    <div class="import-preview">
+      <div class="import-preview__summary">
+        <div class="import-preview__stat">
+          <div class="import-preview__stat-value import-preview__stat-value--good">${imp.preview.imported}</div>
+          <div class="import-preview__stat-label">guests to import</div>
+        </div>
+        ${imp.preview.skipped > 0 ? `
+        <div class="import-preview__stat">
+          <div class="import-preview__stat-value import-preview__stat-value--warn">${imp.preview.skipped}</div>
+          <div class="import-preview__stat-label">rows skipped</div>
+        </div>` : ""}
+        ${imp.preview.errors.length > 0 ? `
+        <div class="import-preview__stat">
+          <div class="import-preview__stat-value import-preview__stat-value--bad">${imp.preview.errors.length}</div>
+          <div class="import-preview__stat-label">errors</div>
+        </div>` : ""}
+      </div>
+
+      ${imp.preview.errors.length > 0 ? `
+      <div class="import-preview__errors">
+        <div class="import-preview__error-title">Errors</div>
+        <ul class="import-preview__error-list">
+          ${imp.preview.errors.slice(0, 5).map(e => `<li class="import-preview__error-item">${e}</li>`).join("")}
+          ${imp.preview.errors.length > 5 ? `<li class="import-preview__error-item">…and ${imp.preview.errors.length - 5} more</li>` : ""}
+        </ul>
+      </div>` : ""}
+
+      ${imp.preview.previewRows.length > 0 ? `
+      <div class="import-preview-table">
+        <table>
+          <thead><tr><th>Name</th><th>Family</th><th>Room</th><th>Diet</th><th>Passport #</th></tr></thead>
+          <tbody>
+            ${imp.preview.previewRows.map(r => `
+              <tr>
+                <td>${r.displayName}</td>
+                <td>${r.familyName}</td>
+                <td>${r.roomName}</td>
+                <td>${r.diet}</td>
+                <td>${r.passportNumber}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+        ${imp.preview.imported > 5 ? `<p class="muted" style="margin-top:var(--s-2);font-size:12px">Showing first 5 of ${imp.preview.imported} guests</p>` : ""}
+      </div>` : ""}
+
+      <div class="import-preview__actions">
+        ${imp.preview.imported > 0
+          ? `<button class="import-confirm-btn" data-import-confirm>Confirm Import · ${imp.preview.imported} Guests</button>`
+          : ""}
+        <button class="import-cancel-btn" data-import-cancel>Cancel</button>
+      </div>
+    </div>` : "";
+
+  const successHTML = imp.result ? `
+    <div class="import-success">
+      <div class="import-success__icon">✅</div>
+      <div class="import-success__title">Import Successful</div>
+      <div class="import-success__subtitle">${imp.result.imported} guests imported · ${imp.result.skipped} skipped · ${imp.result.errors.length} errors</div>
+      <button class="import-another-btn" data-import-another>Import Another File</button>
+    </div>` : "";
+
+  return `
+    <section class="dashboard-section">
+      <h3>Import Guests</h3>
+      <p class="muted" style="margin-bottom:var(--s-4)">Upload a CSV to replace mock data with real guest records. Mock data is never deleted — clearing always reverts to it.</p>
+
+      <div class="import-status-card ${hasLive ? "import-status-card--live" : ""}">
+        <div class="import-status-card__mode">${hasLive ? "🟢 LIVE DATA" : "⚪ MOCK DATA"}</div>
+        <div class="import-status-card__count">${guestCount} guests active</div>
+        ${hasLive && meta ? `<div class="import-status-card__updated">Imported ${formatImportDate(meta.importedAt)}</div>` : ""}
+        ${hasLive ? `
+        <div class="import-status-card__actions">
+          <button class="admin-danger-btn" data-import-clear>Clear → Revert to Mock</button>
+          <button class="import-export-btn" data-import-export>⬇ Export as guests.js</button>
+        </div>` : ""}
+      </div>
+
+      <button class="admin-ghost-btn" data-import-template>⬇ Download CSV Template</button>
+
+      ${imp.status === "idle" ? dropzoneHTML : ""}
+      ${imp.status === "previewing" ? previewHTML : ""}
+      ${imp.status === "success" ? successHTML : ""}
+    </section>
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
@@ -305,6 +416,7 @@ const SECTION_RENDERERS = {
   guests: guestsSection,
   redemptions: redemptionsSection,
   qrcodes: qrCodesSection,
+  import: importSection,
 };
 
 export function AdminPage(state) {

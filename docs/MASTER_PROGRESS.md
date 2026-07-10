@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-10 July 2026 (Session 2)
+10 July 2026 (Session 4)
 
 Current Version:
-v0.2
+v0.3
 
 Current Phase:
 Phase 1 – Foundation
@@ -51,6 +51,8 @@ main
 | Admin Dashboard | 🟢 Completed | 100% |
 | Guest Directory | 🟢 Completed | 100% |
 | Map Navigation UX | 🟢 Completed | 100% |
+| CSV Guest Import | 🟢 Completed | 100% |
+| PWA Icons | 🟢 Completed | 100% |
 | Analytics | ⚪ Not Started | 0% |
 | Final QA | ⚪ Not Started | 0% |
 
@@ -185,6 +187,26 @@ main
 ✅ Admin QR Codes section (`AdminPage.js` + `AdminScreen.js`) — 5th nav item "QR Codes" in Ground Crew tool. Renders a grid of 15 cards each with a live QR image from `api.qrserver.com`, location info, and a "Print" button that opens a print-optimized popup (name, reward, QR at 400px, URL, auto-triggers `window.print()`).
 
 ✅ `index.html` — `screen-hunt` and `screen-hunt-claim` containers added; `hunt.css` linked.
+
+## CSV Guest Import
+
+✅ `src/utils/csvParser.js` — pure-JS CSV parser (no library); handles quoted fields, commas in quotes, double-quote escaping (`""`), Windows (`\r\n`) and Unix (`\n`) line endings, trailing empty rows
+
+✅ `src/services/guestDatabaseService.js` — single source of truth for all guest records: `localStorage(ar_guest_db)` takes priority over `guests.js` fallback; `getAll()`, `getById()`, `getByPassport()`, `getFamilies()`, `getRooms()`, `parseCSVToGuests()`, `commitImport()`, `clearImported()`, `hasImportedData()`, `getImportMeta()`
+
+✅ CSV format: `name, family, room, zone, phone, diet, passportNumber` — family + room resolved to IDs via case-insensitive lookup; missing passport auto-generated as `AR-{room}-{familyInitial}` with numeric suffix on collision; missing diet defaults to "Jain Vegetarian"; IDs continue from highest existing (`G{N+1}`)
+
+✅ `authService.js` updated — `login()` and `getCurrentGuest()` now call `GuestDatabaseService.getAll()` at call time instead of using a module-level cached array; login works for imported guests immediately after import
+
+✅ `passengerService.js` updated — `getAllPassengers()` and `getPassengerById()` delegate to `GuestDatabaseService.getAll()` at call time; DirectoryPage and MapScreen guest search automatically reflect imported data
+
+✅ `leaderboardService.js` updated — `getOverall()`, `getByFamily()`, `getTodayLeaders()` all use `GuestDatabaseService.getAll()` instead of `rawGuests`
+
+✅ Admin "Import Guests" — 6th nav item in Ground Crew tool; status card (🟢 LIVE / ⚪ MOCK, guest count, timestamp, clear button); "⬇ Download CSV Template" button (creates and downloads `ar-airways-guest-template.csv` with headers + 2 example rows); drag-and-drop + browse file input (`accept=".csv"`); parse-then-preview flow (summary stats, error list capped at 5, first-5-row table with human-readable names); "Confirm Import · N Guests" persists to localStorage; success state with "Import Another File"; clearing reverts to mock immediately
+
+✅ `admin.css` extended — `.import-status-card` (with `--live` variant), `.import-dropzone` (dashed border, drag-over gold highlight), `.import-preview` (stats, error list, scrollable table), `.import-confirm-btn`, `.import-success` — plus belated `.admin-qr-*` styles for the QR Codes section
+
+✅ Service worker bumped to `ar-airways-v7`; `csvParser.js` and `guestDatabaseService.js` added to APP_SHELL
 
 ## Guest Directory + "Take Me There" Navigation
 

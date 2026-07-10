@@ -1,0 +1,10 @@
+{
+  "name": "ar-airways",
+  "version": "1.0.0",
+  "description": "AR Airways — Wedding companion app for Riya & Abhishek",
+  "private": true,
+  "scripts": {
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "devDependencies": {}
+}

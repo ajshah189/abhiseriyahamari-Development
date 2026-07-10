@@ -6,9 +6,9 @@
  * The interface stays identical.
  */
 
-import { guests as rawGuests } from "../data/guests.js";
 import { families } from "../data/families.js";
 import MilesService from "./milesService.js";
+import GuestDatabaseService from "./guestDatabaseService.js";
 
 class LeaderboardService {
 
@@ -18,7 +18,7 @@ class LeaderboardService {
    */
   getOverall(currentGuestId) {
     const balances = MilesService.getAllBalances();
-    const entries = rawGuests.map(g => ({
+    const entries = GuestDatabaseService.getAll().map(g => ({
       guestId: g.id,
       name: g.displayName || `${g.firstName} ${g.lastName}`,
       balance: balances[g.id] || 0,
@@ -41,7 +41,7 @@ class LeaderboardService {
     const familyTotals = {};
     const familyMemberCounts = {};
 
-    for (const guest of rawGuests) {
+    for (const guest of GuestDatabaseService.getAll()) {
       if (!guest.familyId) continue;
       if (!familyTotals[guest.familyId]) familyTotals[guest.familyId] = 0;
       familyTotals[guest.familyId] += balances[guest.id] || 0;
@@ -66,7 +66,7 @@ class LeaderboardService {
    * Today's top earners — ranked by miles earned today.
    */
   getTodayLeaders(currentGuestId) {
-    const entries = rawGuests.map(g => ({
+    const entries = GuestDatabaseService.getAll().map(g => ({
       guestId: g.id,
       name: g.displayName || `${g.firstName} ${g.lastName}`,
       todayMiles: MilesService.getTodayMiles(g.id),

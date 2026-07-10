@@ -15,23 +15,20 @@
  * null-safe fallback.
  */
 
-import { guests as rawGuests } from "../data/guests.js";
 import { rooms } from "../data/rooms.js";
 import { families } from "../data/families.js";
-import { normalizeGuest } from "../models/Guest.js";
 import MilesService from "./milesService.js";
 import AuthService from "./authService.js";
-
-const normalized = rawGuests.map(normalizeGuest);
+import GuestDatabaseService from "./guestDatabaseService.js";
 
 class PassengerService {
 
   getAllPassengers() {
-    return normalized;
+    return GuestDatabaseService.getAll();
   }
 
   getPassengerById(id) {
-    return normalized.find(g => g.id === id) || null;
+    return GuestDatabaseService.getAll().find(g => g.id === id) || null;
   }
 
   getPassengerRoom(id) {

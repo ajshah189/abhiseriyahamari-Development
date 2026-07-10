@@ -19,6 +19,7 @@ import { AdminPage } from "./AdminPage.js";
 import { renderAdminPinGate } from "./AdminPinGate.js";
 import PassengerService from "../../services/passengerService.js";
 import MilesService from "../../services/milesService.js";
+import GuestDatabaseService from "../../services/guestDatabaseService.js";
 import Router from "../../router.js";
 
 const AUTH_KEY = "ar_admin_auth";
@@ -48,6 +49,7 @@ function createInitialState() {
     guests: { search: "", tierFilter: "all", expandedGuestId: null },
     checkins: readSessionMap(CHECKIN_KEY),
     fulfilled: readSessionMap(FULFILLED_KEY),
+    import: { status: "idle", preview: null, result: null },
   };
 }
 
@@ -102,6 +104,7 @@ function bindEvents() {
   bindGuestEvents();
   bindRedemptionEvents();
   bindQrEvents();
+  bindImportEvents();
 }
 
 // ---------- Award Miles ----------
@@ -261,6 +264,147 @@ function bindQrEvents() {
 </html>`);
       printWin.document.close();
     });
+  });
+}
+
+// ---------- Import Guests ----------
+
+function handleFileRead(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith(".csv")) {
+    showToast("Please select a .csv file");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const preview = GuestDatabaseService.parseCSVToGuests(e.target.result || "");
+    state.import = { status: "previewing", preview, result: null };
+    renderPage();
+  };
+  reader.onerror = () => showToast("Failed to read file");
+  reader.readAsText(file);
+}
+
+function generateGuestsJS(guests) {
+  function v(val) {
+    if (val === null || val === undefined) return "null";
+    if (typeof val === "boolean" || typeof val === "number") return String(val);
+    return JSON.stringify(val);
+  }
+  const entries = guests.map(g => [
+    `  {`,
+    `    id: ${v(g.id)},`,
+    `    firstName: ${v(g.firstName)},`,
+    `    lastName: ${v(g.lastName)},`,
+    `    displayName: ${v(g.displayName)},`,
+    `    familyId: ${v(g.familyId)},`,
+    `    roomId: ${v(g.roomId)},`,
+    `    passportId: ${v(g.passportId)},`,
+    `    boardingPassId: ${v(g.boardingPassId)},`,
+    `    passportNumber: ${v(g.passportNumber)},`,
+    `    arMiles: ${v(g.seedMiles || 0)},`,
+    `    status: "Explorer",`,
+    `    profilePhoto: ${v(g.profilePhoto)},`,
+    `    checkedIn: ${v(g.checkedIn)},`,
+    `    dietPreference: ${v(g.dietPreference)},`,
+    `    emergencyContact: ${v(g.emergencyContact)},`,
+    `    role: ${v(g.role || "GUEST")},`,
+    `  }`,
+  ].join("\n")).join(",\n\n");
+  return `export const guests = [\n${entries},\n];\n`;
+}
+
+function downloadGuestsJS() {
+  const guests = GuestDatabaseService.getAll();
+  const content = generateGuestsJS(guests);
+  const blob = new Blob([content], { type: "text/javascript" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "guests.js";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 100);
+  showToast(`guests.js downloaded — ${guests.length} guests`);
+}
+
+function downloadTemplate() {
+  const lines = [
+    "name,family,room,zone,phone,diet,passportNumber",
+    '"Abhishek Shah","Shah Family","Japan","Asia","+91 98765 43210","Vegetarian","AR-Japan-S"',
+    '"Priya Mehta","Mehta Family","Bali","Asia","+91 87654 32109","Jain Vegetarian",""',
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ar-airways-guest-template.csv";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 100);
+}
+
+function bindImportEvents() {
+  container.querySelector("[data-import-template]")?.addEventListener("click", downloadTemplate);
+  container.querySelector("[data-import-export]")?.addEventListener("click", downloadGuestsJS);
+
+  container.querySelector("[data-import-clear]")?.addEventListener("click", () => {
+    GuestDatabaseService.clearImported();
+    state.import = { status: "idle", preview: null, result: null };
+    showToast("Reverted to mock data");
+    renderPage();
+  });
+
+  const dropzone = container.querySelector("[data-import-dropzone]");
+  const fileInput = container.querySelector("#importFileInput");
+
+  container.querySelector("[data-import-browse]")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput?.click();
+  });
+
+  dropzone?.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-import-browse]")) fileInput?.click();
+  });
+
+  fileInput?.addEventListener("change", (e) => {
+    handleFileRead(e.target.files?.[0]);
+  });
+
+  dropzone?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("import-dropzone--dragover");
+  });
+  dropzone?.addEventListener("dragleave", () => {
+    dropzone.classList.remove("import-dropzone--dragover");
+  });
+  dropzone?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("import-dropzone--dragover");
+    handleFileRead(e.dataTransfer.files?.[0]);
+  });
+
+  container.querySelector("[data-import-confirm]")?.addEventListener("click", () => {
+    const { preview } = state.import;
+    if (!preview?.guests?.length) return;
+    GuestDatabaseService.commitImport(preview.guests);
+    state.import = {
+      status: "success",
+      preview: null,
+      result: { imported: preview.imported, skipped: preview.skipped, errors: preview.errors },
+    };
+    showToast(`${preview.imported} guests imported`);
+    renderPage();
+  });
+
+  container.querySelector("[data-import-cancel]")?.addEventListener("click", () => {
+    state.import = { status: "idle", preview: null, result: null };
+    renderPage();
+  });
+
+  container.querySelector("[data-import-another]")?.addEventListener("click", () => {
+    state.import = { status: "idle", preview: null, result: null };
+    renderPage();
   });
 }
 
