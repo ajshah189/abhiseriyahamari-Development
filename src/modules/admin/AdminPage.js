@@ -150,7 +150,7 @@ function guestRow(state, entry) {
       <button class="guest-row__summary" data-guest-row="${guest.id}">
         <span class="guest-row__name">${guest.displayName}</span>
         <span class="guest-row__family">${family?.name || "—"}</span>
-        <span class="guest-row__room">${room?.name || "—"}</span>
+        <span class="guest-row__room">${room ? `Room ${room.number} · ${room.zone}` : "—"}</span>
         <span class="guest-row__balance">${MilesService.format(balance)} ✈</span>
         <span class="tier-badge">${tier}</span>
       </button>
