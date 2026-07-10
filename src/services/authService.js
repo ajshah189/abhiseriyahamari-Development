@@ -21,12 +21,10 @@
  *   AuthService.hasAccess(feature) → boolean
  */
 
-import { guests as rawGuests } from "../data/guests.js";
 import { normalizeGuest } from "../models/Guest.js";
 import { storageGet, storageSet, storageRemove } from "../utils/storage.js";
 import { APP_CONFIG } from "../config.js";
-
-const normalized = rawGuests.map(normalizeGuest);
+import GuestDatabaseService from "./guestDatabaseService.js";
 
 const FULL_FEATURES = [
   "miles", "rewards", "passport", "profile", "leaderboard_self",
@@ -44,7 +42,7 @@ class AuthService {
   login(passportNumber) {
     const query = (passportNumber || "").trim().toUpperCase();
 
-    const guest = normalized.find(
+    const guest = GuestDatabaseService.getAll().find(
       g => g.passportNumber && g.passportNumber.toUpperCase() === query
     );
 
@@ -84,7 +82,7 @@ class AuthService {
   getCurrentGuest() {
     const id = storageGet(APP_CONFIG.auth.storageKey, null);
     if (!id) return null;
-    return normalized.find(g => g.id === id) || null;
+    return GuestDatabaseService.getAll().find(g => g.id === id) || null;
   }
 
   /**
