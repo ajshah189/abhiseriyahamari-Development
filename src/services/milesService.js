@@ -18,6 +18,7 @@ import {
   getLedger,
   getAllBalances,
   getFullLedger,
+  getUniqueKinds,
 } from "../store/milesStore.js";
 
 const tiers = APP_CONFIG.arMiles.tiers
@@ -126,6 +127,14 @@ class MilesService {
    */
   getAllBalances() {
     return getAllBalances();
+  }
+
+  /**
+   * Full ledger across all guests, newest first.
+   * Used by Admin Analytics.
+   */
+  getFullLedger() {
+    return getFullLedger();
   }
 
   /**

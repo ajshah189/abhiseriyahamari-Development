@@ -19,6 +19,8 @@ export function TopBar() {
     ? `<span class="notif-bell-badge">${notifCount}</span>`
     : "";
 
+  const isViewer = snapshot?.isViewer ?? true;
+
   return `
 <header class="top-bar">
 
@@ -38,10 +40,11 @@ export function TopBar() {
   </div>
 
   <div class="top-right">
+    ${!isViewer ? `<button class="top-icon top-icon--dir" data-dir-btn aria-label="Guest Directory">👥</button>` : ""}
     <button class="top-icon" data-notif-toggle aria-label="Notifications">
       🔔${badge}
     </button>
-    <button class="top-icon">⚙️</button>
+    <button class="top-icon" data-settings-btn aria-label="Settings">⚙️</button>
   </div>
 
 </header>
