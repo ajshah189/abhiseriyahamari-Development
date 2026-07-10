@@ -7,6 +7,7 @@
  */
 
 import Router from "../../router.js";
+import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 import PassengerService from "../../services/passengerService.js";
 
@@ -72,6 +73,9 @@ function applyAdminVisibility() {
 
 async function mount() {
   container = document.getElementById("screen-map");
+
+  // Inject shared TopBar (map variant) — replaces the old static HTML in index.html
+  container.insertAdjacentHTML("afterbegin", TopBar({ map: true }));
 
   // Reveal the container before the core map modules run — they measure
   // #viewport's live layout size to compute the initial zoom-to-fit

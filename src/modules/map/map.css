@@ -7,38 +7,24 @@
    ============================================================ */
 
 /* ==========================================================
-   Map TopBar (replaces old #topbar inside #screen-map)
+   Map TopBar — shared .top-bar component, fixed for map context
    ========================================================== */
-.map-topbar {
+#screen-map .top-bar {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 72px;
   z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 0 var(--s-3);
   background: linear-gradient(180deg, rgba(12,15,20,0.97), rgba(12,15,20,0.82));
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(var(--blur)) saturate(1.2);
   -webkit-backdrop-filter: blur(var(--blur)) saturate(1.2);
+  /* override layout.css sticky */
+  position: fixed;
 }
 
-.map-topbar__left {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-width: 0;
-}
-
-.map-topbar__right {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  flex-shrink: 0;
-}
-
-.map-topbar__back {
+/* Back arrow button */
+#screen-map .top-bar__back {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
@@ -53,59 +39,37 @@
               border-color var(--t-fast) var(--ease-out),
               background var(--t-fast) var(--ease-out);
 }
-.map-topbar__back:hover {
+#screen-map .top-bar__back:hover {
   color: var(--gold);
   border-color: var(--gold-soft);
   background: var(--gold-faint);
 }
 
-.map-topbar__brand { min-width: 0; }
-
-.map-topbar__title {
+/* Title and subtitle in map context */
+#screen-map .top-bar .top-left h2 {
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 600;
   color: var(--cream);
   line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0;
 }
-
-.map-topbar__sub {
+#screen-map .top-bar .greeting {
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-top: 2px;
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
-.map-topbar__icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
-  color: var(--cream-dim);
-  font-size: 17px;
-  transition: color var(--t-fast) var(--ease-out),
-              border-color var(--t-fast) var(--ease-out),
-              background var(--t-fast) var(--ease-out),
-              transform var(--t-med) var(--ease-out);
-}
-.map-topbar__icon:hover {
-  color: var(--gold);
-  border-color: var(--gold-soft);
-  background: var(--gold-faint);
-}
-.map-topbar__icon.active {
-  color: var(--gold);
-  border-color: var(--gold-soft);
-  transform: rotate(45deg);
+/* ==========================================================
+   Map viewport — fill full viewport width, no centering
+   ========================================================== */
+#screen-map,
+#screen-map #viewport,
+#screen-map #mapWrap {
+  max-width: none;
+  width: 100%;
 }
 
 /* ==========================================================
