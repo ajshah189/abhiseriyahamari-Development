@@ -14,6 +14,7 @@
 
 import { RewardsPage } from "./RewardsPage.js";
 import Router from "../../router.js";
+import { pullToRefresh } from "../../utils/pullToRefresh.js";
 
 const REDEEM_MESSAGE_MS = 2200;
 
@@ -57,6 +58,7 @@ function mount(view) {
   container = document.getElementById("screen-rewards");
   if (view) activeView = view;
   render();
+  pullToRefresh(container, async () => { render(); });
 }
 
 function show(view) {

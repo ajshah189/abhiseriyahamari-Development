@@ -1,0 +1,71 @@
+#ar-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--night);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.splash-plane {
+  font-size: 64px;
+  color: var(--gold);
+  animation: splash-float 3s ease-in-out infinite;
+}
+
+.splash-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.splash-subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--cream-dim);
+  letter-spacing: 0.05em;
+}
+
+.splash-bar {
+  width: 200px;
+  height: 2px;
+  background: var(--night-3);
+  border-radius: 2px;
+  margin-top: var(--s-6);
+  overflow: hidden;
+}
+
+.splash-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  width: 0%;
+  animation: splash-progress 1.5s ease-out forwards;
+}
+
+@keyframes splash-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes splash-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-plane    { animation: none; }
+  .splash-bar-fill { animation: none; width: 100%; }
+  #ar-splash       { transition: none !important; }
+}
