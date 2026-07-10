@@ -1,59 +1,92 @@
-# Session Report — Cache Bust + Local Notifications
+# Session Report — Blank Screen Debug
 
 Date: 10 July 2026
-Scope: v2 CSS cache bust across all stylesheets; browser-native local notification system with bell UI
+Scope: Identified and fixed two compounding causes of the blank-screen regression.
 
 ---
 
-## Task 1 — Cache Bust / v2 Stamp
+## Root Cause 1: Router `_pending` never cleared on failure
 
-**Goal:** Force CDN and browser caches to serve fresh CSS after previous-session UI changes.
+**File:** `src/router.js` — `go()` method
 
-**What changed:**
-- Added `/* v2 */` as the very first line of every CSS file:
-  `style.css`, `dashboard.css`, `events.css`, `journey.css`, `rewards.css`,
-  `passport.css`, `profile.css`, `hunt.css`, `admin.css`, `onboarding.css`, `pwa.css`
-- Verified `html, body` has no `overflow: hidden` (removed in a prior session; remaining `overflow: hidden` uses are all correctly-scoped containers).
-- SW `CACHE_NAME` was already `ar-airways-v2` — no bump needed here.
+```js
+// BEFORE (broken)
+this._pending = this._transition(name, next, params);
+await this._pending;
+this._pending = null;   // ← never reached if _transition throws
+```
+
+If `_transition()` rejected for any reason, `this._pending` stayed as a rejected
+Promise. Every subsequent call to `Router.go()` hit:
+
+```js
+if (this._pending) await this._pending;
+```
+
+…and immediately rethrew the old rejection without ever calling `_transition()`.
+This is exactly why "manually calling `App.start()` again from the console leaves
+it empty" — the second call fails before `mount()` is ever attempted.
+
+**Fix:** wrap in try/catch/finally so `_pending` is always cleared and errors
+surface in the console:
+
+```js
+this._pending = this._transition(name, next, params);
+try {
+  await this._pending;
+} catch (err) {
+  console.error(`[Router] transition to "${name}" failed:`, err);
+} finally {
+  this._pending = null;
+}
+```
 
 ---
 
-## Task 2 — Local Notifications (Bell + Flight Reminders)
+## Root Cause 2: admin.css desktop media query missing `:not([hidden])`
 
-**Goal:** Browser-native push-free event reminders. No Firebase, no SW push, no external services.
+**File:** `src/modules/admin/admin.css`
 
-### New files
+Change 1 (earlier debug session) added `:not([hidden])` to the top-level
+`#screen-admin { display: flex }` rule, but left the desktop media query
+untouched:
 
-| File | Purpose |
-|---|---|
-| `src/modules/notifications/NotificationService.js` | Core service: permission request, setTimeout scheduling, history, badge refresh, panel |
-| `src/modules/notifications/notifications.css` | Bell badge + dropdown panel styles |
+```css
+@media (min-width: 768px) {
+  #screen-admin {
+    display: grid;   /* author style overrides UA [hidden] { display: none } */
+    ...
+  }
+}
+```
 
-### Modified files
+On viewports ≥ 768 px, this author-level `display: grid` overrides the
+browser's UA stylesheet rule `[hidden] { display: none }`. The admin screen
+rendered as an empty grid even when the router had never navigated to it —
+a blank overlay covering every other screen.
 
-| File | Change |
-|---|---|
-| `src/components/layout/TopBar.js` | Bell button with `data-notif-toggle`; inline badge reads `getHistory().length` |
-| `src/modules/onboarding/OnboardingScreen.js` | Calls `requestPermission()` after successful passport login |
-| `src/modules/profile/ProfileScreen.js` | Calls `clearAll()` before `AuthService.logout()` on sign-out |
-| `src/app.js` | Imports and calls `initBell()` at app startup |
-| `index.html` | `<link>` for `notifications.css` added before `</head>` |
-| `sw.js` | Bumped to `ar-airways-v3`; added notification files to `APP_SHELL` |
+Change 2 (`[hidden] { display: none !important }` in style.css) papered over
+this with `!important` but left the admin.css itself incorrect.
 
-### Architecture decisions
+**Fix:**
 
-**Event delegation over per-render binding** — `TopBar()` is a pure string function called on every `show()`. Rather than wiring the bell on each render, `initBell()` registers a single `document.addEventListener("click", ...)` at startup. The handler matches `[data-notif-toggle]` wherever it appears, surviving repeated TopBar re-renders.
+```css
+@media (min-width: 768px) {
+  #screen-admin:not([hidden]) {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+```
 
-**Panel appended to `document.body`** — Avoids clipping by `overflow: hidden` on screen `<div>`s. Positioned with `getBoundingClientRect()` on the bell button.
+---
 
-**Badge freshness two ways** — TopBar reads `getHistory().length` at render time for the initial count. `_refreshBadge()` also runs after each timer fires to update the badge in the live DOM without re-rendering TopBar.
+## Invariant to preserve going forward
 
-**IST timezone** — Events parsed as `new Date(\`${ev.date}T${ev.startTime}:00+05:30\`)` so timers fire at the correct local time regardless of device timezone.
-
-**Two notifications per event:**
-- 30 min before start: `"{icon} {name} boards in 30 minutes — Head to {venue} 🛫"`
-- At start: `"{icon} {name} has begun ✈"`
-
-**History** — Last 10 notifications stored in `localStorage` under `ar_notification_history`. Shown in panel newest-first. Cleared on sign-out via `clearAll()`.
-
-**SW cache bump to v3** — New JS/CSS files added to `APP_SHELL` so the notification feature works fully offline after first load.
+Every CSS block that sets `display: flex | grid | block` on a screen container
+(`#screen-*`) must be qualified with `:not([hidden])`. The `[hidden]` attribute
+is the sole source of truth for screen visibility — the router sets and clears
+it in `show()` and `hide()`. A `display` rule without the guard will override
+the UA stylesheet's `[hidden] { display: none }` and leak the screen into view
+when it shouldn't be shown.
