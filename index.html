@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="src/modules/hunt/hunt.css?v=3">
 <link rel="stylesheet" href="src/modules/notifications/notifications.css?v=3">
 <link rel="stylesheet" href="src/modules/map/map.css?v=1">
+<link rel="stylesheet" href="src/modules/directory/directory.css?v=1">
 </head>
 <body>
 
@@ -65,6 +66,9 @@
 
 <!-- SHARED "coming soon" screen, reused by every unbuilt route -->
 <div id="screen-placeholder" hidden></div>
+
+<!-- GUEST DIRECTORY -->
+<div id="screen-directory" hidden></div>
 
 <!-- RESORT MAP SCREEN -->
 <div id="screen-map" hidden>
@@ -137,6 +141,7 @@
       </div>
       <label class="admin-field-label">My Room</label>
       <select id="navFromSelect"></select>
+      <div id="navFromAutoFill" class="nav-autofill-label" hidden>Your room · auto-filled</div>
       <label class="admin-field-label">Take Me To</label>
       <select id="navToSelect"></select>
       <div id="navEta" class="map-nav-eta"></div>
@@ -202,6 +207,7 @@
       <div id="popupDescription"></div>
       <div id="popupExtra"></div>
       <button class="map-popup-nav-btn" id="popupNavBtn">🧭 Navigate Here</button>
+      <button class="map-popup-nav-btn map-popup-take-me-there" id="popupTakeMeThereBtn" hidden>Take Me There ✈</button>
     </div>
   </div>
 

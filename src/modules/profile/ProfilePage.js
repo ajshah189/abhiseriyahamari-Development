@@ -149,6 +149,17 @@ function loggedOutState() {
   `;
 }
 
+function directoryLink() {
+  return `
+    <section class="dashboard-section">
+      <button class="btn-ghost" data-route="directory"
+              style="width:100%;padding:var(--s-3) var(--s-4);text-align:center;">
+        👥 Browse Guest Directory
+      </button>
+    </section>
+  `;
+}
+
 function signOut() {
   return `
     <section class="profile-signout">
@@ -163,6 +174,7 @@ export function ProfilePage() {
       ${TopBar()}
       <main class="profile-page">
         ${loggedOutState()}
+        ${directoryLink()}
       </main>
       ${BottomNav("profile")}
     `;
@@ -180,6 +192,7 @@ export function ProfilePage() {
       ${transactionHistory(guestId)}
       ${myRewards(guestId)}
       ${quickInfo(snapshot)}
+      ${directoryLink()}
       ${signOut()}
     </main>
     ${BottomNav("profile")}

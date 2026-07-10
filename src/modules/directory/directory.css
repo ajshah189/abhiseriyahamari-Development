@@ -1,0 +1,200 @@
+/* ============================================================
+   Guest Directory Screen
+   ============================================================ */
+
+#screen-directory {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--night);
+}
+
+/* ── TopBar ─────────────────────────────────────────────────────────────── */
+.directory-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: env(safe-area-inset-top, 0px) var(--s-4) 0;
+  padding-top: max(var(--s-4), env(safe-area-inset-top, var(--s-4)));
+  padding-bottom: var(--s-3);
+  background: rgba(12,15,20,0.97);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+
+.directory-topbar__back {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--cream-dim);
+  transition: color var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+}
+.directory-topbar__back:hover {
+  color: var(--gold);
+  border-color: var(--gold-soft);
+}
+
+.directory-topbar__title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+  white-space: nowrap;
+}
+
+.directory-topbar__spacer { width: 40px; flex-shrink: 0; }
+
+/* ── Search ─────────────────────────────────────────────────────────────── */
+.directory-search-wrap {
+  padding: var(--s-3) var(--s-4);
+  background: var(--night-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.directory-search {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--night-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: var(--s-3) var(--s-4);
+  color: var(--cream);
+  font-size: 14px;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+.directory-search::placeholder { color: var(--cream-dim); opacity: 0.5; }
+.directory-search:focus {
+  outline: none;
+  border-color: var(--gold-soft);
+}
+
+/* ── Guest list ─────────────────────────────────────────────────────────── */
+.directory-main {
+  flex: 1;
+  padding: var(--s-4);
+  padding-bottom: calc(64px + var(--s-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.guest-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+/* ── Guest card ─────────────────────────────────────────────────────────── */
+.guest-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--night-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+.guest-card:hover { border-color: var(--line-strong); }
+.guest-card[hidden] { display: none; }
+
+.guest-card__avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.guest-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.guest-card__name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.guest-card__meta {
+  font-size: 12px;
+  color: var(--cream-dim);
+  margin-top: 2px;
+}
+
+.guest-card__room {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: 3px;
+}
+
+.guest-card__room-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.guest-card__zone {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  opacity: 0.55;
+}
+
+.guest-card__room--hidden .guest-card__room-name {
+  color: var(--cream-dim);
+  opacity: 0.35;
+}
+
+.guest-card__map-btn {
+  flex-shrink: 0;
+  padding: 6px var(--s-3);
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-pill);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease-out),
+              color var(--t-fast) var(--ease-out),
+              transform var(--t-fast) var(--ease-out);
+}
+.guest-card__map-btn:hover {
+  background: var(--gold-soft);
+  color: var(--night);
+  transform: scale(1.05);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.directory-empty {
+  text-align: center;
+  padding: var(--s-8) var(--s-4);
+  color: var(--cream-dim);
+  opacity: 0.5;
+  font-size: 14px;
+}

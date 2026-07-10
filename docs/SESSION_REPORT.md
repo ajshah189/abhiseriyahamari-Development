@@ -1,92 +1,68 @@
-# Session Report — Map UI Remake
+# Session Report — Guest Directory + "Take Me There" Navigation
 
-Date: 10 July 2026
-Scope: Replaced the map screen's bespoke toolbar with design-system chrome matching the rest of the app.
+Date: 10 July 2026 (Session 2)
+Scope: Full Guest Directory screen + one-tap navigation UX for the map.
 
 ---
 
 ## What Changed
 
 ### New files
-- **`src/modules/map/map.css`** — all new map chrome: TopBar, search slide-down bar, Navigate FAB, nav bottom sheet, popup bottom sheet, admin toolbar strip, zoom control repositioning.
+- **`src/modules/directory/DirectoryPage.js`** — pure render function; 18 guests sorted alphabetically; avatar with `colorFromName()` / `initials()`; viewer mode hides room/zone/button; "Find on Map" sets `ar_map_highlight` sessionStorage key
+- **`src/modules/directory/DirectoryScreen.js`** — router adapter; re-renders on `show()` (stays fresh after sign in/out); wires back button, live search filter, and "Find on Map" click handlers
+- **`src/modules/directory/directory.css`** — `.directory-topbar`, `.directory-search`, `.guest-card`, `.guest-card__avatar`, `.guest-card__map-btn`; dark card grid with sticky topbar and always-visible search
 
 ### Modified files
-- **`index.html`** — `#screen-map` section fully rewritten. Old `#topbar` replaced by `.map-topbar`. `#navigateBtn`, `#editorToggle`, `#editorTools` repositioned. `#navPanel` restructured as a bottom-sheet modal. `#popupCard` extended with `#popupNavBtn`. Filter panel (`#legend`) removed; `.filter-chip` stubs kept in a hidden container. `<link>` tag for `map.css` added.
-- **`src/modules/map/MapScreen.js`** — `homeBtn` reference removed. Back-button, search toggle, nav-panel backdrop/close, and "Navigate Here" flow wired up. Non-passive `touchmove` listener added to prevent page bounce during pan.
-- **`sw.js`** — `CACHE_NAME` bumped to `ar-airways-v5`; `/src/modules/map/map.css` added to `APP_SHELL`.
-- **`docs/MASTER_PROGRESS.md`** — Interactive Map epic → 100%; Map UI Remake section added.
-
-### No-change files
-- `src/modules/core/` — zero modifications. All engine DOM ID contracts intact.
-- `data.js` — data-only, no UI logic. No changes needed.
-- `script.js` — already minimal, no changes.
+- **`src/modules/map/MapScreen.js`** — full rewrite; added `PassengerService` import; module-level `_hotspotEls` + `_flyTo` (set during `mount()`, used in `show()` for highlight); `polygonCentroid()` helper; `findNavLocId()` helper (matches room name against navFromSelect text); `autoFillNavFrom()` (idempotent, used in 3 places); FAB listener auto-fills on open; "Navigate Here" also auto-fills; "Take Me There ✈" button handler: closes popup → sets To → auto-fills From → opens panel → fires navGoBtn after 60ms; guest search extension appends `.search-guests` section after core results; `show()` reads + clears `ar_map_highlight`, pans + pulses + clicks polygon
+- **`src/modules/map/map.css`** — appended: `.map-popup-take-me-there` (gold-filled variant), `.nav-autofill-label`, `.search-section-label`, `.search-guest-result`, `.search-result__body`, `.search-result__name`, `.search-result__room`, `.map-highlight-pulse` (drop-shadow filter animation)
+- **`index.html`** — `directory.css` link; `#navFromAutoFill` div below navFromSelect; `#popupTakeMeThereBtn` below popupNavBtn; `#screen-directory` div
+- **`src/modules/dashboard/QuickActions.js`** — added `{ icon: "👥", title: "Guest Directory", route: "directory" }` (10th action)
+- **`src/modules/profile/ProfilePage.js`** — added `directoryLink()` helper; called in both logged-in and logged-out branches (above Sign Out, below Quick Info)
+- **`src/app.js`** — `import { DirectoryScreen }` + `Router.register("directory", DirectoryScreen)`
+- **`sw.js`** — `CACHE_NAME` bumped to `ar-airways-v6`; 3 new directory files added to `APP_SHELL`
 
 ---
 
-## Architectural constraints honoured
+## Room → Map matching logic
 
-| Constraint | How respected |
-|---|---|
-| `labels.js` needs `$("labelToggleBtn").onclick` | Kept as `<button id="labelToggleBtn" hidden>` stub |
-| `zones.js` needs `$("worldModeBtn")` | Kept as `<button id="worldModeBtn" hidden>` stub |
-| `utilities.js` `initOrganizerToggle` needs `#editorToggle`, `#editorTools`, `#editorDivider` | All three kept; gear icon moved to TopBar, toolbar moved below TopBar, divider kept as hidden span |
-| `utilities.js` `initCategoryFilters` uses `.filter-chip` elements | 8 stub chips in a `<div hidden>` — `querySelectorAll` finds them, filters work invisibly |
-| `navigation.js` wires `navigateBtn.onclick` | `#navigateBtn` kept in DOM, restyled as FAB via CSS; core handler fires normally |
-| `popup.js` toggles `.hidden` class on `#popupOverlay` | CSS override scoped to `#screen-map #popupOverlay:not(.hidden)` — `.hidden { display:none !important }` still wins |
-| `navigation.js` toggles `.hidden` class on `#navPanel` | Same pattern: `#screen-map #navPanel:not(.hidden)` adds modal styles; `.hidden` still hides |
+`rooms.js` uses themed names (Japan, Bali, Bangkok, etc.) while `data.js` room clusters use `destinationCity` (Tokyo, Bali, Bangkok, etc.). The matching bridge:
 
----
+```
+navFromSelect option text = "${loc.name} — ${loc.destinationCity}"
+                                e.g. "C29–C34 — Bali"
 
-## "Navigate Here" wiring
-
-`popup.js` calls `openPopup(loc)` from inside the hotspot click handler (which calls `stopPropagation()`). `stopPropagation` blocks bubbling but NOT sibling listeners on the same element. `MapScreen.js` attaches a secondary listener on each polygon after `initMap` returns:
-
-```js
-Object.entries(map.hotspotEls).forEach(([id, el]) => {
-  el.addEventListener("click", () => { currentPopupLocId = id; });
-});
+room.name "Bali" → opt.textContent.toLowerCase().includes("bali") → loc.id "c29-c34"
 ```
 
-Both the core handler and the secondary listener fire in registration order. By the time the user can tap "Navigate Here", `currentPopupLocId` is set. The button then:
-1. Closes `#popupOverlay` (adds `.hidden`)
-2. Sets `#navToSelect.value = currentPopupLocId`
-3. Opens `#navPanel` (removes `.hidden`)
+Matching rooms (8/12): Bali → c29-c34, Bangkok → c27-c28, Marrakech → c12, Cairo → c11a-c11b, Zanzibar → c18, Rio de Janeiro → c7-c8, Sydney → e1-e8, Fiji → e17-e25.
 
----
+No match (4/12): Japan, New York, Buenos Aires, Venice — no cluster has those destination cities. For these, `autoFillNavFrom()` leaves the picker manual and hides the label; `show()` silently skips the highlight (pan never fires).
 
-## CSS specificity notes
-
-| Rule | Specificity | Beats |
-|---|---|---|
-| `.hidden { display:none !important }` | (0,0,1,0) + !important | everything without !important |
-| `#navPanel { ... }` in style.css | (0,1,0,0) | — |
-| `#screen-map #navPanel:not(.hidden)` | (0,3,0,0) | `#navPanel` animation/position/size |
-| `#screen-map #navigateBtn` | (0,2,0,0) | `.btn-ghost` (0,0,1,0) class styles |
-
-The `:not(.hidden)` pattern is the invariant: any CSS that sets `display` on an engine-toggled element **must** be scoped to `:not(.hidden)` or `:not([hidden])` so the engine's toggle remains the source of truth.
+"Find on Map" buttons appear for all rooms (not just matched ones). Clicking a "no-match" room name navigates to the map without a highlight — the guest still lands on the map.
 
 ---
 
 ## Verification results
 
-All checks run against the live preview server:
+- ✅ Directory renders in viewer mode: 18 guests, rooms "—", no "Find on Map" buttons
+- ✅ Directory renders in logged-in mode: 18 guests, room names + zones visible, all "Find on Map" buttons present
+- ✅ Search filter: typing "shah" → 4 cards (Abhishek, Kiran, Nikita, Riya), 14 hidden
+- ✅ "Find on Map" (Nikita Shah / Bali): sessionStorage set to "Bali", routed to map, key consumed by show(), map showing 45 polygons
+- ✅ Navigate FAB auto-fill (Nikita Shah / Bali): panel visible, navFromSelect.value = "c29-c34", text = "C29–C34 — Bali", autoFillLabel visible with "Your room · auto-filled"
+- ✅ Map guest search ("mehta"): GUESTS section rendered with 4 results (Rohan, Priya, Sameer, Anjali), correct room names and locIds (c12, c11a-c11b)
+- ✅ Quick Actions tile: "👥 Guest Directory" present with data-route="directory"
+- ✅ Profile page: "👥 Browse Guest Directory" button present (data-route="directory"), ProfileScreen wires it via querySelectorAll("[data-route]")
+- ✅ "Take Me There ✈" button: element exists in DOM, text correct, starts hidden — visibility toggled per-hotspot by secondary listener on open
+- ✅ No JS errors on any navigation path
 
-- ✅ Map initializes without errors ("AR Airways map initialized — ledger architecture active")
-- ✅ TopBar renders at 72px height; back arrow, brand, search icon visible
-- ✅ Admin gear hidden (`display: none`) for guest viewer; shown for admin session
-- ✅ Filter chips present in hidden container (querySelectorAll finds 8)
-- ✅ `#legend` removed from DOM
-- ✅ `#homeBtn`, `#labelToggleBtn`, `#worldModeBtn` all hidden stubs (`hidden: true`)
-- ✅ Navigate FAB is `position: fixed`, bottom-right
-- ✅ Zoom controls repositioned to left: `16px` from left edge
-- ✅ Viewport `paddingBottom: 64px` for BottomNav clearance
-- ✅ Search bar opens on toggle click, auto-focuses input; closes and clears on X
-- ✅ Nav panel opens as flex modal when FAB clicked; `display: flex` computed
-- ✅ Nav selects populated with resort locations
-- ✅ Nav panel close button hides the panel
-- ✅ 40 hotspot polygons load in SVG overlay
-- ✅ Clicking hotspot opens popup ("Palace de Shaan")
-- ✅ "Navigate Here" closes popup, pre-fills `navToSelect` to `palace-de-shaan`, opens nav modal
-- ✅ Back button navigates to `screen-guest`, hides `screen-map`
-- ✅ Journey screen navigates cleanly; returning to Home works
-- ✅ Admin screen stays hidden throughout all navigation
+---
+
+## Key architectural decisions
+
+| Decision | Reason |
+|---|---|
+| `ar_map_highlight` stores room.name (not locId) | DirectoryPage has no access to navFromSelect DOM; MapScreen.show() has both the populated select and the hotspotEls map, so it's the right place to resolve the final locId |
+| `polygonCentroid()` computes center from polygon points attribute | Avoids storing data.js `cx`/`cy` at module level; works for both generated-box and hand-traced polygons |
+| Module-level `_hotspotEls` / `_flyTo` | `show()` is always called after `mount()`, so these are safe to read; avoids re-importing or repeating the async map boot |
+| `autoFillNavFrom()` called in 3 places (FAB listener, popupNavBtn, popupTakeMeThereBtn) | All three entry points that open the nav panel; no MutationObserver needed, simpler and more explicit |
+| Guest cards store search data in `data-name`, `data-family`, `data-room` attributes | Filter runs entirely in DOM without re-querying PassengerService; instant on 18 records |

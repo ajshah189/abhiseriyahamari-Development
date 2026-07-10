@@ -22,6 +22,7 @@ import { PassportScreen } from "./modules/passport/PassportScreen.js";
 import { AdminScreen } from "./modules/admin/AdminScreen.js";
 import { HuntScreen } from "./modules/hunt/HuntScreen.js";
 import { HuntClaimScreen } from "./modules/hunt/HuntClaimScreen.js";
+import { DirectoryScreen } from "./modules/directory/DirectoryScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
 import { initBell } from "./modules/notifications/NotificationService.js";
 
@@ -50,6 +51,7 @@ class App {
         Router.register("admin", AdminScreen);
         Router.register("hunt", HuntScreen);
         Router.register("hunt-claim", HuntClaimScreen);
+        Router.register("directory", DirectoryScreen);
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
