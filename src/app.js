@@ -23,6 +23,7 @@ import { AdminScreen } from "./modules/admin/AdminScreen.js";
 import { HuntScreen } from "./modules/hunt/HuntScreen.js";
 import { HuntClaimScreen } from "./modules/hunt/HuntClaimScreen.js";
 import { DirectoryScreen } from "./modules/directory/DirectoryScreen.js";
+import { SettingsScreen } from "./modules/settings/SettingsScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
 import { initBell } from "./modules/notifications/NotificationService.js";
 
@@ -42,9 +43,7 @@ class App {
         Router.register("rewards", RewardsScreen.forView("rewards"));
         Router.register("leaderboard", RewardsScreen.forView("leaderboard"));
         Router.register("profile", ProfileScreen);
-        // Settings has no dedicated screen yet — it's slated to live as a
-        // section within Profile, so route it there rather than 404.
-        Router.register("settings", ProfileScreen);
+        Router.register("settings", SettingsScreen);
         Router.register("passport", PassportScreen);
         // Not in BottomNav, not a ComingSoon fallback — organiser-only,
         // reached via the hidden trigger on the Profile avatar.
@@ -60,6 +59,12 @@ class App {
         // Bell wired after all screens are registered so a failure here
         // cannot prevent routing.
         initBell();
+
+        // TopBar icon delegation — survives re-renders on any screen
+        document.addEventListener("click", (e) => {
+          if (e.target.closest("[data-dir-btn]"))      Router.go("directory");
+          if (e.target.closest("[data-settings-btn]")) Router.go("settings");
+        });
 
         // Parse URL params once — before any routing decision.
         const urlParams = new URLSearchParams(window.location.search);

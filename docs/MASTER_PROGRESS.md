@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-10 July 2026 (Session 4)
+11 July 2026 (Session 5)
 
 Current Version:
-v0.3
+v0.4
 
 Current Phase:
 Phase 1 – Foundation
@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-78%
+88%
 
 Project Status:
 🟡 Active Development
@@ -53,7 +53,10 @@ main
 | Map Navigation UX | 🟢 Completed | 100% |
 | CSV Guest Import | 🟢 Completed | 100% |
 | PWA Icons | 🟢 Completed | 100% |
-| Analytics | ⚪ Not Started | 0% |
+| Settings | 🟢 Completed | 100% |
+| Guest Search in Navigate | 🟢 Completed | 100% |
+| Directory Prominence | 🟢 Completed | 100% |
+| Analytics | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---
@@ -233,6 +236,48 @@ main
 ✅ Profile page: "👥 Browse Guest Directory" button above Sign Out; also present in the logged-out (viewer) state
 
 ✅ App wiring: `DirectoryScreen` registered in `app.js`; `#screen-directory` in `index.html`; `directory.css` linked; service worker bumped to `ar-airways-v6` with all 3 new directory files in `APP_SHELL`
+
+## Settings Page
+
+✅ `src/modules/settings/SettingsPage.js` — pure HTML renderer, 4 sections: Profile Settings (display name, avatar color picker with 6 gold/coral/emerald/sapphire/amethyst/rose presets, read-only passport number), Notifications (3 toggles for events/miles/leaderboard → `ar_notif_prefs`), App (reduce motion toggle → `ar_reduce_motion` + `.reduce-motion` on `<html>`, app version info), Data & Privacy (clear cache = unregister SW + clear caches + reload, clear activity = filter current guest's ledger entries, sign out)
+
+✅ `src/modules/settings/SettingsScreen.js` — mount/show/hide router adapter; re-renders on every `show()` so prefs always reflect latest state; `bindEvents()` handles all interactions: live display-name save on input, avatar swatch selected-ring toggle, notif toggle `change` → `ar_notif_prefs`, reduce-motion toggle → `document.documentElement` class, danger buttons with `confirm()` guards
+
+✅ `src/modules/settings/settings.css` — matches Profile card style; `.settings-section` panels, `.settings-row` flex rows with border-bottom dividers, pure CSS toggle switch (`.settings-toggle__track`), `.settings-color-swatch` with gold ring on selected, `.settings-section--danger` red-tinted border, `.settings-danger-btn` / `.settings-signout-btn`, `.reduce-motion` global class disabling all transitions/animations
+
+✅ Settings wired into app: `SettingsScreen` registered in `app.js` (replaces old ProfileScreen stub), `#screen-settings` in `index.html`, `settings.css` linked, SW bumped to `v13` with all 3 new files in `APP_SHELL`
+
+✅ Gear icon (⚙️) in TopBar now has `data-settings-btn` attribute; event delegation in `app.js` routes to `"settings"` — wires globally, survives re-renders on any screen
+
+## Directory Prominence
+
+✅ 👥 directory button added to TopBar on every non-admin, non-map screen — only rendered when not in viewer mode (`!isViewer`); `data-dir-btn` attribute; event delegation in `app.js` routes to `"directory"`
+
+✅ Map hides the 👥 button via `#screen-map .top-icon--dir { display: none; }` in `map.css` — map has its own search, no duplication
+
+## Guest Search in Navigate
+
+✅ `addGuestOptgroups(selectEl, which)` in `MapScreen.js` — called after `initNavigation()` has populated both selects; wraps existing options in `<optgroup label="📍 Locations">`, appends `<optgroup label="👤 Guests">` with options formatted as "Name · Room {cottage}" and value `guest-{id}`
+
+✅ `change` listener on each select resolves `guest-{id}` → `rooms.find(r => r.id === guest.roomId)` → `findNavLocId(room.name)` → stores result in module-level `_navGuestOverride.{which}`; null if room name not found in map locations
+
+✅ Capture-phase `click` listener on `#navGoBtn` — fires before core engine's bubbling handler; swaps any `guest-{id}` value to the resolved location ID, or calls `stopImmediatePropagation()` + `alert("Room not mapped…")` if override is null; `"from"` check runs first, short-circuits to same `blocked` guard for `"to"`
+
+## Admin Analytics
+
+✅ 7th nav section "Analytics" added to Admin Ground Crew tool (`AdminPage.js`)
+
+✅ Engagement Overview: transactions today count, peak hour (most-active hour by tx count), avg AR Miles per guest (total balance ÷ guest count), 0-mile guest count
+
+✅ Top Performers: pure-CSS horizontal bar chart, top 5 guests by balance from `LeaderboardService.getOverall()` — bar width computed as `(balance / topBalance * 100)%` inline style
+
+✅ Treasure Hunt Stats: total scan count (HUNT_DISCOVERY transactions), most-found and least-found locations (from `getFoundLocations()` across all guests), completion rate (guests who found ≥1 / total guests)
+
+✅ Family Engagement: horizontal bar chart per family group, bar width proportional to family's total balance share
+
+✅ Activity Timeline: 24-column vertical bar chart (one per hour 00–23), height proportional to that hour's transaction count; today's data only
+
+✅ Pure CSS bar charts — `.analytics-bar-track` + `.analytics-bar-fill` (inline `width:%`) for horizontal; `.analytics-timeline-bar` (inline `height:px`) for vertical; no Chart.js, no D3, no external dependencies
 
 ## Map UI Remake
 
@@ -482,7 +527,7 @@ Interactive Map
 
 ✅ QR Missions / Treasure Hunt
 
-⬜ Analytics
+✅ Analytics
 
 ⬜ Performance Testing
 

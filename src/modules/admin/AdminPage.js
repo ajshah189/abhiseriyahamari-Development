@@ -15,16 +15,18 @@ import LeaderboardService from "../../services/leaderboardService.js";
 import RewardService from "../../services/rewardService.js";
 import GuestDatabaseService from "../../services/guestDatabaseService.js";
 import { EVENTS } from "../../data/events.js";
+import { families } from "../../data/families.js";
 import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
-import { HUNT_LOCATIONS } from "../../data/treasureHunt.js";
+import { HUNT_LOCATIONS, getFoundLocations } from "../../data/treasureHunt.js";
 
 const NAV_ITEMS = [
-  { id: "overview", label: "Overview" },
-  { id: "award", label: "Award Miles" },
-  { id: "guests", label: "Guests" },
-  { id: "redemptions", label: "Redemptions" },
-  { id: "qrcodes", label: "QR Codes" },
-  { id: "import", label: "Import Guests" },
+  { id: "overview",   label: "Overview" },
+  { id: "award",      label: "Award Miles" },
+  { id: "guests",     label: "Guests" },
+  { id: "redemptions",label: "Redemptions" },
+  { id: "qrcodes",    label: "QR Codes" },
+  { id: "import",     label: "Import Guests" },
+  { id: "analytics",  label: "Analytics" },
 ];
 
 const AMOUNT_PRESETS = [50, 100, 200, 500, 1000];
@@ -150,7 +152,7 @@ function guestRow(state, entry) {
       <button class="guest-row__summary" data-guest-row="${guest.id}">
         <span class="guest-row__name">${guest.displayName}</span>
         <span class="guest-row__family">${family?.name || "—"}</span>
-        <span class="guest-row__room">${room ? `Room ${room.number} · ${room.zone}` : "—"}</span>
+        <span class="guest-row__room">${room ? `Room ${room.cottage} · ${room.zone} Zone` : "—"}</span>
         <span class="guest-row__balance">${MilesService.format(balance)} ✈</span>
         <span class="tier-badge">${tier}</span>
       </button>
@@ -408,15 +410,182 @@ function importSection(state) {
   `;
 }
 
+// ---------- Analytics ----------
+
+function bar(value, max, label, sublabel) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+  return `
+    <div class="analytics-bar-item">
+      <div class="analytics-bar-label-row">
+        <span class="analytics-bar-name">${label}</span>
+        <span class="analytics-bar-value">${sublabel}</span>
+      </div>
+      <div class="analytics-bar-track">
+        <div class="analytics-bar-fill" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+}
+
+function analyticsSection() {
+  const guests = GuestDatabaseService.getAll();
+  const ledger = MilesService.getFullLedger();
+  const balances = MilesService.getAllBalances();
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const todayTxs = ledger.filter(tx => tx.createdAt >= todayStart && tx.amount > 0);
+
+  // ── Engagement Overview ──────────────────────────────────────────────────
+  const totalToday = todayTxs.length;
+  const hourCounts = Array(24).fill(0);
+  todayTxs.forEach(tx => { hourCounts[new Date(tx.createdAt).getHours()]++; });
+  const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
+  const peakHourLabel = totalToday > 0
+    ? `${peakHour}:00 – ${peakHour + 1}:00` : "—";
+  const totalMiles = Object.values(balances).reduce((s, b) => s + Math.max(0, b), 0);
+  const avgMiles = guests.length > 0 ? Math.round(totalMiles / guests.length) : 0;
+  const zeroGuests = guests.filter(g => !balances[g.id] || balances[g.id] <= 0).length;
+
+  // ── Top 5 Performers ─────────────────────────────────────────────────────
+  const top5 = LeaderboardService.getOverall().slice(0, 5);
+  const maxBalance = top5[0]?.balance || 1;
+
+  // ── Treasure Hunt Stats ──────────────────────────────────────────────────
+  const huntCounts = {};
+  HUNT_LOCATIONS.forEach(loc => { huntCounts[loc.id] = 0; });
+  guests.forEach(g => {
+    getFoundLocations(g.id).forEach(huntId => {
+      if (huntCounts[huntId] !== undefined) huntCounts[huntId]++;
+    });
+  });
+  const totalScans = Object.values(huntCounts).reduce((s, n) => s + n, 0);
+  const huntScans = todayTxs.filter(tx => tx.kind === "HUNT_DISCOVERY").length;
+  const sortedHunts = HUNT_LOCATIONS
+    .map(loc => ({ ...loc, count: huntCounts[loc.id] }))
+    .sort((a, b) => b.count - a.count);
+  const mostFound = sortedHunts[0];
+  const leastFound = sortedHunts[sortedHunts.length - 1];
+  const completionCount = guests.filter(g => getFoundLocations(g.id).length >= 5).length;
+
+  // ── Family Engagement ────────────────────────────────────────────────────
+  const familyTotals = {};
+  families.forEach(f => { familyTotals[f.id] = 0; });
+  guests.forEach(g => {
+    if (g.familyId && familyTotals[g.familyId] !== undefined) {
+      familyTotals[g.familyId] += Math.max(0, balances[g.id] || 0);
+    }
+  });
+  const sortedFamilies = families
+    .map(f => ({ ...f, total: familyTotals[f.id] || 0 }))
+    .sort((a, b) => b.total - a.total);
+  const maxFamilyTotal = sortedFamilies[0]?.total || 1;
+
+  // ── Activity Timeline (hourly, today) ────────────────────────────────────
+  const maxHourly = Math.max(...hourCounts, 1);
+
+  return `
+    <section class="dashboard-section">
+      <h3>Analytics</h3>
+
+      <div class="analytics-group-title">Engagement Overview</div>
+      <div class="admin-stat-grid">
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${totalToday}</div>
+          <div class="admin-stat-card__label">Transactions Today</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value" style="font-size:16px">${peakHourLabel}</div>
+          <div class="admin-stat-card__label">Most Active Hour</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${MilesService.format(avgMiles)}</div>
+          <div class="admin-stat-card__label">Avg Miles / Guest</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${zeroGuests}</div>
+          <div class="admin-stat-card__label">Guests at 0 Miles</div>
+        </div>
+      </div>
+
+      <div class="analytics-group-title">Top Performers</div>
+      <div class="analytics-bars">
+        ${top5.length
+          ? top5.map(e => bar(e.balance, maxBalance, e.name.split(" ")[0], `${MilesService.format(e.balance)} ✈`)).join("")
+          : `<p class="muted">No miles awarded yet.</p>`}
+      </div>
+
+      <div class="analytics-group-title">Treasure Hunt</div>
+      <div class="admin-stat-grid">
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${huntScans}</div>
+          <div class="admin-stat-card__label">Scans Today</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${totalScans}</div>
+          <div class="admin-stat-card__label">Total Discoveries</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${completionCount}</div>
+          <div class="admin-stat-card__label">Found 5+ Locations</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-card__value">${HUNT_LOCATIONS.length}</div>
+          <div class="admin-stat-card__label">Total Locations</div>
+        </div>
+      </div>
+      <div class="analytics-bars" style="margin-top:var(--s-4)">
+        ${mostFound ? `
+          <div class="analytics-hunt-row analytics-hunt-row--top">
+            <span class="analytics-hunt-icon">${mostFound.icon}</span>
+            <div class="analytics-hunt-body">
+              <div class="analytics-hunt-name">Most found: <strong>${mostFound.name}</strong></div>
+              <div class="analytics-hunt-sub">${mostFound.count} discoveries · ${mostFound.location}</div>
+            </div>
+          </div>
+        ` : ""}
+        ${leastFound && leastFound.id !== mostFound?.id ? `
+          <div class="analytics-hunt-row">
+            <span class="analytics-hunt-icon">${leastFound.icon}</span>
+            <div class="analytics-hunt-body">
+              <div class="analytics-hunt-name">Least found: <strong>${leastFound.name}</strong></div>
+              <div class="analytics-hunt-sub">${leastFound.count} discoveries · ${leastFound.location}</div>
+            </div>
+          </div>
+        ` : ""}
+      </div>
+
+      <div class="analytics-group-title">Family Engagement</div>
+      <div class="analytics-bars">
+        ${sortedFamilies.map(f =>
+          bar(f.total, maxFamilyTotal, f.name, `${MilesService.format(f.total)} ✈`)
+        ).join("")}
+      </div>
+
+      <div class="analytics-group-title">Activity Timeline — Today</div>
+      <div class="analytics-timeline">
+        ${hourCounts.map((count, h) => `
+          <div class="analytics-timeline-col">
+            <div class="analytics-timeline-bar" style="height:${maxHourly > 0 ? Math.max(2, Math.round((count / maxHourly) * 90)) : 2}px"
+                 title="${h}:00 — ${count} tx"></div>
+            <div class="analytics-timeline-label">${h % 6 === 0 ? h + "h" : ""}</div>
+          </div>
+        `).join("")}
+      </div>
+      <p class="muted" style="margin-top:var(--s-3);font-size:12px">Showing positive transactions only. Times in local time.</p>
+    </section>
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
-  overview: overviewSection,
-  award: awardSection,
-  guests: guestsSection,
+  overview:    overviewSection,
+  award:       awardSection,
+  guests:      guestsSection,
   redemptions: redemptionsSection,
-  qrcodes: qrCodesSection,
-  import: importSection,
+  qrcodes:     qrCodesSection,
+  import:      importSection,
+  analytics:   analyticsSection,
 };
 
 export function AdminPage(state) {

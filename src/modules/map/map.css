@@ -10,7 +10,9 @@
    Map TopBar — standard .top-bar, needs position:fixed override
    (layout.css uses sticky; map needs fixed so it stays above the
    absolutely-positioned map viewport)
+   Map has its own search — hide the directory icon
    ========================================================== */
+#screen-map .top-icon--dir { display: none; }
 #screen-map .top-bar {
   position: fixed;
   top: 0; left: 0; right: 0;

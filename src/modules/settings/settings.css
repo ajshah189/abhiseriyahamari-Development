@@ -1,0 +1,265 @@
+/* Settings Page — matches Profile page spacing and card style */
+
+.settings-page {
+  max-width: 700px;
+  margin: auto;
+  padding: var(--s-6) var(--s-6) 140px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.settings-section {
+  background: var(--panel);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-5);
+  box-shadow: var(--shadow-2);
+}
+
+.settings-section__title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: var(--s-4);
+  font-family: var(--font-body);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-row:last-child,
+.settings-row--no-border {
+  border-bottom: none;
+}
+
+.settings-row__label {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-row__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cream);
+}
+
+.settings-row__hint {
+  font-size: 12px;
+  color: var(--cream-dim);
+  margin-top: 2px;
+}
+
+.settings-row__value {
+  font-size: 14px;
+  color: var(--cream-dim);
+  flex-shrink: 0;
+}
+
+.settings-row__value--mono {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+
+/* --- Input --- */
+
+.settings-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--night-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--cream);
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.settings-input:focus {
+  border-color: var(--gold-soft);
+}
+
+/* --- Colour picker --- */
+
+.settings-color-picker {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.settings-color-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.settings-color-swatch:hover {
+  transform: scale(1.12);
+}
+
+.settings-color-swatch--selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212,175,106,0.3), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* --- Toggle switch --- */
+
+.settings-toggle {
+  flex-shrink: 0;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  display: block;
+  cursor: pointer;
+}
+
+.settings-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle__track {
+  position: absolute;
+  inset: 0;
+  background: var(--night-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  transition: background var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+}
+
+.settings-toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--cream-faint);
+  transition: transform var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out);
+}
+
+.settings-toggle__input:checked + .settings-toggle__track {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.settings-toggle__input:checked + .settings-toggle__track::after {
+  transform: translateX(18px);
+  background: var(--night);
+}
+
+/* --- Notification warning --- */
+
+.settings-notif-warning {
+  font-size: 13px;
+  color: var(--cream-dim);
+  background: var(--night-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+}
+
+/* --- App info --- */
+
+.settings-app-info {
+  font-size: 13px;
+  color: var(--cream-dim);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.settings-app-version {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* --- Danger section --- */
+
+.settings-section--danger {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.settings-section--danger .settings-section__title {
+  color: #ef4444;
+}
+
+.settings-danger-btn {
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: transparent;
+  color: #ef4444;
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+}
+
+.settings-danger-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.settings-signout-btn {
+  width: 100%;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--cream-dim);
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out);
+}
+
+.settings-signout-btn:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* --- Reduce motion --- */
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (max-width: 650px) {
+  .settings-page {
+    padding: var(--s-4) var(--s-4) 140px;
+  }
+}

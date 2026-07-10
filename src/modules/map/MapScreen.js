@@ -10,12 +10,57 @@ import Router from "../../router.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 import PassengerService from "../../services/passengerService.js";
+import GuestDatabaseService from "../../services/guestDatabaseService.js";
+import { rooms } from "../../data/rooms.js";
 
 let container = null;
 
 // Stored during mount() so show() can pan/highlight without re-importing
 let _hotspotEls = {};
 let _flyTo = null;
+
+// Resolved location IDs when a guest is selected in the nav selects
+const _navGuestOverride = { from: null, to: null };
+
+// Wrap existing select options in a Locations optgroup, then append a Guests optgroup.
+// Called once after initNavigation() has populated the selects.
+function addGuestOptgroups(selectEl, which) {
+  const existing = Array.from(selectEl.options);
+  if (!existing.length) return;
+
+  const locGroup = document.createElement("optgroup");
+  locGroup.label = "📍 Locations";
+  existing.forEach(opt => locGroup.appendChild(opt.cloneNode(true)));
+
+  const guestGroup = document.createElement("optgroup");
+  guestGroup.label = "👤 Guests";
+  GuestDatabaseService.getAll().forEach(g => {
+    const room = rooms.find(r => r.id === g.roomId);
+    const opt = document.createElement("option");
+    opt.value = `guest-${g.id}`;
+    opt.textContent = room
+      ? `${g.displayName} · Room ${room.cottage}`
+      : g.displayName;
+    guestGroup.appendChild(opt);
+  });
+
+  selectEl.innerHTML = "";
+  selectEl.appendChild(locGroup);
+  selectEl.appendChild(guestGroup);
+
+  // Resolve guest selection to a location ID
+  selectEl.addEventListener("change", () => {
+    const val = selectEl.value;
+    if (!val.startsWith("guest-")) {
+      _navGuestOverride[which] = null;
+      return;
+    }
+    const guestId = val.slice(6);
+    const guest = GuestDatabaseService.getById(guestId);
+    const room = guest ? rooms.find(r => r.id === guest.roomId) : null;
+    _navGuestOverride[which] = room ? (findNavLocId(room.name) || null) : null;
+  });
+}
 
 // Average of polygon point pairs → [cx, cy] in map-image coordinate space
 function polygonCentroid(el) {
@@ -132,6 +177,41 @@ async function mount() {
   state.closeRoadEdit = navigation.closeRoadEdit;
   state.closeEntryEdit = navigation.closeEntryEdit;
   state.routeAnchor = navigation.routeAnchor;
+
+  // ── Guest optgroups in navigate selects ──────────────────────────────────
+  // initNavigation has already populated the selects; wrap them with optgroups
+  // and add a Guests group. A capture-phase click on navGoBtn swaps any
+  // "guest-{id}" value to the resolved location ID before the core handler fires.
+  const navFromSel = document.getElementById("navFromSelect");
+  const navToSel   = document.getElementById("navToSelect");
+  if (navFromSel) addGuestOptgroups(navFromSel, "from");
+  if (navToSel)   addGuestOptgroups(navToSel,   "to");
+
+  document.getElementById("navGoBtn")?.addEventListener("click", (e) => {
+    let blocked = false;
+    if (navFromSel?.value?.startsWith("guest-")) {
+      if (_navGuestOverride.from) {
+        navFromSel.value = _navGuestOverride.from;
+      } else {
+        e.stopImmediatePropagation();
+        blocked = true;
+        // Reset so user can try again
+        navFromSel.value = navFromSel.options[0]?.value || "";
+        _navGuestOverride.from = null;
+        alert("Room not mapped — guest's room has no matching location on this map.");
+      }
+    }
+    if (!blocked && navToSel?.value?.startsWith("guest-")) {
+      if (_navGuestOverride.to) {
+        navToSel.value = _navGuestOverride.to;
+      } else {
+        e.stopImmediatePropagation();
+        navToSel.value = navToSel.options[0]?.value || "";
+        _navGuestOverride.to = null;
+        alert("Room not mapped — guest's room has no matching location on this map.");
+      }
+    }
+  }, true); // capture phase: fires before core's bubbling listener
 
   // ── BottomNav ────────────────────────────────────────────────────────────
   const navWrapper = document.createElement("div");
