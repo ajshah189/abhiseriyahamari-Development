@@ -2,6 +2,22 @@ import PassengerService from "../../services/passengerService.js";
 import { initials, colorFromName } from "../../modules/leaderboard/LeaderboardCard.js";
 import { getHistory } from "../../modules/notifications/NotificationService.js";
 
+function getWeddingPill() {
+  const now   = new Date();
+  const day1  = new Date("2027-01-22T00:00:00+05:30");
+  const day2  = new Date("2027-01-23T00:00:00+05:30");
+  const day3  = new Date("2027-01-24T00:00:00+05:30");
+  const after = new Date("2027-01-25T00:00:00+05:30");
+
+  if (now >= after) return "Thank you for flying ✈";
+  if (now >= day3)  return "Day 3 of 3 ✈";
+  if (now >= day2)  return "Day 2 of 3 ✈";
+  if (now >= day1)  return "Day 1 of 3 ✈";
+
+  const days = Math.ceil((day1 - now) / (1000 * 60 * 60 * 24));
+  return `🎉 Wedding in ${days} day${days !== 1 ? "s" : ""}`;
+}
+
 export function TopBar() {
   const now = new Date();
   const greeting =
@@ -36,7 +52,7 @@ export function TopBar() {
 
   <div class="top-center">
     <div class="weather">☀️ 29°C</div>
-    <div class="countdown">🎉 Wedding in 198 Days</div>
+    <div class="countdown">${getWeddingPill()}</div>
   </div>
 
   <div class="top-right">

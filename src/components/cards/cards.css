@@ -79,6 +79,14 @@
   color: var(--gold);
 }
 
+.miles-empty-hint {
+  margin-top: var(--s-2);
+  font-size: 12px;
+  color: var(--cream-faint);
+  font-style: italic;
+  line-height: 1.5;
+}
+
 .progress label {
   display: block;
   margin-bottom: var(--s-2);

@@ -13,9 +13,10 @@ function hero() {
   return `
     <div class="onboarding__hero">
       <div class="onboarding__wordmark">✈</div>
-      <h1 class="onboarding__title">Welcome to AR Airways</h1>
-      <p class="onboarding__subtitle">${APP_CONFIG.coupleNames.display} — ${APP_CONFIG.weddingDate.display}</p>
-      <p class="onboarding__resort">${APP_CONFIG.resortName}</p>
+      <p class="onboarding__couple">${APP_CONFIG.coupleNames.display}</p>
+      <p class="onboarding__invite">invite you aboard</p>
+      <h1 class="onboarding__title">AR Airways</h1>
+      <p class="onboarding__subtitle">Your journey begins at ${APP_CONFIG.resortName}<br>22 · 23 · 24 January 2027</p>
     </div>
   `;
 }
@@ -34,7 +35,7 @@ function passportEntry(state) {
         value="${state.passportNumber}"
         autocomplete="off"
         data-passport-input />
-      <p class="onboarding__hint">Found on your boarding pass</p>
+      <p class="onboarding__hint">Your passport number is on your physical boarding pass 🎫</p>
       ${state.error ? `<p class="onboarding__error">${state.error}</p>` : ""}
       <button class="onboarding__cta" ${disabled ? "disabled" : ""} data-board-btn>Board Flight →</button>
     </div>
@@ -49,7 +50,7 @@ function viewerAccess() {
   return `
     <div class="onboarding__viewer-wrap">
       <button class="onboarding__viewer" data-viewer-btn>Continue as Guest Viewer</button>
-      <p class="onboarding__viewer-subtitle">Browse the schedule and venue map without a personalised experience</p>
+      <p class="onboarding__viewer-subtitle">Browse the schedule and map · No passport needed</p>
     </div>
   `;
 }

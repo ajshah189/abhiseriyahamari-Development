@@ -87,6 +87,18 @@ export function HuntPage(activeDay) {
         `).join("")}
       </div>
 
+      ${isLoggedIn && totalFound === 0 ? `
+        <div class="empty-state" style="margin:var(--s-4) 0">
+          <div class="empty-state__icon">🗺</div>
+          <p class="empty-state__title">No locations discovered yet.</p>
+          <p class="empty-state__subtitle">
+            Your first clue:<br>
+            <em>"Where the journey begins for every passenger"</em><br>
+            <span style="color:var(--cream-faint);font-size:12px">(Hint: look near the Main Gate)</span>
+          </p>
+        </div>
+      ` : ""}
+
       <div class="hunt-location-list">
         ${locationsForDay.map(loc => locationCard(loc, found.includes(loc.id))).join("")}
       </div>

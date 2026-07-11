@@ -13,7 +13,7 @@ import MilesService from "../../services/milesService.js";
 import AuthService from "../../services/authService.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
-import { getSortedRewards } from "../../data/rewards.js";
+import { getSortedRewards, canAfford } from "../../data/rewards.js";
 import { RewardCard } from "./RewardCard.js";
 import { LeaderboardPage } from "../leaderboard/LeaderboardPage.js";
 
@@ -77,7 +77,16 @@ export function RewardsPage(view = "rewards") {
   } else if (!AuthService.hasAccess("rewards")) {
     content = rewardsLockedOverlay();
   } else {
-    content = `<div class="rewards-grid">${getSortedRewards().map(r => RewardCard(r, balance)).join("")}</div>`;
+    const rewards = getSortedRewards();
+    const noneAffordable = !rewards.some(r => canAfford(r, balance));
+    const earningHint = noneAffordable ? `
+      <div class="empty-state" style="margin-top:var(--s-4)">
+        <div class="empty-state__icon">✈</div>
+        <p class="empty-state__title">Earn AR Miles at events and the Treasure Hunt to unlock rewards.</p>
+        <p class="empty-state__subtitle">Check-in on 22 Jan to get started.</p>
+      </div>
+    ` : "";
+    content = `<div class="rewards-grid">${rewards.map(r => RewardCard(r, balance)).join("")}</div>${earningHint}`;
   }
 
   return `

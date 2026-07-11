@@ -24,10 +24,27 @@ const KIND_ICONS = {
   MISSION: "🔎",
   REDEEM: "🎁",
   ADMIN: "⚙️",
-  AWARD_MANUAL: "⚙️",
+  AWARD_MANUAL: "🏆",
   BONUS: "⭐",
   MANUAL: "✨",
 };
+
+const KIND_LABELS = {
+  OPENING_BALANCE: "Welcome aboard · Opening balance",
+  AWARD_MANUAL: "Award from Ground Crew",
+  HUNT_DISCOVERY: "Treasure Hunt discovery",
+};
+
+function formatActivityTime(timestamp) {
+  const d   = new Date(timestamp);
+  const now = new Date();
+  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+  if (d.toDateString() === now.toDateString()) return `Today at ${time}`;
+  const yesterday = new Date(now.getTime() - 86400000);
+  if (d.toDateString() === yesterday.toDateString()) return `Yesterday at ${time}`;
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + ` at ${time}`;
+}
 
 export function ActivityCard() {
   const passenger = PassengerService.getCurrentPassenger();
@@ -44,11 +61,17 @@ export function ActivityCard() {
   const limit = APP_CONFIG.dashboard.recentActivityLimit;
   const transactions = MilesService.getLedger(passenger.id).slice(0, limit);
 
-  if (transactions.length === 0) {
+  const hasRealActivity = transactions.some(tx => tx.kind !== "OPENING_BALANCE");
+
+  if (transactions.length === 0 || !hasRealActivity) {
     return `
       <section class="dashboard-section">
         <h3>Recent Activity</h3>
-        <p class="muted" style="padding:var(--s-4) 0">Your journey hasn't started yet.</p>
+        <div class="empty-state">
+          <div class="empty-state__icon">✈</div>
+          <p class="empty-state__title">No activity yet</p>
+          <p class="empty-state__subtitle">Your journey begins at Check-in on 22 January. See you there!</p>
+        </div>
       </section>
     `;
   }
@@ -58,14 +81,15 @@ export function ActivityCard() {
       <h3>Recent Activity</h3>
       <div class="activity-feed">
         ${transactions.map(tx => {
-          const icon = KIND_ICONS[tx.kind] || "✨";
-          const sign = tx.amount >= 0 ? "+" : "";
+          const icon  = KIND_ICONS[tx.kind] || "✨";
+          const label = KIND_LABELS[tx.kind] || tx.reason;
+          const sign  = tx.amount >= 0 ? "+" : "";
           return `
             <div class="feed-item">
               <div class="feed-icon">${icon}</div>
               <div class="feed-content">
-                <h4>${tx.reason}</h4>
-                <p>${MilesService.formatTime(tx.createdAt)}</p>
+                <h4>${label}</h4>
+                <p>${formatActivityTime(tx.createdAt)}</p>
               </div>
               <div class="feed-miles ${tx.amount < 0 ? "negative" : ""}">
                 ${sign}${MilesService.format(tx.amount)}
