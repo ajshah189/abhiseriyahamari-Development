@@ -16,7 +16,6 @@
  */
 
 import { rooms } from "../data/rooms.js";
-import { families } from "../data/families.js";
 import MilesService from "./milesService.js";
 import AuthService from "./authService.js";
 import GuestDatabaseService from "./guestDatabaseService.js";
@@ -40,7 +39,7 @@ class PassengerService {
   getPassengerFamily(id) {
     const guest = this.getPassengerById(id);
     if (!guest) return null;
-    return families.find(f => f.id === guest.familyId) || null;
+    return GuestDatabaseService.getFamilies().find(f => f.id === guest.familyId) || null;
   }
 
   /**

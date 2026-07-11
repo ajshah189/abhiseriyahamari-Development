@@ -401,7 +401,7 @@ function bindImportEvents() {
   container.querySelector("[data-import-confirm]")?.addEventListener("click", () => {
     const { preview } = state.import;
     if (!preview?.guests?.length) return;
-    GuestDatabaseService.commitImport(preview.guests);
+    GuestDatabaseService.commitImport(preview.guests, preview.families);
     state.import = {
       status: "success",
       preview: null,
