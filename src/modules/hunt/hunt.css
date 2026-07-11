@@ -383,7 +383,12 @@
   border-left: 3px solid transparent;
   border-radius: var(--r-xl);
   padding: var(--s-5);
-  transition: border-color var(--t-fast) var(--ease-out);
+  transition: border-color var(--t-fast) var(--ease-out), transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.hunt-location-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
 }
 
 .hunt-location-card--found {
@@ -408,7 +413,8 @@
 }
 
 .hunt-location-card__name {
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 700;
   color: var(--cream);
   margin-bottom: var(--s-1);
@@ -427,6 +433,7 @@
 
 .hunt-location-card__hint {
   font-size: 13px;
+  font-style: italic;
   color: var(--cream-dim, #a09070);
   line-height: 1.4;
 }

@@ -137,9 +137,24 @@
   transform: translateY(-4px);
 }
 
+@keyframes nav-bounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.nav-item:active .nav-icon {
+  transform: scale(1.15);
+}
+
 .nav-item.active {
   color: var(--gold);
   transform: translateY(-4px);
+}
+
+.nav-item.active .nav-icon {
+  animation: nav-bounce 0.3s var(--ease-out) both;
 }
 
 @media (max-width: 650px) {

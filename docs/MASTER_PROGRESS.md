@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 9)
+11 July 2026 (Session 10)
 
 Current Version:
 v0.8
@@ -52,6 +52,8 @@ main
 | Map Polish | 🟢 Completed | 100% |
 | Admin Dashboard | 🟢 Completed | 100% |
 | Admin Power Tools (Announcements + QR Check-in + Mobile Layout) | 🟢 Completed | 100% |
+| Visual Polish (Typography + Micro-animations + Passport Mobile) | 🟢 Completed | 100% |
+| Export Requests CSV + Admin UI Polish | 🟢 Completed | 100% |
 | Guest Services Concierge | 🟢 Completed | 100% |
 | Guest Directory | 🟢 Completed | 100% |
 | Map Navigation UX | 🟢 Completed | 100% |

@@ -607,6 +607,35 @@
   background: #fff;
 }
 
+/* ---------- Empty States ---------- */
+
+.admin-empty-state {
+  text-align: center;
+  padding: var(--s-8) var(--s-4);
+}
+
+.admin-empty-state__icon {
+  font-size: 40px;
+  margin-bottom: var(--s-4);
+  display: block;
+  opacity: 0.6;
+}
+
+.admin-empty-state__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: var(--s-2);
+}
+
+.admin-empty-state__hint {
+  font-size: 13px;
+  color: var(--cream-dim);
+  max-width: 280px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
 .admin-qr-info {
   width: 100%;
   text-align: center;

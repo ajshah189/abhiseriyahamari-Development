@@ -91,8 +91,10 @@
 }
 
 .stat-card__label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--cream-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .stat-card__hint {
@@ -135,7 +137,7 @@
 .transaction-row__desc {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--cream);
 }
 
@@ -143,7 +145,7 @@
   flex: 0 0 auto;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .transaction-row--earn .transaction-row__amount {

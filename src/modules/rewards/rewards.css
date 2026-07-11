@@ -102,6 +102,12 @@
   box-shadow: var(--shadow-2);
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.reward-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
 }
 
 .reward-card--featured {
@@ -115,9 +121,9 @@
   right: var(--s-4);
   background: var(--gold);
   color: var(--night);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   padding: var(--s-1) var(--s-3);
   border-radius: var(--r-pill);
@@ -130,9 +136,9 @@
 
 .reward-card__name {
   margin: 0 0 var(--s-2);
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
   color: var(--cream);
 }
 
@@ -270,6 +276,7 @@
   flex: 1;
   min-width: 0;
   font-size: 14px;
+  font-weight: 500;
   color: var(--cream);
 }
 
@@ -285,6 +292,21 @@
   font-size: 14px;
   white-space: nowrap;
 }
+
+/* Staggered entrance animation for leaderboard rows */
+@keyframes row-enter {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.leaderboard-row {
+  animation: row-enter 0.2s var(--ease-out) both;
+}
+.leaderboard-row:nth-child(1) { animation-delay:   0ms; }
+.leaderboard-row:nth-child(2) { animation-delay:  40ms; }
+.leaderboard-row:nth-child(3) { animation-delay:  80ms; }
+.leaderboard-row:nth-child(4) { animation-delay: 120ms; }
+.leaderboard-row:nth-child(5) { animation-delay: 160ms; }
+.leaderboard-row:nth-child(n+6) { animation-delay: 200ms; }
 
 /* ---------- Trophy tiers + YOU badge + rank change ---------- */
 
