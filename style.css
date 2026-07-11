@@ -111,6 +111,27 @@ button {
 
 ::selection { background: var(--gold-soft); color: var(--cream); }
 
+/* ==========================================================
+   Typography utilities
+   ========================================================== */
+.heading-display { font-family: var(--font-display); }
+.heading-section { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--cream); }
+.label-caps  { font-family: var(--font-body); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--cream-dim); }
+.text-body   { font-family: var(--font-body); font-size: 14px; color: var(--cream); }
+.text-muted  { font-family: var(--font-body); font-size: 13px; color: var(--cream-dim); }
+.text-gold   { color: var(--gold); }
+.text-tabular { font-variant-numeric: tabular-nums; }
+
+/* Button press feedback — all interactive buttons scale down on active */
+.admin-submit-btn:active,
+.hunt-claim__cta:active,
+.hunt-hero__cta:active,
+.reward-card__redeem:active,
+.onboarding__cta:active {
+  transform: scale(0.97);
+}
+.btn-ghost:active    { transform: scale(0.98); opacity: 0.88; }
+
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

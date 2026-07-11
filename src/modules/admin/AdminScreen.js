@@ -594,6 +594,57 @@ function broadcastAnnouncement() {
 
 // ---------- Requests ----------
 
+function _getRequests() {
+  try { return JSON.parse(localStorage.getItem("ar_requests") || "[]"); } catch { return []; }
+}
+
+function updateRequestStatus(requestId, newStatus) {
+  const raw = localStorage.getItem(`ar_request_status_${requestId}`) || "";
+  let existing = {};
+  try { existing = JSON.parse(raw); } catch {}
+  const updated = {
+    status: newStatus,
+    updatedAt: new Date().toISOString(),
+    completedAt: newStatus === "done"
+      ? (existing.completedAt || new Date().toISOString())
+      : (existing.completedAt || ""),
+  };
+  localStorage.setItem(`ar_request_status_${requestId}`, JSON.stringify(updated));
+  showToast("Status updated");
+}
+
+function exportRequestsCSV() {
+  const requests = _getRequests();
+  const header = ["Request ID", "Guest Name", "Room", "Request Type", "Note", "Sent At", "Status", "Completed At"];
+  const dataRows = requests.map(r => {
+    const raw = localStorage.getItem(`ar_request_status_${r.id}`) || "";
+    let status = "pending";
+    let completedAt = "";
+    try {
+      const parsed = JSON.parse(raw);
+      status      = parsed?.status      || r.status || "pending";
+      completedAt = parsed?.completedAt || "";
+    } catch {
+      status = raw || r.status || "pending";
+    }
+    return [r.id, r.guestName || "", r.room || "", r.label || "", r.note || "", r.timestamp || "", status, completedAt];
+  });
+
+  const csv = "﻿" + [header, ...dataRows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `ar-requests-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 100);
+  showToast(`Exported ${requests.length} request${requests.length !== 1 ? "s" : ""}`);
+}
+
 function bindRequestEvents() {
   const contactInput = container.querySelector("[data-events-contact]");
   container.querySelector("[data-events-contact-save]")?.addEventListener("click", () => {
@@ -602,10 +653,11 @@ function bindRequestEvents() {
     showToast("Events contact saved");
   });
 
+  container.querySelector("[data-req-export]")?.addEventListener("click", exportRequestsCSV);
+
   container.querySelectorAll("[data-req-status]").forEach(sel => {
     sel.addEventListener("change", () => {
-      localStorage.setItem(`ar_request_status_${sel.dataset.reqStatus}`, sel.value);
-      showToast("Status updated");
+      updateRequestStatus(sel.dataset.reqStatus, sel.value);
     });
   });
 }

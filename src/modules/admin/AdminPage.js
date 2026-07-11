@@ -20,16 +20,16 @@ import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
 import { HUNT_LOCATIONS, getFoundLocations } from "../../data/treasureHunt.js";
 
 const NAV_ITEMS = [
-  { id: "overview",      label: "Overview" },
-  { id: "award",         label: "Award Miles" },
-  { id: "scanner",       label: "Check-in" },
-  { id: "guests",        label: "Guests" },
-  { id: "redemptions",   label: "Redemptions" },
-  { id: "qrcodes",       label: "QR Codes" },
-  { id: "import",        label: "Import Guests" },
-  { id: "analytics",     label: "Analytics" },
-  { id: "announcements", label: "Announce" },
-  { id: "requests",      label: "Requests" },
+  { id: "overview",      label: "📊 Overview" },
+  { id: "award",         label: "✈ Award Miles" },
+  { id: "scanner",       label: "✅ Check-in" },
+  { id: "guests",        label: "👥 Guests" },
+  { id: "redemptions",   label: "🎁 Redemptions" },
+  { id: "qrcodes",       label: "📱 QR Codes" },
+  { id: "import",        label: "📥 Import Guests" },
+  { id: "analytics",     label: "📈 Analytics" },
+  { id: "announcements", label: "📢 Announce" },
+  { id: "requests",      label: "🛎 Requests" },
 ];
 
 const ANNOUNCEMENT_TEMPLATES = [
@@ -268,7 +268,11 @@ function redemptionsSection(state) {
       <div class="redemption-list">
         ${all.length
           ? all.map(r => redemptionRow(state, r)).join("")
-          : `<p class="muted">No rewards redeemed yet.</p>`}
+          : `<div class="admin-empty-state">
+              <div class="admin-empty-state__icon">🎁</div>
+              <div class="admin-empty-state__title">No redemptions yet</div>
+              <div class="admin-empty-state__hint">When guests redeem rewards, they'll appear here for fulfillment.</div>
+            </div>`}
       </div>
     </section>
   `;
@@ -617,7 +621,7 @@ function scannerSection(state) {
         <input
           class="admin-input scanner-manual-input"
           type="text"
-          placeholder="AR-Japan-S"
+          placeholder="e.g. AR-501-S"
           value="${sc.passportInput}"
           data-scanner-input />
         <button class="admin-submit-btn scanner-manual-btn" data-scanner-checkin>Check In</button>
@@ -748,9 +752,20 @@ function requestsSection() {
         <button class="admin-events-contact-save" data-events-contact-save>Save</button>
       </div>
 
+      ${requests.length
+        ? `<button class="admin-ghost-btn" style="margin-bottom:var(--s-4)" data-req-export>📥 Export as CSV</button>`
+        : ""}
+
       <div style="margin-top:var(--s-2)">
         ${requests.length ? requests.map(r => {
-          const status = localStorage.getItem(`ar_request_status_${r.id}`) || r.status || "pending";
+          const raw = localStorage.getItem(`ar_request_status_${r.id}`) || "";
+          let status = "pending";
+          try {
+            const parsed = JSON.parse(raw);
+            status = parsed?.status || r.status || "pending";
+          } catch {
+            status = raw || r.status || "pending";
+          }
           return `
             <div class="admin-request-row">
               <div class="admin-request-row__info">

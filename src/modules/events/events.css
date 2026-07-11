@@ -89,7 +89,7 @@
 
 .flight-code {
   font-size: 11px;
-  letter-spacing: 2px;
+  letter-spacing: 0.08em;
   color: var(--cream-faint);
   text-transform: uppercase;
   margin-bottom: var(--s-1);
@@ -140,9 +140,9 @@
 }
 
 .status-badge {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: var(--s-1) var(--s-3);
   border-radius: var(--r-pill);

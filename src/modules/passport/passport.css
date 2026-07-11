@@ -86,8 +86,9 @@
 
 .stamp-card__name {
   margin: 0 0 var(--s-1);
-  font-size: 17px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
   color: var(--cream);
 }
 
@@ -160,13 +161,24 @@
   padding: var(--s-1) var(--s-3);
   transform: rotate(-2deg);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   font-size: 11px;
+  text-transform: uppercase;
   display: inline-block;
 }
 
 .stamp-card:nth-child(even) .stamp-ink {
   transform: rotate(2deg);
+}
+
+/* Stamp reveal animation (newly unlocked) */
+@keyframes stamp-reveal {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.1) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+}
+.stamp-card--newly-stamped .stamp-ink {
+  animation: stamp-reveal 0.5s var(--ease-out) forwards;
 }
 
 @media (max-width: 650px) {
@@ -181,6 +193,22 @@
 
   .stamp-grid {
     grid-template-columns: 1fr;
+  }
+
+  .stamp-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-4);
+  }
+
+  .stamp-card__flag {
+    font-size: 40px;
+    flex-shrink: 0;
+  }
+
+  .stamp-ink {
+    transform: none !important;
   }
 }
 
