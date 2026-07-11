@@ -35,6 +35,7 @@ class App {
     start() {
 
         initMilesStore();
+        initOfflineBanner();
 
         Router.register("onboarding", OnboardingScreen);
         Router.register("home", GuestAppScreen);
@@ -114,6 +115,43 @@ class App {
 
     }
 
+}
+
+// ── Offline banner ────────────────────────────────────────────────────────────
+
+function initOfflineBanner() {
+  const banner = document.createElement("div");
+  banner.id = "offline-banner";
+  banner.textContent = "✈ You're offline — changes will sync when connected";
+  banner.style.cssText = [
+    "display:none",
+    "position:fixed",
+    "top:64px",
+    "left:0",
+    "right:0",
+    "background:rgba(245,158,11,0.15)",
+    "border-bottom:1px solid rgba(245,158,11,0.3)",
+    "color:#f59e0b",
+    "font-family:Inter,sans-serif",
+    "font-size:12px",
+    "text-align:center",
+    "padding:6px 16px",
+    "z-index:90",
+    "letter-spacing:0.02em",
+  ].join(";");
+  document.body.appendChild(banner);
+
+  function update() {
+    const onMap   = !document.getElementById("screen-map")?.hidden;
+    const onAdmin = !document.getElementById("screen-admin")?.hidden;
+    banner.style.display = (!navigator.onLine && !onMap && !onAdmin) ? "block" : "none";
+  }
+
+  window.addEventListener("online",  update);
+  window.addEventListener("offline", update);
+  // Re-evaluate whenever the route changes so map/admin suppression stays current
+  document.addEventListener("click", update, true);
+  update();
 }
 
 // ── Concierge bell ────────────────────────────────────────────────────────────
