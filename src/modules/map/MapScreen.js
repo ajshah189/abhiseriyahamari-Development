@@ -71,15 +71,59 @@ function polygonCentroid(el) {
   return n > 0 ? [sx / n, sy / n] : [500, 400];
 }
 
-// Match a room name (e.g. "Bali") against navFromSelect option display text
-// (options are formatted as "C29–C34 — Bali" by navigation.js)
+// Match a room name/number against navFromSelect option text or value.
+// Options are formatted "{cluster name}[ — {city}]"; values are cluster IDs.
+// Handles: direct text match, normalized hyphen stripping ("C-9" → "c9"),
+// prefix routing (N→new-building, T→treetop), range clusters (e1-e8).
 function findNavLocId(roomName) {
   if (!roomName) return null;
   const sel = document.getElementById("navFromSelect");
-  const opt = Array.from(sel?.options || []).find(o =>
-    o.textContent.toLowerCase().includes(roomName.toLowerCase())
-  );
-  return opt?.value || null;
+  const opts = Array.from(sel?.options || []).filter(o => o.value);
+  if (!opts.length) return null;
+
+  const lower = roomName.toLowerCase();
+
+  // 1. Text contains the room name directly (e.g. "Bali" in "C29–C34 — Bali")
+  const byText = opts.find(o => o.textContent.toLowerCase().includes(lower));
+  if (byText) return byText.value;
+
+  // Normalize: strip hyphens/en-dashes
+  const norm = s => s.toLowerCase().replace(/[-–]/g, "");
+  const needle = norm(roomName);
+
+  // 2. Normalized value match ("C-9" → "c9" === value "c9")
+  const byNormVal = opts.find(o => norm(o.value) === needle);
+  if (byNormVal) return byNormVal.value;
+
+  // 3. Normalized text match ("C-9" → "c9" in "c9 — bali")
+  const byNormText = opts.find(o => norm(o.textContent).includes(needle));
+  if (byNormText) return byNormText.value;
+
+  // 4. Prefix-based routing for block rooms
+  const pm = needle.match(/^([a-z]+)(\d+)$/);
+  if (pm) {
+    const [, prefix, numStr] = pm;
+    const num = parseInt(numStr, 10);
+
+    if (prefix === "n") {
+      const nb = opts.find(o => o.value === "new-building");
+      if (nb) return nb.value;
+    }
+    if (prefix === "t") {
+      const tt = opts.find(o => o.value === "treetop");
+      if (tt) return tt.value;
+    }
+    // Range cluster values like "e1-e8", "c5-c6", "c29-c34"
+    for (const o of opts) {
+      const rm = o.value.match(/^([a-z]+)(\d+)-[a-z]*(\d+)$/);
+      if (!rm) continue;
+      const [, vPfx, vStart, vEnd] = rm;
+      if (vPfx === prefix && num >= parseInt(vStart, 10) && num <= parseInt(vEnd, 10))
+        return o.value;
+    }
+  }
+
+  return null;
 }
 
 // Auto-fill #navFromSelect with the logged-in guest's room and show the
@@ -115,6 +159,23 @@ async function mount() {
 
   // Inject shared TopBar — identical to Dashboard, Events, Journey, Rewards, Profile
   container.insertAdjacentHTML("afterbegin", TopBar());
+
+  // Fix 4: Edit Map toggle for admins — injects ✏️ button into TopBar right area
+  if (sessionStorage.getItem("ar_admin_auth") === "true") {
+    const topRight = container.querySelector(".top-right");
+    if (topRight) {
+      const editBtn = document.createElement("button");
+      editBtn.className = "top-icon";
+      editBtn.title = "Toggle map editor";
+      editBtn.textContent = "✏️";
+      topRight.insertBefore(editBtn, topRight.firstChild);
+      editBtn.addEventListener("click", () => {
+        const tools = document.getElementById("editorTools");
+        if (!tools) return;
+        tools.hidden = !tools.hidden;
+      });
+    }
+  }
 
   // Reveal the container before the core map modules run — they measure
   // #viewport's live layout size to compute the initial zoom-to-fit
@@ -186,6 +247,23 @@ async function mount() {
   const navToSel   = document.getElementById("navToSelect");
   if (navFromSel) addGuestOptgroups(navFromSel, "from");
   if (navToSel)   addGuestOptgroups(navToSel,   "to");
+
+  // Fix 1: Add rooms optgroup to navToSelect so "Take Me There" on room popups
+  // resolves — the popup sets navToSelect.value = roomLocId which only works if
+  // room location IDs are actually in the select.
+  if (navToSel) {
+    const roomGroup = document.createElement("optgroup");
+    roomGroup.label = "🏨 Rooms";
+    data.locations
+      .filter(loc => loc.category === "rooms")
+      .forEach(loc => {
+        const opt = document.createElement("option");
+        opt.value = loc.id;
+        opt.textContent = loc.name + (loc.destinationCity ? ` — ${loc.destinationCity}` : "");
+        roomGroup.appendChild(opt);
+      });
+    navToSel.appendChild(roomGroup);
+  }
 
   document.getElementById("navGoBtn")?.addEventListener("click", (e) => {
     let blocked = false;

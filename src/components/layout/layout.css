@@ -93,6 +93,17 @@
   }
 }
 
+@media (max-width: 479px) {
+  .top-icon--dir { display: none; }
+  .top-left h2 {
+    font-size: 18px;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 /* ---------- Bottom Navigation ---------- */
 
 .bottom-nav {
