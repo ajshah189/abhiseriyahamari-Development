@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: "ar-airways-v{N}".
  */
 
-const CACHE_NAME = "ar-airways-v22";
+const CACHE_NAME = "ar-airways-v23";
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -48,6 +48,10 @@ const APP_SHELL = [
   // State stores
   "/src/store/appStore.js",
   "/src/store/milesStore.js",
+
+  // Firebase
+  "/src/config/firebase.js",
+  "/src/services/firebaseService.js",
 
   // Services
   "/src/services/authService.js",

@@ -10,17 +10,23 @@
  * (registered separately in app.js, each wrapping mount/show with the
  * view they represent) so a deep link to either lands on the right
  * segment pre-selected.
+ *
+ * When the leaderboard tab is active, a Firebase subscription keeps the
+ * Top Passengers list live. Unsubscribed on hide().
  */
 
 import { RewardsPage } from "./RewardsPage.js";
-import { animateLeaderboard } from "../leaderboard/LeaderboardCard.js";
+import { animateLeaderboard, LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
 import Router from "../../router.js";
 import { pullToRefresh } from "../../utils/pullToRefresh.js";
+import LeaderboardService from "../../services/leaderboardService.js";
+import AuthService from "../../services/authService.js";
 
 const REDEEM_MESSAGE_MS = 2200;
 
 let container = null;
 let activeView = "rewards";
+let _unsubLeaderboard = null;
 
 function bindEvents() {
   container.querySelectorAll("[data-view]").forEach((btn) => {
@@ -55,6 +61,30 @@ function render() {
   bindEvents();
   if (activeView === "leaderboard") {
     setTimeout(() => animateLeaderboard(), 0);
+    startLiveLeaderboard();
+  } else {
+    stopLiveLeaderboard();
+  }
+}
+
+function startLiveLeaderboard() {
+  if (_unsubLeaderboard) _unsubLeaderboard();
+  _unsubLeaderboard = LeaderboardService.subscribeToLiveLeaderboard((entries) => {
+    const currentGuest = AuthService.getCurrentGuest();
+    const listEl = container?.querySelector('.leaderboard-list');
+    if (!listEl) return;
+    const enriched = entries.slice(0, 20).map(e => ({
+      ...e,
+      isSelf: e.guestId === currentGuest?.id,
+    }));
+    listEl.innerHTML = enriched.map(LeaderboardRow).join('');
+  });
+}
+
+function stopLiveLeaderboard() {
+  if (_unsubLeaderboard) {
+    _unsubLeaderboard();
+    _unsubLeaderboard = null;
   }
 }
 
@@ -73,6 +103,7 @@ function show(view) {
 
 function hide() {
   container.hidden = true;
+  stopLiveLeaderboard();
 }
 
 /**

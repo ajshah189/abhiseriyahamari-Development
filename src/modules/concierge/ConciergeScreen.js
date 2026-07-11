@@ -3,19 +3,23 @@
  *
  * Handles request submission: saves to ar_requests in localStorage and
  * opens WhatsApp with a pre-filled message to the events contact number.
- * Status sync is pull-based (localStorage) until Firebase in August.
+ * Also pushes requests to Firebase (fire-and-forget) and subscribes to
+ * real-time status updates via Firebase for the current guest's requests.
  */
 
 import { ConciergePage, REQUEST_TYPES } from "./ConciergePage.js";
 import PassengerService from "../../services/passengerService.js";
 import AuthService from "../../services/authService.js";
+import FirebaseService from "../../services/firebaseService.js";
 import Router from "../../router.js";
 
 let container = null;
 let state = { selectedTypeId: null, note: "" };
+let _unsubRequests = null;
+let _liveRequests = null;
 
 function renderPage() {
-  container.innerHTML = ConciergePage(state);
+  container.innerHTML = ConciergePage(state, _liveRequests);
   bindEvents();
 }
 
@@ -67,7 +71,6 @@ function sendRequest() {
     "Sent via AR Airways ✈",
   ].filter(l => l !== null).join("\n");
 
-  // Save locally
   const request = {
     id:        Date.now(),
     guestId,
@@ -79,11 +82,23 @@ function sendRequest() {
     timestamp: now.toISOString(),
     status:    "pending",
   };
+
+  // Save locally
   try {
     const all = JSON.parse(localStorage.getItem("ar_requests") || "[]");
     all.unshift(request);
     localStorage.setItem("ar_requests", JSON.stringify(all));
   } catch {}
+
+  // Push to Firebase (fire-and-forget)
+  FirebaseService.postRequest({
+    guestId,
+    guestName,
+    room:  cottage || "—",
+    type:  selectedType.id,
+    label: selectedType.label,
+    note:  noteText,
+  }).catch(() => {});
 
   // Open WhatsApp
   const waNumber = (localStorage.getItem("ar_events_contact") || "").replace(/\D/g, "");
@@ -91,16 +106,27 @@ function sendRequest() {
     window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
-  // Reset and re-render (shows updated My Requests)
   state.selectedTypeId = null;
   state.note = "";
   renderPage();
 }
 
+function _startRequestsSubscription() {
+  if (_unsubRequests) { _unsubRequests(); _unsubRequests = null; }
+  const snapshot = PassengerService.getCurrentSnapshot();
+  if (!snapshot || snapshot.isViewer) return;
+  _unsubRequests = FirebaseService.subscribeToGuestRequests(snapshot.guestId, (fbRequests) => {
+    _liveRequests = fbRequests;
+    renderPage();
+  });
+}
+
 function mount() {
   container = document.getElementById("screen-concierge");
   state = { selectedTypeId: null, note: "" };
+  _liveRequests = null;
   if (!AuthService.isLoggedIn()) { Router.go("home"); return; }
+  _startRequestsSubscription();
   renderPage();
 }
 
@@ -108,11 +134,15 @@ function show() {
   container.hidden = false;
   if (!AuthService.isLoggedIn()) { Router.go("home"); return; }
   state = { selectedTypeId: null, note: "" };
+  _liveRequests = null;
+  _startRequestsSubscription();
   renderPage();
 }
 
 function hide() {
   container.hidden = true;
+  if (_unsubRequests) { _unsubRequests(); _unsubRequests = null; }
+  _liveRequests = null;
 }
 
 export const ConciergeScreen = { mount, show, hide };

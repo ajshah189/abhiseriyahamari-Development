@@ -8,6 +8,7 @@
 
 import MilesService from "./milesService.js";
 import GuestDatabaseService from "./guestDatabaseService.js";
+import FirebaseService from "./firebaseService.js";
 
 class LeaderboardService {
 
@@ -76,6 +77,49 @@ class LeaderboardService {
     entries.forEach((e, i) => { e.rank = i + 1; });
 
     return entries.filter(e => e.todayMiles > 0);
+  }
+
+  /**
+   * Live leaderboard from Firebase, enriched with guest metadata.
+   * Guests not yet in Firebase fall back to localStorage balance.
+   * Returns an unsubscribe function.
+   */
+  subscribeToLiveLeaderboard(callback) {
+    return FirebaseService.subscribeToLeaderboard((fbData) => {
+      const guests = GuestDatabaseService.getAll();
+
+      const leaderboard = fbData.map(({ guestId, balance }) => {
+        const guest = guests.find(g => g.id === guestId);
+        if (!guest) return null;
+        return {
+          guestId,
+          name: guest.displayName || `${guest.firstName} ${guest.lastName}`,
+          balance,
+          tier: MilesService.getTier(guestId).current.name,
+          isSelf: false,
+        };
+      }).filter(Boolean);
+
+      // Include guests not yet in Firebase using localStorage balance
+      guests.forEach(g => {
+        if (!leaderboard.find(l => l.guestId === g.id)) {
+          const bal = MilesService.getBalance(g.id);
+          if (bal > 0) {
+            leaderboard.push({
+              guestId: g.id,
+              name: g.displayName || `${g.firstName} ${g.lastName}`,
+              balance: bal,
+              tier: MilesService.getTier(g.id).current.name,
+              isSelf: false,
+            });
+          }
+        }
+      });
+
+      leaderboard.sort((a, b) => b.balance - a.balance);
+      leaderboard.forEach((e, i) => { e.rank = i + 1; });
+      callback(leaderboard);
+    });
   }
 }
 

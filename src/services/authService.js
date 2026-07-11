@@ -25,6 +25,7 @@ import { normalizeGuest } from "../models/Guest.js";
 import { storageGet, storageSet, storageRemove } from "../utils/storage.js";
 import { APP_CONFIG } from "../config.js";
 import GuestDatabaseService from "./guestDatabaseService.js";
+import FirebaseService from "./firebaseService.js";
 
 const FULL_FEATURES = [
   "miles", "rewards", "passport", "profile", "leaderboard_self",
@@ -55,6 +56,9 @@ class AuthService {
 
     storageSet(APP_CONFIG.auth.storageKey, guest.id);
     storageRemove(APP_CONFIG.auth.viewerKey);
+
+    // Fire-and-forget: migrate existing localStorage ledger to Firebase once per device
+    migrateToFirebase(guest).catch(() => {});
 
     return { success: true, guest };
   }
@@ -113,3 +117,29 @@ class AuthService {
 }
 
 export default new AuthService();
+
+async function migrateToFirebase(guest) {
+  const migrationKey = `ar_firebase_migrated_${guest.id}`;
+  if (localStorage.getItem(migrationKey)) return;
+  try {
+    const existing = await FirebaseService.getTransactions(guest.id);
+    if (existing && existing.length > 0) {
+      localStorage.setItem(migrationKey, 'true');
+      return;
+    }
+    let guestTxs = [];
+    try {
+      const ledger = JSON.parse(localStorage.getItem('miles_ledger') || '[]');
+      guestTxs = ledger.filter(tx => tx.guestId === guest.id);
+    } catch {}
+    for (const tx of guestTxs) {
+      await FirebaseService.addTransaction(guest.id, tx);
+    }
+    localStorage.setItem(migrationKey, 'true');
+    if (guestTxs.length > 0) {
+      console.log(`Firebase: migrated ${guestTxs.length} tx for ${guest.displayName || guest.id}`);
+    }
+  } catch (e) {
+    console.warn('Firebase migration failed:', e.message);
+  }
+}

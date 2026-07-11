@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 13 — Pre-August Cleanup)
+12 July 2026 (Session 14 — Firebase Integration)
 
 Current Version:
 v0.8
@@ -68,6 +68,7 @@ main
 | Directory Prominence | 🟢 Completed | 100% |
 | Analytics | 🟢 Completed | 100% |
 | Pre-August Cleanup | 🟢 Completed | 100% |
+| Firebase Integration | 🟢 Completed | 90% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---
@@ -500,13 +501,13 @@ Cloudflare Pages
 
 ## August 2026 — Firebase Integration
 
-- [ ] Setup Firebase project (ar-airways-2027)
-- [ ] Migrate miles ledger to Realtime Database
-- [ ] Real-time leaderboard sync across devices
-- [ ] Multi-device check-in sync
+- [x] Setup Firebase project (ar-airways-2027)
+- [x] Migrate miles ledger to Realtime Database (dual-write, localStorage fallback)
+- [x] Real-time leaderboard sync across devices
+- [x] Multi-device check-in sync
 - [ ] Push notifications via FCM
-- [ ] Concierge request real-time status sync
-- [ ] Guest services WhatsApp → Push notification upgrade
+- [x] Concierge request real-time status sync
+- [x] Announcement broadcast to all guest devices via Firebase
 
 ## Before January 2027
 
