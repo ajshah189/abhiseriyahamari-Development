@@ -95,6 +95,15 @@
   color: var(--cream-dim);
 }
 
+.stat-card__hint {
+  margin-top: var(--s-2);
+  font-size: 11px;
+  color: var(--cream-faint);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+
 /* ---------- Transaction History ---------- */
 
 .transaction-list {

@@ -100,6 +100,109 @@
   font-size: 14px;
 }
 
+/* ---------- Up Next Hero Card ---------- */
+
+.up-next {
+  margin-bottom: var(--s-5);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  background: linear-gradient(135deg, rgba(212,175,106,0.08), rgba(212,175,106,0.02));
+  padding: var(--s-5);
+}
+
+.up-next--boarding {
+  border-left-color: var(--gold);
+  animation: boarding-pulse 2s ease-in-out infinite;
+}
+
+.up-next--inflight {
+  border-left-color: #4caf50;
+  background: linear-gradient(135deg, rgba(76,175,80,0.08), rgba(76,175,80,0.02));
+}
+
+.up-next--prewedding {
+  border-left-color: var(--gold);
+}
+
+@keyframes boarding-pulse {
+  0%, 100% { border-left-color: var(--gold); }
+  50%       { border-left-color: var(--gold-soft); }
+}
+
+.up-next__label {
+  font-size: 11px;
+  font-family: var(--font-body);
+  font-variant: small-caps;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin-bottom: var(--s-2);
+}
+
+.up-next__name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--cream);
+  margin-bottom: var(--s-1);
+}
+
+.up-next__days {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.up-next__meta {
+  font-size: 13px;
+  color: var(--cream-dim);
+  margin-bottom: var(--s-4);
+}
+
+.up-next__preview-label {
+  font-size: 12px;
+  color: var(--cream-dim);
+  font-style: italic;
+  margin-top: var(--s-2);
+}
+
+.up-next__starts-in {
+  font-size: 13px;
+  color: var(--cream-dim);
+  margin-bottom: var(--s-4);
+}
+
+.up-next__countdown {
+  font-size: 22px;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+  font-weight: 700;
+  display: block;
+  margin-bottom: var(--s-4);
+}
+
+.up-next__starts-in .up-next__countdown {
+  display: inline;
+  font-size: 18px;
+  margin-bottom: 0;
+}
+
+.up-next__nav {
+  background: none;
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-pill);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s-2) var(--s-4);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.up-next__nav:hover {
+  background: rgba(212,175,106,0.1);
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1100px) {

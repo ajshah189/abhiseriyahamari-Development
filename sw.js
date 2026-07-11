@@ -1,8 +1,8 @@
-/**
- * AR Airways — Service Worker
+﻿/**
+ * AR Airways â€” Service Worker
  *
  * Cache strategy:
- *   App shell (HTML, CSS, JS):  Cache First — served instantly from cache,
+ *   App shell (HTML, CSS, JS):  Cache First â€” served instantly from cache,
  *                               no network round-trip needed for the static files.
  *   Everything else:            Network First with cache fallback.
  *
@@ -16,9 +16,9 @@
  * are evicted on next activate. Format: "ar-airways-v{N}".
  */
 
-const CACHE_NAME = "ar-airways-v14";
+const CACHE_NAME = "ar-airways-v15";
 
-// Every file listed here must return HTTP 200 — a single 404 will cause
+// Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
 // Paths are verified against the real src/ directory structure.
 const APP_SHELL = [
@@ -81,14 +81,14 @@ const APP_SHELL = [
   "/src/models/Passport.js",
   "/src/models/Reward.js",
 
-  // Components — Layout
+  // Components â€” Layout
   "/src/components/layout/TopBar.js",
   "/src/components/layout/BottomNav.js",
   "/src/components/layout/LoadingScreen.js",
   "/src/components/layout/PageContainer.js",
   "/src/components/layout/layout.css",
 
-  // Components — Cards
+  // Components â€” Cards
   "/src/components/cards/PassengerCard.js",
   "/src/components/cards/ActivityCard.js",
   "/src/components/cards/ActionCard.js",
@@ -97,7 +97,7 @@ const APP_SHELL = [
   "/src/components/cards/ProgressCard.js",
   "/src/components/cards/cards.css",
 
-  // Components — Common
+  // Components â€” Common
   "/src/components/common/Avatar.js",
   "/src/components/common/Badge.js",
   "/src/components/common/Button.js",
@@ -187,7 +187,7 @@ const APP_SHELL = [
   "/src/modules/shared/ComingSoonScreen.js",
   "/src/modules/shared/shared.css",
 
-  // Core map engine (do not modify — stable map module)
+  // Core map engine (do not modify â€” stable map module)
   "/src/modules/core/labels.js",
   "/src/modules/core/map.js",
   "/src/modules/core/maps.js",
@@ -206,7 +206,7 @@ const APP_SHELL = [
   "/src/modules/notifications/notifications.css",
 ];
 
-// ─── Install ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Install â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -216,7 +216,7 @@ self.addEventListener("install", event => {
   );
 });
 
-// ─── Activate ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Activate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener("activate", event => {
   event.waitUntil(
@@ -230,7 +230,7 @@ self.addEventListener("activate", event => {
   );
 });
 
-// ─── Fetch ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Fetch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
@@ -258,8 +258,8 @@ self.addEventListener("fetch", event => {
   );
 });
 
-// ─── Push Notifications ────────────────────────────────────────────────────
-// Ready for Firebase Cloud Messaging — wired now, activated in a future session.
+// â”€â”€â”€ Push Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ready for Firebase Cloud Messaging â€” wired now, activated in a future session.
 
 self.addEventListener("push", event => {
   if (!event.data) return;
@@ -275,7 +275,7 @@ self.addEventListener("push", event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "AR Airways ✈", options)
+    self.registration.showNotification(data.title || "AR Airways âœˆ", options)
   );
 });
 

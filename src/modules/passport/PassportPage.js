@@ -82,6 +82,14 @@ export function PassportPage() {
         ${PASSPORT_COUNTRIES.map(country => stampCard(country, hasAccess)).join("")}
       </div>
 
+      ${stamped === 0 ? `
+        <div class="empty-state" style="margin-top:var(--s-2)">
+          <div class="empty-state__icon">✈</div>
+          <p class="empty-state__title">Your passport is blank — for now.</p>
+          <p class="empty-state__subtitle">Every event earns a new stamp.<br>Start at the Main Gate on 22 Jan.</p>
+        </div>
+      ` : ""}
+
       <section class="journey-progress">
         <p class="journey-progress-label">Your Journey: ${stamped} / ${total} countries</p>
         <div class="journey-progress-bar">

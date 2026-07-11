@@ -58,10 +58,12 @@ function journeyStats(stats) {
       <div class="stat-card">
         <div class="stat-card__value">${stats.eventsAttended}</div>
         <div class="stat-card__label">Events Attended</div>
+        ${stats.eventsAttended === 0 ? `<div class="stat-card__hint">Your adventure awaits on 22 Jan</div>` : ""}
       </div>
       <div class="stat-card">
         <div class="stat-card__value">${stats.countriesVisited}</div>
         <div class="stat-card__label">Countries Visited</div>
+        ${stats.countriesVisited === 0 ? `<div class="stat-card__hint">Your passport stamps await ✈</div>` : ""}
       </div>
     </section>
   `;
@@ -88,7 +90,11 @@ function transactionHistory(guestId) {
       <h3>Transaction History</h3>
       ${transactions.length
         ? `<div class="transaction-list">${transactions.map(transactionRow).join("")}</div>`
-        : `<p class="muted">No miles earned yet</p>`}
+        : `<div class="empty-state">
+             <div class="empty-state__icon">✈</div>
+             <p class="empty-state__title">Your ledger is empty</p>
+             <p class="empty-state__subtitle">First miles arrive at Check-in on 22 January 2027</p>
+           </div>`}
     </section>
   `;
 }

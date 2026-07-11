@@ -117,9 +117,10 @@ export function PassengerCard(snapshot = {}) {
             AR Miles
         </div>
 
-        <div class="today-miles">
-            +${today} today
-        </div>
+        ${balance === 0
+          ? `<p class="miles-empty-hint">Your journey starts at Check-in.<br>Earn your first miles on 22 Jan.</p>`
+          : `<div class="today-miles">+${today} today</div>`
+        }
 
     </div>
 

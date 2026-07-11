@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 6)
+11 July 2026 (Session 7)
 
 Current Version:
-v0.5
+v0.6
 
 Current Phase:
 Phase 1 – Foundation
@@ -13,7 +13,7 @@ Current Sprint:
 Sprint 002 – Architecture Refactor
 
 Overall Progress:
-92%
+95%
 
 Project Status:
 🟡 Active Development
@@ -38,7 +38,8 @@ main
 | Guest Onboarding / Auth | 🟢 Completed | 100% |
 | Passenger System | 🟢 Completed | 100% |
 | PWA Shell | 🟢 Completed | 100% |
-| Home Dashboard | ⚪ Not Started | 0% |
+| Home Dashboard | 🟢 Completed | 100% |
+| Dashboard Alive (Countdown + Empty States + Warmth) | 🟢 Completed | 100% |
 | Boarding Pass | 🟢 Completed | 100% |
 | Passport | 🟢 Completed | 100% |
 | Events | 🟢 Completed | 100% |
