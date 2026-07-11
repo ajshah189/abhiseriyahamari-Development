@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: "ar-airways-v{N}".
  */
 
-const CACHE_NAME = "ar-airways-v15";
+const CACHE_NAME = "ar-airways-v16";
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.

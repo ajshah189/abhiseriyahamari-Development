@@ -179,6 +179,15 @@ export function getFoundLocations(guestId) {
   }
 }
 
+export function getFoundTimestamps(guestId) {
+  if (!guestId) return {};
+  try {
+    return JSON.parse(localStorage.getItem(`ar_hunt_times_${guestId}`)) || {};
+  } catch {
+    return {};
+  }
+}
+
 export function alreadyFound(guestId, huntId) {
   return getFoundLocations(guestId).includes(huntId);
 }
@@ -189,5 +198,8 @@ export function markLocationFound(guestId, huntId) {
   if (!found.includes(huntId)) {
     found.push(huntId);
     localStorage.setItem(`ar_hunt_found_${guestId}`, JSON.stringify(found));
+    const times = getFoundTimestamps(guestId);
+    times[huntId] = new Date().toISOString();
+    localStorage.setItem(`ar_hunt_times_${guestId}`, JSON.stringify(times));
   }
 }

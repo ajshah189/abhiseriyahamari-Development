@@ -176,6 +176,131 @@
   100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 
+/* ---------- Hunt Hero (shown when 0 locations found) ---------- */
+
+.hunt-hero {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: var(--s-6);
+  text-align: center;
+  margin-bottom: var(--s-5);
+}
+
+.hunt-hero__eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: var(--s-3);
+}
+
+.hunt-hero__title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--cream);
+  margin: 0 0 var(--s-5);
+}
+
+.hunt-hero__clue-card {
+  background: var(--panel-hover);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  margin: 0 auto var(--s-5);
+  max-width: 360px;
+  text-align: left;
+}
+
+.hunt-hero__clue-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: var(--s-2);
+}
+
+.hunt-hero__clue-text {
+  font-size: 15px;
+  color: var(--cream);
+  margin: 0 0 var(--s-2);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.hunt-hero__clue-location {
+  font-size: 12px;
+  color: var(--cream-dim, #a09070);
+}
+
+.hunt-hero__cta {
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--gold);
+  color: var(--night);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  padding: var(--s-4) var(--s-8);
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease-out);
+  display: inline-block;
+  margin-bottom: var(--s-3);
+}
+
+.hunt-hero__cta:hover {
+  transform: translateY(-2px);
+}
+
+.hunt-hero__sub {
+  font-size: 12px;
+  color: var(--cream-faint);
+  margin: 0;
+}
+
+/* ---------- Progress Bar ---------- */
+
+.hunt-progress {
+  margin-bottom: var(--s-4);
+}
+
+.hunt-progress__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--s-2);
+}
+
+.hunt-progress__count {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.hunt-progress__miles {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.hunt-progress__bar {
+  height: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.hunt-progress__fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: var(--r-pill);
+  transition: width 0.6s var(--ease-out);
+  min-width: 0;
+}
+
 /* ---------- Hunt Hub Page ---------- */
 
 .hunt-page {
@@ -310,6 +435,37 @@
   font-size: 12px;
   color: var(--gold);
   margin-top: var(--s-1);
+}
+
+.hunt-location-card--next {
+  border-left-color: var(--cream-dim, #a09070);
+  background: var(--panel-hover);
+}
+
+.hunt-location-card__found-label {
+  color: #10b981;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.hunt-location-card__next-clue {
+  margin-top: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  background: rgba(212, 175, 106, 0.08);
+  border-radius: var(--r-lg);
+  border-left: 2px solid var(--gold-soft);
+  font-size: 12px;
+  color: var(--cream-dim, #a09070);
+  line-height: 1.4;
+}
+
+.hunt-location-card__clue-label {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-right: var(--s-1);
+  display: inline;
 }
 
 /* ---------- Top Hunters mini-leaderboard ---------- */
