@@ -18,6 +18,7 @@ import { createTransaction, TX_KINDS } from "../models/Transaction.js";
 import { normalizeGuest } from "../models/Guest.js";
 import { guests as rawGuests } from "../data/guests.js";
 import AppStore from "./appStore.js";
+import FirebaseService from "../services/firebaseService.js";
 
 const LEDGER_KEY = "miles_ledger";
 const MIGRATED_KEY = "miles_migrated";
@@ -81,6 +82,8 @@ export function addTransaction({ guestId, amount, reason, kind }) {
     balance: getBalance(guestId),
     transaction: tx,
   });
+  // Fire-and-forget dual-write to Firebase
+  FirebaseService.addTransaction(guestId, tx).catch(() => {});
   return tx;
 }
 

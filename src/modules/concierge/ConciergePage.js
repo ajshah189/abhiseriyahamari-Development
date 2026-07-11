@@ -40,14 +40,14 @@ function getMyRequests(guestId) {
   } catch { return []; }
 }
 
-export function ConciergePage(state) {
+export function ConciergePage(state, liveRequests = null) {
   const snapshot  = PassengerService.getCurrentSnapshot();
   const guestId   = snapshot?.guestId;
   const profile   = snapshot?.profile;
   const cottage   = profile?.roomCottage || profile?.room || "";
   const zone      = profile?.roomZone    || "";
   const roomLabel = cottage ? `Room ${cottage}${zone ? ` · ${zone} Zone` : ""}` : "—";
-  const myRequests = getMyRequests(guestId);
+  const myRequests = liveRequests !== null ? liveRequests : getMyRequests(guestId);
   const selectedType = REQUEST_TYPES.find(t => t.id === state.selectedTypeId);
 
   return `
@@ -99,7 +99,10 @@ export function ConciergePage(state) {
           <div class="concierge-request-list">
             ${myRequests.map(r => {
               const type   = REQUEST_TYPES.find(t => t.id === r.type);
-              const status = localStorage.getItem(`ar_request_status_${r.id}`) || r.status || "pending";
+              // Live Firebase requests carry status directly; localStorage requests use the status key
+              const status = liveRequests !== null
+                ? (r.status || "pending")
+                : (localStorage.getItem(`ar_request_status_${r.id}`) || r.status || "pending");
               return `
                 <div class="concierge-request-item">
                   <div class="concierge-request-item__icon">${type?.icon || "🛎"}</div>

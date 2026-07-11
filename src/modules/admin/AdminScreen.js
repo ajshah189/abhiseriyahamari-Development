@@ -20,11 +20,17 @@ import { renderAdminPinGate } from "./AdminPinGate.js";
 import PassengerService from "../../services/passengerService.js";
 import MilesService from "../../services/milesService.js";
 import GuestDatabaseService from "../../services/guestDatabaseService.js";
+import FirebaseService from "../../services/firebaseService.js";
 import Router from "../../router.js";
 
 // Scanner: module-level so video/stream survive renderPage() calls
 let _scannerStream   = null;
 let _scannerInterval = null;
+
+// Firebase subscriptions — unsubscribed in hide()
+let _unsubCheckins  = null;
+let _unsubRequests  = null;
+let _fbRequests     = null;
 
 const AUTH_KEY = "ar_admin_auth";
 const CHECKIN_KEY = "ar_checkins";
@@ -524,6 +530,9 @@ function checkInGuest(passportNumber) {
   writeLocalMap(CHECKIN_KEY, checkins);
   state.checkins = checkins;
 
+  // Push to Firebase (fire-and-forget)
+  FirebaseService.checkIn(guest.id).catch(() => {});
+
   // Award check-in miles once per session
   const milesKey = `ar_checkin_miles_${guest.id}`;
   if (!sessionStorage.getItem(milesKey)) {
@@ -608,6 +617,9 @@ function broadcastAnnouncement() {
     localStorage.setItem("ar_announcements", JSON.stringify(all.slice(0, 20)));
   } catch {}
 
+  // Push to Firebase (fire-and-forget) so all guest devices receive it
+  FirebaseService.postAnnouncement(message.trim(), priority).catch(() => {});
+
   showToast(`📢 Broadcast sent · ${priority === "urgent" ? "URGENT" : "Normal"}`);
   state.announcements.message = "";
   state.announcements.priority = "normal";
@@ -617,6 +629,7 @@ function broadcastAnnouncement() {
 // ---------- Requests ----------
 
 function _getRequests() {
+  if (_fbRequests !== null) return _fbRequests;
   try { return JSON.parse(localStorage.getItem("ar_requests") || "[]"); } catch { return []; }
 }
 
@@ -632,6 +645,8 @@ function updateRequestStatus(requestId, newStatus) {
       : (existing.completedAt || ""),
   };
   localStorage.setItem(`ar_request_status_${requestId}`, JSON.stringify(updated));
+  // Push status to Firebase (fire-and-forget)
+  FirebaseService.updateRequestStatus(requestId, newStatus).catch(() => {});
   showToast("Status updated");
 }
 
@@ -703,9 +718,33 @@ function mount() {
   renderGate();
 }
 
+function _startFirebaseSubscriptions() {
+  // Sync Firebase check-ins into local state (silent unless on guests/scanner section)
+  _unsubCheckins = FirebaseService.subscribeToCheckins((firebaseCheckins) => {
+    let changed = false;
+    for (const [guestId, data] of Object.entries(firebaseCheckins)) {
+      if (data.checkedIn && !state.checkins[guestId]) {
+        state.checkins[guestId] = data.date || new Date().toISOString();
+        changed = true;
+      }
+    }
+    if (changed) {
+      writeLocalMap(CHECKIN_KEY, state.checkins);
+      if (state.section === "guests" || state.section === "scanner") renderPage();
+    }
+  });
+
+  // Cache Firebase requests — re-render if admin is on requests section
+  _unsubRequests = FirebaseService.subscribeToRequests((fbReqs) => {
+    _fbRequests = fbReqs;
+    if (state.section === "requests") renderPage();
+  });
+}
+
 function show() {
   container.hidden = false;
   renderGate();
+  _startFirebaseSubscriptions();
 }
 
 function hide() {
@@ -714,6 +753,9 @@ function hide() {
   if (_scannerInterval) { clearInterval(_scannerInterval); _scannerInterval = null; }
   if (_scannerStream)   { _scannerStream.getTracks().forEach(t => t.stop()); _scannerStream = null; }
   if (state) state.scanner.active = false;
+  if (_unsubCheckins) { _unsubCheckins(); _unsubCheckins = null; }
+  if (_unsubRequests) { _unsubRequests(); _unsubRequests = null; }
+  _fbRequests = null;
 }
 
 export const AdminScreen = { mount, show, hide };

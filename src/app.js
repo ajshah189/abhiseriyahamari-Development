@@ -10,6 +10,7 @@
 import Router from "./router.js";
 import { initMilesStore } from "./store/milesStore.js";
 import AuthService from "./services/authService.js";
+import FirebaseService from "./services/firebaseService.js";
 import { initInstallPrompt } from "./modules/pwa/InstallPrompt.js";
 import { OnboardingScreen } from "./modules/onboarding/OnboardingScreen.js";
 import { GuestAppScreen } from "./modules/dashboard/GuestAppScreen.js";
@@ -109,9 +110,8 @@ class App {
         // Inject floating concierge bell (logged-in guests only)
         injectConciergeButton();
 
-        // Check for unread announcements broadcast by admin
-        checkAnnouncements();
-        setInterval(checkAnnouncements, 60_000);
+        // Subscribe to Firebase announcements (replaces 60s localStorage polling)
+        initAnnouncementListener();
 
     }
 
@@ -166,6 +166,30 @@ function injectConciergeButton() {
   btn.setAttribute("aria-label", "Guest Services");
   btn.addEventListener("click", () => Router.go("concierge"));
   document.body.appendChild(btn);
+}
+
+// ── Announcement listener (Firebase) ─────────────────────────────────────────
+
+function initAnnouncementListener() {
+  const READ_KEY = "ar_announcements_read";
+  FirebaseService.subscribeToAnnouncements((announcements) => {
+    let readIds;
+    try { readIds = JSON.parse(localStorage.getItem(READ_KEY) || "[]"); } catch { readIds = []; }
+
+    const unread = announcements.filter(a => !readIds.includes(a.id));
+    if (unread.length === 0) return;
+
+    const latest = unread[0];
+    const onMap   = !document.getElementById("screen-map")?.hidden;
+    const onAdmin = !document.getElementById("screen-admin")?.hidden;
+
+    if (!onMap && !onAdmin) {
+      showAnnouncementBanner(latest);
+    }
+
+    readIds.push(latest.id);
+    try { localStorage.setItem(READ_KEY, JSON.stringify(readIds)); } catch {}
+  });
 }
 
 // ── Announcement banner ───────────────────────────────────────────────────────
