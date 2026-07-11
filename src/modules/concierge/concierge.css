@@ -1,0 +1,266 @@
+/* Concierge — Guest Services portal */
+
+#screen-concierge:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--night);
+}
+
+/* ── Topbar ── */
+
+.concierge-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  background: var(--panel-solid);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.concierge-back-btn {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.concierge-topbar__title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--cream);
+  font-weight: 600;
+}
+
+/* ── Page content ── */
+
+.concierge-page {
+  flex: 1;
+  padding: var(--s-5) var(--s-5) calc(80px + var(--s-5));
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Room card ── */
+
+.concierge-room-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-lg);
+  padding: var(--s-4) var(--s-5);
+  margin-bottom: var(--s-6);
+}
+
+.concierge-room-card__icon { font-size: 28px; }
+
+.concierge-room-card__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  margin-bottom: 3px;
+}
+
+.concierge-room-card__room {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cream);
+}
+
+/* ── Section ── */
+
+.concierge-section { margin-bottom: var(--s-5); }
+
+.concierge-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cream-faint);
+  margin-bottom: var(--s-3);
+}
+
+/* ── Request type grid ── */
+
+.request-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+}
+
+.request-type-card {
+  padding: var(--s-4);
+  background: var(--panel);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+}
+
+.request-type-card:hover { border-color: var(--gold-soft); }
+
+.request-type-card--selected {
+  border-color: var(--gold);
+  background: var(--gold-faint);
+}
+
+.request-type-card__icon { font-size: 28px; }
+
+.request-type-card__label {
+  font-size: 13px;
+  color: var(--cream);
+  font-weight: 500;
+}
+
+/* ── Note ── */
+
+.concierge-label {
+  display: block;
+  font-size: 13px;
+  color: var(--cream-dim);
+  margin-bottom: var(--s-2);
+}
+
+.concierge-textarea {
+  width: 100%;
+  background: var(--night-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s-3);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: none;
+  min-height: 80px;
+}
+
+.concierge-textarea:focus {
+  outline: none;
+  border-color: var(--gold-soft);
+}
+
+/* ── Send button ── */
+
+.concierge-send-btn {
+  width: 100%;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--gold);
+  color: var(--night);
+  font-weight: 700;
+  font-size: 15px;
+  padding: var(--s-4);
+  cursor: pointer;
+  margin-bottom: var(--s-5);
+  transition: transform 0.15s var(--ease-out);
+  min-height: 52px;
+}
+
+.concierge-send-btn:active { transform: scale(0.97); }
+
+/* ── My Requests list ── */
+
+.concierge-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.concierge-request-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.concierge-request-item__icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.concierge-request-item__body { flex: 1; min-width: 0; }
+
+.concierge-request-item__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 2px;
+}
+
+.concierge-request-item__meta {
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+.concierge-request-item__note {
+  font-size: 12px;
+  color: var(--cream-faint);
+  margin-top: var(--s-1);
+  font-style: italic;
+}
+
+/* ── Status badges (also used on admin side) ── */
+
+.request-status {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.request-status--pending     { color: #f59e0b; }
+.request-status--in-progress { color: #3b82f6; }
+.request-status--done        { color: #10b981; }
+
+/* ── Floating concierge bell ── */
+
+#concierge-btn {
+  position: fixed;
+  bottom: calc(64px + var(--s-4));
+  left: var(--s-4);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--panel-solid);
+  border: 1px solid var(--line-strong);
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: var(--shadow-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s var(--ease-out);
+}
+
+#concierge-btn:active { transform: scale(0.92); }
+
+/* Hide on screens where it doesn't belong */
+#screen-map:not([hidden])        ~ #concierge-btn,
+#screen-admin:not([hidden])      ~ #concierge-btn,
+#screen-onboarding:not([hidden]) ~ #concierge-btn,
+#screen-concierge:not([hidden])  ~ #concierge-btn {
+  display: none !important;
+}

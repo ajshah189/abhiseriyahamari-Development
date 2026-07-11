@@ -26,6 +26,7 @@ import { DirectoryScreen } from "./modules/directory/DirectoryScreen.js";
 import { SettingsScreen } from "./modules/settings/SettingsScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
 import { initBell } from "./modules/notifications/NotificationService.js";
+import { ConciergeScreen } from "./modules/concierge/ConciergeScreen.js";
 
 const UPCOMING_ROUTES = {};
 
@@ -51,6 +52,7 @@ class App {
         Router.register("hunt", HuntScreen);
         Router.register("hunt-claim", HuntClaimScreen);
         Router.register("directory", DirectoryScreen);
+        Router.register("concierge", ConciergeScreen);
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
@@ -103,8 +105,74 @@ class App {
 
         initInstallPrompt();
 
+        // Inject floating concierge bell (logged-in guests only)
+        injectConciergeButton();
+
+        // Check for unread announcements broadcast by admin
+        checkAnnouncements();
+        setInterval(checkAnnouncements, 60_000);
+
     }
 
+}
+
+// ── Concierge bell ────────────────────────────────────────────────────────────
+
+function injectConciergeButton() {
+  if (document.getElementById("concierge-btn")) return;
+  if (!AuthService.isLoggedIn()) return;
+
+  const btn = document.createElement("button");
+  btn.id   = "concierge-btn";
+  btn.innerHTML = "🛎";
+  btn.setAttribute("aria-label", "Guest Services");
+  btn.addEventListener("click", () => Router.go("concierge"));
+  document.body.appendChild(btn);
+}
+
+// ── Announcement banner ───────────────────────────────────────────────────────
+
+function checkAnnouncements() {
+  let announcements;
+  try {
+    announcements = JSON.parse(localStorage.getItem("ar_announcements") || "[]");
+  } catch { return; }
+
+  const unread = announcements.filter(a => !a.read);
+  if (unread.length === 0) return;
+
+  const latest = unread[0];
+
+  // Mark as read immediately so it doesn't re-show on the 60s tick
+  announcements.forEach(a => { if (a.id === latest.id) a.read = true; });
+  try { localStorage.setItem("ar_announcements", JSON.stringify(announcements)); } catch {}
+
+  showAnnouncementBanner(latest);
+}
+
+function showAnnouncementBanner(announcement) {
+  // Don't stack banners
+  document.querySelector(".announcement-banner")?.remove();
+
+  const urgent = announcement.priority === "urgent";
+  const banner = document.createElement("div");
+  banner.className = `announcement-banner${urgent ? " announcement-banner--urgent" : ""}`;
+  banner.innerHTML = `
+    <div class="announcement-banner__icon">${urgent ? "📢" : "ℹ️"}</div>
+    <div class="announcement-banner__text">${_esc(announcement.message)}</div>
+    <button class="announcement-banner__close" aria-label="Close">×</button>
+  `;
+  banner.querySelector(".announcement-banner__close").addEventListener("click", () => banner.remove());
+  document.body.appendChild(banner);
+
+  if (!urgent) setTimeout(() => banner.remove(), 8000);
+}
+
+function _esc(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 export default new App();
