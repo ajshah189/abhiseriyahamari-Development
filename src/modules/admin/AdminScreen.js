@@ -27,7 +27,7 @@ let _scannerStream   = null;
 let _scannerInterval = null;
 
 const AUTH_KEY = "ar_admin_auth";
-const CHECKIN_KEY = "ar_admin_checkins";
+const CHECKIN_KEY = "ar_checkins";
 const FULFILLED_KEY = "ar_admin_fulfilled";
 
 function readSessionMap(key) {
@@ -42,6 +42,18 @@ function writeSessionMap(key, map) {
   sessionStorage.setItem(key, JSON.stringify(map));
 }
 
+function readLocalMap(key) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalMap(key, map) {
+  localStorage.setItem(key, JSON.stringify(map));
+}
+
 function isAuthed() {
   return sessionStorage.getItem(AUTH_KEY) === "true";
 }
@@ -53,7 +65,7 @@ function createInitialState() {
     guests:        { search: "", tierFilter: "all", expandedGuestId: null },
     scanner:       { passportInput: "", recentCheckins: [], active: false },
     announcements: { message: "", priority: "normal" },
-    checkins:      readSessionMap(CHECKIN_KEY),
+    checkins:      readLocalMap(CHECKIN_KEY),
     fulfilled:     readSessionMap(FULFILLED_KEY),
     import:        { status: "idle", preview: null, result: null },
   };
@@ -215,8 +227,9 @@ function bindGuestEvents() {
     el.addEventListener("click", () => {
       const id = el.dataset.checkinToggle;
       const guest = PassengerService.getPassengerById(id);
-      state.checkins[id] = !effectiveCheckIn(guest);
-      writeSessionMap(CHECKIN_KEY, state.checkins);
+      const wasCheckedIn = !!effectiveCheckIn(guest);
+      state.checkins[id] = wasCheckedIn ? false : new Date().toISOString();
+      writeLocalMap(CHECKIN_KEY, state.checkins);
       renderPage();
     });
   });
@@ -498,9 +511,18 @@ function checkInGuest(passportNumber) {
     return;
   }
 
-  // Mark checked in
-  state.checkins[guest.id] = true;
-  writeSessionMap(CHECKIN_KEY, state.checkins);
+  // Duplicate guard — warn if already checked in
+  const checkins = readLocalMap(CHECKIN_KEY);
+  if (checkins[guest.id]) {
+    const time = new Date(checkins[guest.id]).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+    showToast(`⚠️ ${guest.displayName || guest.id} already checked in at ${time}`);
+    return;
+  }
+
+  // Mark checked in with timestamp
+  checkins[guest.id] = new Date().toISOString();
+  writeLocalMap(CHECKIN_KEY, checkins);
+  state.checkins = checkins;
 
   // Award check-in miles once per session
   const milesKey = `ar_checkin_miles_${guest.id}`;
