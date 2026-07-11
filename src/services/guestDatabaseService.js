@@ -8,13 +8,26 @@
  */
 
 import { guests as rawGuests } from "../data/guests.js";
-import { families } from "../data/families.js";
+import { families as staticFamilies } from "../data/families.js";
 import { rooms } from "../data/rooms.js";
 import { normalizeGuest } from "../models/Guest.js";
 import { parseCSV } from "../utils/csvParser.js";
 
-const GUEST_DB_KEY = "ar_guest_db";
+const GUEST_DB_KEY   = "ar_guest_db";
 const GUEST_DB_META_KEY = "ar_guest_db_meta";
+const FAMILY_DB_KEY  = "ar_family_db";
+
+const FAMILY_COLORS = ["#d4af6a","#e07b7b","#7bb8e0","#7be09a","#b07be0","#e0b87b","#7be0d8","#c97be0"];
+
+function colorFromFamilyName(name) {
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) & 0xffffffff;
+  return FAMILY_COLORS[Math.abs(h) % FAMILY_COLORS.length];
+}
+
+function slugify(str) {
+  return str.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
 
 function generatePassportNumber(roomName, familyName, existingSet, pendingSet) {
   const initial = (familyName.trim()[0] || "X").toUpperCase();
@@ -50,8 +63,18 @@ class GuestDatabaseService {
     return this.getAll().find(g => g.passportNumber?.toUpperCase() === q) || null;
   }
 
-  getFamilies() { return families; }
-  getRooms()    { return rooms; }
+  getFamilies() {
+    try {
+      const raw = localStorage.getItem(FAMILY_DB_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return staticFamilies;
+  }
+
+  getRooms() { return rooms; }
 
   hasImportedData() {
     try {
@@ -106,6 +129,7 @@ class GuestDatabaseService {
     const guests = [];
     const previewRows = [];
     const errors = [];
+    const derivedFamilyMap = {};
     let skipped = 0;
 
     for (let i = 0; i < rows.length; i++) {
@@ -119,17 +143,21 @@ class GuestDatabaseService {
 
       if (!name && !familyName && !roomName) { skipped++; continue; }
 
-      if (!name)       { errors.push(`Row ${rowNum}: missing name`);                      skipped++; continue; }
-      if (!familyName) { errors.push(`Row ${rowNum}: missing family for "${name}"`);      skipped++; continue; }
-      if (!roomName)   { errors.push(`Row ${rowNum}: missing room for "${name}"`);        skipped++; continue; }
-      if (!zone)       { errors.push(`Row ${rowNum}: missing zone for "${name}"`);        skipped++; continue; }
+      if (!name)       { errors.push(`Row ${rowNum}: missing name`);                 skipped++; continue; }
+      if (!familyName) { errors.push(`Row ${rowNum}: missing family for "${name}"`); skipped++; continue; }
+      if (!roomName)   { errors.push(`Row ${rowNum}: missing room for "${name}"`);   skipped++; continue; }
+      if (!zone)       { errors.push(`Row ${rowNum}: missing zone for "${name}"`);   skipped++; continue; }
 
-      const family = families.find(f => f.name.toLowerCase() === familyName.toLowerCase());
-      if (!family) {
-        errors.push(`Row ${rowNum}: family "${familyName}" not found — check spelling`);
-        skipped++;
-        continue;
+      // Derive family from CSV — no validation against families.js
+      const normKey = familyName.toLowerCase();
+      if (!derivedFamilyMap[normKey]) {
+        derivedFamilyMap[normKey] = {
+          id:    `fam-${slugify(familyName)}`,
+          name:  familyName,
+          color: colorFromFamilyName(familyName),
+        };
       }
+      const family = derivedFamilyMap[normKey];
 
       const room = rooms.find(r => r.name.toLowerCase() === roomName.toLowerCase());
       if (!room) {
@@ -176,22 +204,33 @@ class GuestDatabaseService {
       }
     }
 
-    return { guests, previewRows, imported: guests.length, skipped, errors };
+    return {
+      guests,
+      previewRows,
+      imported: guests.length,
+      skipped,
+      errors,
+      families: Object.values(derivedFamilyMap),
+    };
   }
 
-  /** Persist a previously-parsed guest list to localStorage. */
-  commitImport(guests) {
+  /** Persist a previously-parsed guest list (and derived families) to localStorage. */
+  commitImport(guests, derivedFamilies) {
     localStorage.setItem(GUEST_DB_KEY, JSON.stringify(guests));
+    if (Array.isArray(derivedFamilies) && derivedFamilies.length) {
+      localStorage.setItem(FAMILY_DB_KEY, JSON.stringify(derivedFamilies));
+    }
     localStorage.setItem(GUEST_DB_META_KEY, JSON.stringify({
       importedAt: new Date().toISOString(),
       count: guests.length,
     }));
   }
 
-  /** Remove imported data — getAll() will fall back to guests.js. */
+  /** Remove imported data — getAll() and getFamilies() fall back to static data. */
   clearImported() {
     localStorage.removeItem(GUEST_DB_KEY);
     localStorage.removeItem(GUEST_DB_META_KEY);
+    localStorage.removeItem(FAMILY_DB_KEY);
   }
 }
 

@@ -6,7 +6,6 @@
  * The interface stays identical.
  */
 
-import { families } from "../data/families.js";
 import MilesService from "./milesService.js";
 import GuestDatabaseService from "./guestDatabaseService.js";
 
@@ -48,7 +47,7 @@ class LeaderboardService {
       familyMemberCounts[guest.familyId] = (familyMemberCounts[guest.familyId] || 0) + 1;
     }
 
-    const entries = families.map(f => ({
+    const entries = GuestDatabaseService.getFamilies().map(f => ({
       familyId: f.id,
       name: f.name,
       color: f.color,
