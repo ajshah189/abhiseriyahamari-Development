@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 10)
+11 July 2026 (Session 13 — Pre-August Cleanup)
 
 Current Version:
 v0.8
@@ -67,6 +67,7 @@ main
 | Guest Search in Navigate | 🟢 Completed | 100% |
 | Directory Prominence | 🟢 Completed | 100% |
 | Analytics | 🟢 Completed | 100% |
+| Pre-August Cleanup | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---
@@ -495,31 +496,28 @@ Cloudflare Pages
 
 ---
 
-# Upcoming Milestones
+# Next Milestone
 
-Sprint 003
+## August 2026 — Firebase Integration
 
-Passenger System
+- [ ] Setup Firebase project (ar-airways-2027)
+- [ ] Migrate miles ledger to Realtime Database
+- [ ] Real-time leaderboard sync across devices
+- [ ] Multi-device check-in sync
+- [ ] Push notifications via FCM
+- [ ] Concierge request real-time status sync
+- [ ] Guest services WhatsApp → Push notification upgrade
 
-Sprint 004
+## Before January 2027
 
-Home Dashboard
-
-Sprint 005
-
-Boarding Pass
-
-Sprint 006
-
-Passport
-
-Sprint 007
-
-Backend
-
-Sprint 008
-
-AR Miles
+- [ ] Upload complete guest list (487 guests) via CSV import
+- [ ] Connect abhiseriyahamari.in to Cloudflare Pages
+- [ ] Make GitHub repo private
+- [ ] Design and print 487 physical boarding passes
+- [ ] Generate and place 15 QR codes at Aayush Resort
+- [ ] Final SW cache bump
+- [ ] iPhone Safari PWA testing
+- [ ] Volunteer training (check-in process)
 
 ---
 

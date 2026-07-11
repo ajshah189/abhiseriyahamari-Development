@@ -146,7 +146,6 @@ class GuestDatabaseService {
       if (!name)       { errors.push(`Row ${rowNum}: missing name`);                 skipped++; continue; }
       if (!familyName) { errors.push(`Row ${rowNum}: missing family for "${name}"`); skipped++; continue; }
       if (!roomName)   { errors.push(`Row ${rowNum}: missing room for "${name}"`);   skipped++; continue; }
-      if (!zone)       { errors.push(`Row ${rowNum}: missing zone for "${name}"`);   skipped++; continue; }
 
       // Derive family from CSV — no validation against families.js
       const normKey = familyName.toLowerCase();
