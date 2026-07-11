@@ -27,6 +27,14 @@ function bindEvents() {
       render();
     });
   });
+
+  const startBtn = container.querySelector("[data-start-hunt]");
+  if (startBtn) {
+    startBtn.addEventListener("click", () => {
+      sessionStorage.setItem("ar_map_highlight", "HUNT-001");
+      Router.go("map");
+    });
+  }
 }
 
 function mount() {

@@ -128,6 +128,75 @@
   margin: 0 var(--s-6) var(--s-5);
 }
 
+.boarding-pass__qr-section {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--s-3);
+  border-top: 1px dashed #d4c5b0;
+  margin-top: var(--s-3);
+}
+
+.boarding-pass__qr {
+  border-radius: 4px;
+  display: block;
+}
+
+.boarding-pass__passport-number {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 6px;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- Share Button ---------- */
+
+.journey-share-btn {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  background: none;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+}
+
+.journey-share-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ---------- Copy toast ---------- */
+
+.journey-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  color: var(--cream);
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 100;
+  white-space: nowrap;
+  animation: toast-in 0.2s var(--ease-out) both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 @media (max-width: 600px) {
   .boarding-pass {
     grid-template-columns: 1fr;

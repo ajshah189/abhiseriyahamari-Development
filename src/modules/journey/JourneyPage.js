@@ -66,6 +66,18 @@ function boardingPass(snapshot) {
   const gate = isViewer ? "—" : (zone ? zone.toUpperCase() : "TBD");
   const seat = isViewer ? "—" : (cottage || room);
   const flightClass = isViewer ? "—" : tierName;
+  const passportNumber = isViewer ? null : (snapshot?.profile?.passportNumber || null);
+
+  const qrUrl = passportNumber
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(passportNumber)}&bgcolor=faf9f6&color=0a0a0f&margin=8`
+    : null;
+
+  const barcodeSection = qrUrl
+    ? `<div class="boarding-pass__qr-section">
+        <img class="boarding-pass__qr" src="${qrUrl}" alt="Boarding QR" width="120" height="120" loading="lazy">
+        <p class="boarding-pass__passport-number">${passportNumber}</p>
+      </div>`
+    : `<div class="boarding-pass__barcode"></div>`;
 
   return `
     <div class="boarding-pass">
@@ -116,7 +128,7 @@ function boardingPass(snapshot) {
         <div class="boarding-pass__class">${flightClass}</div>
       </div>
 
-      <div class="boarding-pass__barcode"></div>
+      ${barcodeSection}
     </div>
   `;
 }
@@ -149,11 +161,13 @@ export function JourneyPage() {
   const snapshot = PassengerService.getCurrentSnapshot();
   const todaysEvents = getTodaysEvents();
   const countries = getCountries();
+  const canShare = !snapshot?.isViewer && snapshot?.profile?.passportNumber;
 
   return `
     ${TopBar()}
     <main class="journey-page">
       ${boardingPass(snapshot)}
+      ${canShare ? `<button class="journey-share-btn" data-share-btn>✈ Share Boarding Pass</button>` : ""}
 
       <section class="dashboard-section">
         <div class="section-header">

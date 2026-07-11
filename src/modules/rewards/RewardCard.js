@@ -6,6 +6,9 @@
  * actual "Redeem" click behavior (inline confirmation) is wired by
  * RewardsScreen via the data-redeem attribute — this file has no
  * event handling of its own.
+ *
+ * preWedding: when true, all buttons show "Opens in N days" instead of
+ * afford/shortfall state — redemption isn't open yet.
  */
 
 import MilesService from "../../services/milesService.js";
@@ -18,9 +21,18 @@ const CATEGORY_LABEL = {
   recognition: "Recognition",
 };
 
-export function RewardCard(reward, balance) {
+export function RewardCard(reward, balance, preWedding = false, daysUntil = 0) {
   const affordable = canAfford(reward, balance);
   const shortfall = reward.cost - balance;
+
+  let button;
+  if (preWedding) {
+    button = `<button class="reward-card__redeem reward-card__redeem--disabled" disabled>Opens in ${daysUntil > 0 ? daysUntil : 0} days · 22 Jan</button>`;
+  } else if (affordable) {
+    button = `<button class="reward-card__redeem" data-redeem="${reward.id}">Redeem</button>`;
+  } else {
+    button = `<button class="reward-card__redeem reward-card__redeem--disabled" disabled>Need ${MilesService.format(shortfall)} more</button>`;
+  }
 
   return `
     <div class="reward-card ${reward.featured ? "reward-card--featured" : ""}">
@@ -31,9 +43,7 @@ export function RewardCard(reward, balance) {
       <span class="reward-card__category">${CATEGORY_LABEL[reward.category] || reward.category}</span>
       <div class="reward-card__footer">
         <div class="reward-card__cost">${MilesService.format(reward.cost)} ✈</div>
-        ${affordable
-          ? `<button class="reward-card__redeem" data-redeem="${reward.id}">Redeem</button>`
-          : `<button class="reward-card__redeem reward-card__redeem--disabled" disabled>Need ${MilesService.format(shortfall)} more</button>`}
+        ${button}
       </div>
     </div>
   `;

@@ -13,6 +13,7 @@
  */
 
 import { RewardsPage } from "./RewardsPage.js";
+import { animateLeaderboard } from "../leaderboard/LeaderboardCard.js";
 import Router from "../../router.js";
 import { pullToRefresh } from "../../utils/pullToRefresh.js";
 
@@ -52,6 +53,9 @@ function bindEvents() {
 function render() {
   container.innerHTML = RewardsPage(activeView);
   bindEvents();
+  if (activeView === "leaderboard") {
+    setTimeout(() => animateLeaderboard(), 0);
+  }
 }
 
 function mount(view) {

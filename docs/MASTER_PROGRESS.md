@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 7)
+11 July 2026 (Session 8)
 
 Current Version:
-v0.6
+v0.7
 
 Current Phase:
 Phase 1 – Foundation
@@ -40,6 +40,7 @@ main
 | PWA Shell | 🟢 Completed | 100% |
 | Home Dashboard | 🟢 Completed | 100% |
 | Dashboard Alive (Countdown + Empty States + Warmth) | 🟢 Completed | 100% |
+| Gamification Polish (Trophies + QR + Hunt Urgency + Rewards Countdown) | 🟢 Completed | 100% |
 | Boarding Pass | 🟢 Completed | 100% |
 | Passport | 🟢 Completed | 100% |
 | Events | 🟢 Completed | 100% |
@@ -112,7 +113,7 @@ main
 
 ✅ Passport preview: country circles derived from event data, visited/locked state from live event status
 
-⬜ Functional QR code on the boarding pass (currently decorative)
+✅ Functional QR code on the boarding pass — live QR from `api.qrserver.com` encoding the guest's passport number; fallback decorative barcode for viewer mode
 
 ## Rewards / Leaderboard
 
