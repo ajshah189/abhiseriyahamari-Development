@@ -20,13 +20,25 @@ import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
 import { HUNT_LOCATIONS, getFoundLocations } from "../../data/treasureHunt.js";
 
 const NAV_ITEMS = [
-  { id: "overview",   label: "Overview" },
-  { id: "award",      label: "Award Miles" },
-  { id: "guests",     label: "Guests" },
-  { id: "redemptions",label: "Redemptions" },
-  { id: "qrcodes",    label: "QR Codes" },
-  { id: "import",     label: "Import Guests" },
-  { id: "analytics",  label: "Analytics" },
+  { id: "overview",      label: "Overview" },
+  { id: "award",         label: "Award Miles" },
+  { id: "scanner",       label: "Check-in" },
+  { id: "guests",        label: "Guests" },
+  { id: "redemptions",   label: "Redemptions" },
+  { id: "qrcodes",       label: "QR Codes" },
+  { id: "import",        label: "Import Guests" },
+  { id: "analytics",     label: "Analytics" },
+  { id: "announcements", label: "Announce" },
+  { id: "requests",      label: "Requests" },
+];
+
+const ANNOUNCEMENT_TEMPLATES = [
+  "🚌 Buses leaving in 10 minutes — please make your way to the main gate",
+  "🍽 Dinner is now being served at the Palace",
+  "💃 Garba is starting now — head to The Palace",
+  "🎶 Sangeet begins in 15 minutes — get ready!",
+  "📸 Group photo in 5 minutes at the main lawn",
+  "🛏 Rooms are ready for check-in",
 ];
 
 const AMOUNT_PRESETS = [50, 100, 200, 500, 1000];
@@ -576,16 +588,202 @@ function analyticsSection() {
   `;
 }
 
+// ---------- Check-in Scanner ----------
+
+function scannerSection(state) {
+  const sc = state.scanner;
+  const recent = sc.recentCheckins || [];
+
+  return `
+    <section class="dashboard-section">
+      <h3>Check-in Scanner</h3>
+      <p class="muted" style="margin-bottom:var(--s-4)">Scan a guest's boarding pass QR to check them in and award +100 AR Miles.</p>
+
+      <div class="scanner-viewfinder-wrap" id="scanner-viewfinder-wrap" ${sc.active ? "" : "style=\"display:none\""}>
+        <div class="scanner-viewfinder-placeholder" id="scanner-placeholder">
+          <div class="scanner-viewfinder-placeholder__icon">📷</div>
+          <div class="scanner-viewfinder-placeholder__text">Camera initializing…</div>
+        </div>
+      </div>
+
+      ${sc.active
+        ? `<button class="admin-ghost-btn" style="margin-bottom:var(--s-4)" data-scanner-stop>✕ Stop Scanner</button>`
+        : `<button class="admin-submit-btn" style="margin-bottom:var(--s-4)" data-scanner-start>📷 Start Scanner</button>`}
+
+      <div class="scanner-divider">— OR —</div>
+
+      <label class="admin-field-label">Manual Entry</label>
+      <div class="scanner-manual-row">
+        <input
+          class="admin-input scanner-manual-input"
+          type="text"
+          placeholder="AR-Japan-S"
+          value="${sc.passportInput}"
+          data-scanner-input />
+        <button class="admin-submit-btn scanner-manual-btn" data-scanner-checkin>Check In</button>
+      </div>
+
+      ${recent.length > 0 ? `
+        <label class="admin-field-label" style="margin-top:var(--s-5)">Recent Check-ins</label>
+        <div class="scanner-recent">
+          ${recent.map(c => `
+            <div class="scanner-recent-item">
+              <span class="scanner-recent-icon">✅</span>
+              <span class="scanner-recent-name">${c.name}</span>
+              <span class="scanner-recent-time">${c.time}</span>
+            </div>
+          `).join("")}
+        </div>
+      ` : ""}
+    </section>
+  `;
+}
+
+// ---------- Announcements ----------
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatAnnTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function getAnnouncements() {
+  try { return JSON.parse(localStorage.getItem("ar_announcements") || "[]"); } catch { return []; }
+}
+
+function announcementsSection(state) {
+  const ann = state.announcements;
+  const history = getAnnouncements();
+
+  return `
+    <section class="dashboard-section">
+      <h3>Broadcast Announcement</h3>
+
+      <label class="admin-field-label">Quick Templates</label>
+      <div class="announcement-templates">
+        ${ANNOUNCEMENT_TEMPLATES.map(msg => `
+          <button
+            class="announcement-template-btn ${ann.message === msg ? "announcement-template-btn--selected" : ""}"
+            data-ann-template="${esc(msg)}">
+            ${esc(msg)}
+          </button>
+        `).join("")}
+      </div>
+
+      <label class="admin-field-label">Message</label>
+      <textarea
+        class="admin-input"
+        rows="3"
+        placeholder="Type your announcement…"
+        data-ann-message>${esc(ann.message)}</textarea>
+
+      <div class="announcement-priority-row">
+        <span style="font-size:13px;color:var(--cream-dim)">Priority:</span>
+        <label class="announcement-priority-label">
+          <input type="radio" name="ann-priority" value="normal"
+            ${ann.priority === "normal" ? "checked" : ""} data-ann-priority />
+          Normal
+        </label>
+        <label class="announcement-priority-label">
+          <input type="radio" name="ann-priority" value="urgent"
+            ${ann.priority === "urgent" ? "checked" : ""} data-ann-priority />
+          🔴 Urgent
+        </label>
+      </div>
+
+      <button class="admin-submit-btn" data-ann-send>📢 Broadcast to All Guests</button>
+
+      ${history.length > 0 ? `
+        <label class="admin-field-label" style="margin-top:var(--s-6)">Past Announcements</label>
+        <div class="announcement-history">
+          ${history.map(a => `
+            <div class="announcement-history-item ${a.priority === "urgent" ? "announcement-history-item--urgent" : ""}">
+              <span class="announcement-history-time">${formatAnnTime(a.timestamp)}</span>
+              <span class="announcement-history-text">${esc(a.message)}</span>
+              <button class="announcement-history-delete" data-ann-delete="${a.id}">Delete</button>
+            </div>
+          `).join("")}
+        </div>
+      ` : `<p class="muted" style="margin-top:var(--s-4)">No announcements sent yet.</p>`}
+    </section>
+  `;
+}
+
+// ---------- Guest Requests ----------
+
+function formatReqTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function getRequests() {
+  try { return JSON.parse(localStorage.getItem("ar_requests") || "[]"); } catch { return []; }
+}
+
+function requestsSection() {
+  const requests = getRequests();
+  const eventsContact = localStorage.getItem("ar_events_contact") || "";
+
+  return `
+    <section class="dashboard-section">
+      <h3>Guest Requests</h3>
+
+      <label class="admin-field-label">Events Management WhatsApp</label>
+      <div class="admin-events-contact-row">
+        <input
+          class="admin-input"
+          type="tel"
+          placeholder="+91__________"
+          value="${esc(eventsContact)}"
+          data-events-contact />
+        <button class="admin-events-contact-save" data-events-contact-save>Save</button>
+      </div>
+
+      <div style="margin-top:var(--s-2)">
+        ${requests.length ? requests.map(r => {
+          const status = localStorage.getItem(`ar_request_status_${r.id}`) || r.status || "pending";
+          return `
+            <div class="admin-request-row">
+              <div class="admin-request-row__info">
+                <div class="admin-request-row__guest">${esc(r.guestName)} · Room ${esc(String(r.room))}</div>
+                <div class="admin-request-row__type">${esc(r.label)} · ${formatReqTime(r.timestamp)}</div>
+                ${r.note ? `<div class="admin-request-row__note">${esc(r.note)}</div>` : ""}
+              </div>
+              <select class="admin-request-status" data-req-status="${r.id}">
+                <option value="pending"     ${status === "pending"     ? "selected" : ""}>● Pending</option>
+                <option value="in-progress" ${status === "in-progress" ? "selected" : ""}>● In Progress</option>
+                <option value="done"        ${status === "done"        ? "selected" : ""}>✅ Done</option>
+              </select>
+            </div>
+          `;
+        }).join("") : `<p class="muted">No guest requests yet.</p>`}
+      </div>
+    </section>
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
-  overview:    overviewSection,
-  award:       awardSection,
-  guests:      guestsSection,
-  redemptions: redemptionsSection,
-  qrcodes:     qrCodesSection,
-  import:      importSection,
-  analytics:   analyticsSection,
+  overview:      overviewSection,
+  award:         awardSection,
+  scanner:       scannerSection,
+  guests:        guestsSection,
+  redemptions:   redemptionsSection,
+  qrcodes:       qrCodesSection,
+  import:        importSection,
+  analytics:     analyticsSection,
+  announcements: announcementsSection,
+  requests:      requestsSection,
 };
 
 export function AdminPage(state) {

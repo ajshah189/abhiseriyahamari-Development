@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-11 July 2026 (Session 8)
+11 July 2026 (Session 9)
 
 Current Version:
-v0.7
+v0.8
 
 Current Phase:
 Phase 1 – Foundation
@@ -51,6 +51,8 @@ main
 | QR Missions / Treasure Hunt | 🟢 Completed | 100% |
 | Map Polish | 🟢 Completed | 100% |
 | Admin Dashboard | 🟢 Completed | 100% |
+| Admin Power Tools (Announcements + QR Check-in + Mobile Layout) | 🟢 Completed | 100% |
+| Guest Services Concierge | 🟢 Completed | 100% |
 | Guest Directory | 🟢 Completed | 100% |
 | Map Navigation UX | 🟢 Completed | 100% |
 | CSV Guest Import | 🟢 Completed | 100% |

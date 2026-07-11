@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: "ar-airways-v{N}".
  */
 
-const CACHE_NAME = "ar-airways-v16";
+const CACHE_NAME = "ar-airways-v18";
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -204,6 +204,14 @@ const APP_SHELL = [
   // Notifications
   "/src/modules/notifications/NotificationService.js",
   "/src/modules/notifications/notifications.css",
+
+  // Concierge / Guest Services
+  "/src/modules/concierge/ConciergePage.js",
+  "/src/modules/concierge/ConciergeScreen.js",
+  "/src/modules/concierge/concierge.css",
+
+  // Admin broadcast
+  "/src/modules/admin/announcements.css",
 ];
 
 // â”€â”€â”€ Install â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
