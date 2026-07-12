@@ -83,7 +83,9 @@ export function addTransaction({ guestId, amount, reason, kind }) {
     transaction: tx,
   });
   // Fire-and-forget dual-write to Firebase
-  FirebaseService.addTransaction(guestId, tx).catch(() => {});
+  FirebaseService.addTransaction(guestId, tx).catch(e => {
+    console.error('Firebase dual-write failed:', e);
+  });
   return tx;
 }
 
