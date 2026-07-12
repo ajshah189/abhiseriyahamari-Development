@@ -21,6 +21,7 @@ import PassengerService from "../../services/passengerService.js";
 import MilesService from "../../services/milesService.js";
 import GuestDatabaseService from "../../services/guestDatabaseService.js";
 import FirebaseService from "../../services/firebaseService.js";
+import FCMService from "../../services/fcmService.js";
 import Router from "../../router.js";
 
 // Scanner: module-level so video/stream survive renderPage() calls
@@ -651,29 +652,24 @@ function bindAnnouncementEvents() {
   });
 }
 
-function broadcastAnnouncement() {
+async function broadcastAnnouncement() {
   const { message, priority } = state.announcements;
   if (!message.trim()) { showToast("Write a message first"); return; }
 
-  const announcement = {
-    id:        Date.now(),
-    message:   message.trim(),
-    priority,
-    timestamp: new Date().toISOString(),
-    sentBy:    "Ground Crew",
-    read:      false,
-  };
+  // Push to Firebase — delivers to all open app tabs via onValue subscription
+  const success = await FirebaseService.postAnnouncement(message.trim(), priority);
 
+  // localStorage fallback for offline + local display
   try {
     const all = JSON.parse(localStorage.getItem("ar_announcements") || "[]");
-    all.unshift(announcement);
+    all.unshift({ id: Date.now(), message: message.trim(), priority, timestamp: new Date().toISOString(), sentBy: "Ground Crew", read: false });
     localStorage.setItem("ar_announcements", JSON.stringify(all.slice(0, 20)));
   } catch {}
 
-  // Push to Firebase (fire-and-forget) so all guest devices receive it
-  FirebaseService.postAnnouncement(message.trim(), priority).catch(() => {});
+  // FCM background push (reaches locked screens) requires Cloud Functions backend —
+  // not available in vanilla JS. Firebase onValue handles all open app instances.
 
-  showToast(`📢 Broadcast sent · ${priority === "urgent" ? "URGENT" : "Normal"}`);
+  showToast(success ? `📢 Broadcast sent to all guests` : `📢 Sent (offline mode)`);
   state.announcements.message = "";
   state.announcements.priority = "normal";
   renderPage();

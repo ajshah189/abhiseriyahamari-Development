@@ -182,6 +182,31 @@ class FirebaseService {
     });
   }
 
+  // ─── FCM TOKENS ─────────────────────────────────────────────────────────────
+
+  async saveFCMToken(guestId, token) {
+    try {
+      await set(ref(db, `fcm_tokens/${guestId}`), {
+        token,
+        updatedAt: Date.now(),
+      });
+      return true;
+    } catch (e) {
+      console.warn('Failed to save FCM token:', e.message);
+      return false;
+    }
+  }
+
+  async getAllFCMTokens() {
+    try {
+      const snapshot = await get(ref(db, 'fcm_tokens'));
+      if (!snapshot.exists()) return [];
+      return Object.values(snapshot.val()).map(t => t.token);
+    } catch (e) {
+      return [];
+    }
+  }
+
   subscribeToGuestRequests(guestId, callback) {
     const requestsRef = ref(db, 'requests');
     return onValue(requestsRef, (snapshot) => {

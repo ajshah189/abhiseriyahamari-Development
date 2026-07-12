@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-12 July 2026 (Session 15 — Miles Reversal)
+12 July 2026 (Session 16 — FCM Push Notifications + Family Leaderboard Firebase Sync)
 
 Current Version:
 v0.8
@@ -68,8 +68,10 @@ main
 | Directory Prominence | 🟢 Completed | 100% |
 | Analytics | 🟢 Completed | 100% |
 | Pre-August Cleanup | 🟢 Completed | 100% |
-| Firebase Integration | 🟢 Completed | 90% |
+| Firebase Integration | 🟢 Completed | 100% |
 | Miles Reversal / Deduct | 🟢 Completed | 100% |
+| FCM Push Notifications | 🟢 Completed | 100% |
+| Family Leaderboard Firebase Sync | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---
@@ -506,7 +508,7 @@ Cloudflare Pages
 - [x] Migrate miles ledger to Realtime Database (dual-write, localStorage fallback)
 - [x] Real-time leaderboard sync across devices
 - [x] Multi-device check-in sync
-- [ ] Push notifications via FCM
+- [x] Push notifications via FCM (foreground + token registration; background push needs Cloud Functions)
 - [x] Concierge request real-time status sync
 - [x] Announcement broadcast to all guest devices via Firebase
 

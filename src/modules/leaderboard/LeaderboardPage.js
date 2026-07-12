@@ -43,7 +43,7 @@ export function LeaderboardPage() {
 
     <section class="dashboard-section">
       <h3>Top Families</h3>
-      <div class="leaderboard-list">
+      <div class="leaderboard-list family-leaderboard-list">
         ${byFamily.map(FamilyRow).join("")}
       </div>
     </section>

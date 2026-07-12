@@ -8,6 +8,7 @@ import {
   getDatabase, ref, push, set, get,
   onValue, query, orderByChild, limitToLast, remove
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBNSRwju-YBwkLG70D93bXJeqNT_Ew5rUo",
@@ -21,5 +22,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const messaging = getMessaging(app);
 
-export { db, ref, push, set, get, onValue, query, orderByChild, limitToLast, remove };
+// VAPID key — from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Key pair
+const VAPID_KEY = 'PASTE_VAPID_KEY_HERE';
+
+export { db, ref, push, set, get, onValue, query, orderByChild, limitToLast, remove, messaging, getToken, onMessage, VAPID_KEY };
