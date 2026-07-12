@@ -338,6 +338,78 @@
   transform: translateY(-2px);
 }
 
+/* ---------- Award/Deduct mode toggle ---------- */
+
+.admin-award-mode-toggle {
+  display: flex;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+
+.admin-mode-btn {
+  flex: 1;
+  border: 1px solid var(--line-strong);
+  background: var(--night-3);
+  color: var(--cream-dim);
+  border-radius: var(--r-pill);
+  padding: var(--s-2) var(--s-4);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+}
+
+.admin-mode-btn--active {
+  background: var(--gold-faint);
+  color: var(--gold);
+  border-color: var(--gold-soft);
+}
+
+.admin-mode-btn--active-deduct {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.admin-amount-chip--selected-deduct {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.admin-submit-btn--deduct {
+  background: rgba(245, 158, 11, 0.85);
+  color: var(--night);
+}
+
+.admin-submit-btn--deduct:hover {
+  background: #f59e0b;
+}
+
+/* ---------- Guest row actions ---------- */
+
+.guest-row__actions {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.admin-reverse-btn {
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+  color: #f59e0b;
+  border-radius: var(--r-pill);
+  padding: var(--s-2) var(--s-4);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.admin-reverse-btn:hover {
+  background: rgba(245, 158, 11, 0.18);
+}
+
 /* ---------- Guests table ---------- */
 
 .admin-tier-filters {

@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-12 July 2026 (Session 14 — Firebase Integration)
+12 July 2026 (Session 15 — Miles Reversal)
 
 Current Version:
 v0.8
@@ -69,6 +69,7 @@ main
 | Analytics | 🟢 Completed | 100% |
 | Pre-August Cleanup | 🟢 Completed | 100% |
 | Firebase Integration | 🟢 Completed | 90% |
+| Miles Reversal / Deduct | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---
