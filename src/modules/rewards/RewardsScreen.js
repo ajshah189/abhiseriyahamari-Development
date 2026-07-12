@@ -16,7 +16,7 @@
  */
 
 import { RewardsPage } from "./RewardsPage.js";
-import { animateLeaderboard, LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
+import { animateLeaderboard, LeaderboardRow, FamilyRow } from "../leaderboard/LeaderboardCard.js";
 import Router from "../../router.js";
 import { pullToRefresh } from "../../utils/pullToRefresh.js";
 import LeaderboardService from "../../services/leaderboardService.js";
@@ -27,6 +27,7 @@ const REDEEM_MESSAGE_MS = 2200;
 let container = null;
 let activeView = "rewards";
 let _unsubLeaderboard = null;
+let _unsubFamilyLeaderboard = null;
 
 function bindEvents() {
   container.querySelectorAll("[data-view]").forEach((btn) => {
@@ -62,8 +63,10 @@ function render() {
   if (activeView === "leaderboard") {
     setTimeout(() => animateLeaderboard(), 0);
     startLiveLeaderboard();
+    startLiveFamilyLeaderboard();
   } else {
     stopLiveLeaderboard();
+    stopLiveFamilyLeaderboard();
   }
 }
 
@@ -88,6 +91,23 @@ function stopLiveLeaderboard() {
   }
 }
 
+function startLiveFamilyLeaderboard() {
+  if (_unsubFamilyLeaderboard) _unsubFamilyLeaderboard();
+  _unsubFamilyLeaderboard = LeaderboardService.subscribeToLiveFamilyLeaderboard((data) => {
+    const listEl = container?.querySelector('.family-leaderboard-list');
+    if (listEl) {
+      listEl.innerHTML = data.slice(0, 10).map(FamilyRow).join('');
+    }
+  });
+}
+
+function stopLiveFamilyLeaderboard() {
+  if (_unsubFamilyLeaderboard) {
+    _unsubFamilyLeaderboard();
+    _unsubFamilyLeaderboard = null;
+  }
+}
+
 function mount(view) {
   container = document.getElementById("screen-rewards");
   if (view) activeView = view;
@@ -104,6 +124,7 @@ function show(view) {
 function hide() {
   container.hidden = true;
   stopLiveLeaderboard();
+  stopLiveFamilyLeaderboard();
 }
 
 /**

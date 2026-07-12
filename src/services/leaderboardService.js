@@ -79,6 +79,70 @@ class LeaderboardService {
     return entries.filter(e => e.todayMiles > 0);
   }
 
+  _getLocalBalance(guestId) {
+    return MilesService.getBalance(guestId);
+  }
+
+  /**
+   * Live family leaderboard from Firebase.
+   * Groups guest balances by familyId, falls back to localStorage for
+   * guests not yet synced to Firebase. Returns an unsubscribe function.
+   */
+  subscribeToLiveFamilyLeaderboard(callback) {
+    return FirebaseService.subscribeToLeaderboard((fbData) => {
+      const guests = GuestDatabaseService.getAll();
+      const families = GuestDatabaseService.getFamilies();
+
+      const familyTotals = {};
+
+      fbData.forEach(({ guestId, balance }) => {
+        const guest = guests.find(g => g.id === guestId);
+        if (!guest || !guest.familyId) return;
+
+        if (!familyTotals[guest.familyId]) {
+          const fam = families.find(f => f.id === guest.familyId) || {};
+          familyTotals[guest.familyId] = {
+            name: fam.name || guest.familyId,
+            color: fam.color,
+            totalBalance: 0,
+            memberCount: 0,
+          };
+        }
+        familyTotals[guest.familyId].totalBalance += balance;
+        familyTotals[guest.familyId].memberCount++;
+      });
+
+      // Fill in guests not yet in Firebase from localStorage
+      guests.forEach(guest => {
+        if (!guest.familyId) return;
+        const inFirebase = fbData.find(f => f.guestId === guest.id);
+        if (!inFirebase) {
+          const localBalance = this._getLocalBalance(guest.id);
+          if (localBalance > 0) {
+            if (!familyTotals[guest.familyId]) {
+              const fam = families.find(f => f.id === guest.familyId) || {};
+              familyTotals[guest.familyId] = {
+                name: fam.name || guest.familyId,
+                color: fam.color,
+                totalBalance: 0,
+                memberCount: 0,
+              };
+            }
+            familyTotals[guest.familyId].totalBalance += localBalance;
+            familyTotals[guest.familyId].memberCount++;
+          }
+        }
+      });
+
+      const sorted = Object.values(familyTotals)
+        .sort((a, b) => b.totalBalance - a.totalBalance);
+
+      sorted.forEach((e, i) => { e.rank = i + 1; });
+
+      callback(sorted);
+    });
+  }
+
   /**
    * Live leaderboard from Firebase, enriched with guest metadata.
    * Guests not yet in Firebase fall back to localStorage balance.

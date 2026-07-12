@@ -26,6 +26,7 @@ import { storageGet, storageSet, storageRemove } from "../utils/storage.js";
 import { APP_CONFIG } from "../config.js";
 import GuestDatabaseService from "./guestDatabaseService.js";
 import FirebaseService from "./firebaseService.js";
+import FCMService from "./fcmService.js";
 
 const FULL_FEATURES = [
   "miles", "rewards", "passport", "profile", "leaderboard_self",
@@ -59,6 +60,9 @@ class AuthService {
 
     // Fire-and-forget: migrate existing localStorage ledger to Firebase once per device
     migrateToFirebase(guest).catch(() => {});
+
+    // Register FCM push notifications after login (non-critical)
+    FCMService.requestPermissionAndRegister(guest.id).catch(() => {});
 
     return { success: true, guest };
   }

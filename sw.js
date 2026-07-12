@@ -1,4 +1,31 @@
-﻿/**
+﻿// Firebase Cloud Messaging — background push handler (must be at top level)
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: “AIzaSyBNSRwju-YBwkLG70D93bXJeqNT_Ew5rUo”,
+  authDomain: “ar-airways-2027.firebaseapp.com”,
+  databaseURL: “https://ar-airways-2027-default-rtdb.asia-southeast1.firebasedatabase.app”,
+  projectId: “ar-airways-2027”,
+  storageBucket: “ar-airways-2027.firebasestorage.app”,
+  messagingSenderId: “602808657534”,
+  appId: “1:602808657534:web:43519c91ee3e113b519a2f”
+});
+
+const firebaseMessaging = firebase.messaging();
+
+firebaseMessaging.onBackgroundMessage((payload) => {
+  const { title, body, icon } = payload.notification || {};
+  self.registration.showNotification(title || 'AR Airways ✈', {
+    body: body || '',
+    icon: icon || '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    vibrate: [200, 100, 200],
+    data: payload.data || {}
+  });
+});
+
+/**
  * AR Airways â€” Service Worker
  *
  * Cache strategy:
@@ -9,14 +36,15 @@
  * Offline fallback: any navigation request that misses the network returns
  * /index.html so the SPA router can handle it.
  *
- * Push / notification handlers are wired up and ready for Firebase Cloud
- * Messaging when the backend session adds that integration.
+ * Push / notification handlers wired via Firebase Messaging compat scripts
+ * above. Background push reaches locked screens once VAPID key is set in
+ * src/config/firebase.js and a Cloud Functions backend is wired up.
  *
  * IMPORTANT: Bump CACHE_NAME whenever the app shell changes so old caches
- * are evicted on next activate. Format: "ar-airways-v{N}".
+ * are evicted on next activate. Format: “ar-airways-v{N}”.
  */
 
-const CACHE_NAME = "ar-airways-v24";
+const CACHE_NAME = “ar-airways-v25”;
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -61,6 +89,7 @@ const APP_SHELL = [
   "/src/services/leaderboardService.js",
   "/src/services/rewardService.js",
   "/src/services/dataService.js",
+  "/src/services/fcmService.js",
 
   // Utilities
   "/src/utils/storage.js",
