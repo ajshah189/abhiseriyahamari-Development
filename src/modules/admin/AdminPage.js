@@ -98,6 +98,7 @@ function overviewSection(state) {
 
 function awardSection(state) {
   const award = state.award;
+  const isDeduct = (award.mode || "award") === "deduct";
 
   const passengers = PassengerService.getAllPassengers().map(p => ({
     ...p,
@@ -130,24 +131,32 @@ function awardSection(state) {
             `).join("")
           : `<p class="muted">No guests match.</p>`}
       </div>
-      ${selected ? `<p class="admin-award-selected">Awarding to <strong>${selected.displayName}</strong></p>` : ""}
+      ${selected ? `<p class="admin-award-selected">${isDeduct ? "Deducting from" : "Awarding to"} <strong>${selected.displayName}</strong></p>` : ""}
+
+      <label class="admin-field-label">Type</label>
+      <div class="admin-award-mode-toggle">
+        <button class="admin-mode-btn ${!isDeduct ? "admin-mode-btn--active" : ""}" data-award-mode="award">✈ Award</button>
+        <button class="admin-mode-btn admin-mode-btn--deduct ${isDeduct ? "admin-mode-btn--active-deduct" : ""}" data-award-mode="deduct">⚠ Deduct</button>
+      </div>
 
       <label class="admin-field-label">Amount</label>
       <div class="admin-amount-presets">
         ${AMOUNT_PRESETS.map(a => `
           <button
-            class="admin-amount-chip ${award.amount === a ? "admin-amount-chip--selected" : ""}"
+            class="admin-amount-chip ${award.amount === a ? (isDeduct ? "admin-amount-chip--selected-deduct" : "admin-amount-chip--selected") : ""}"
             data-award-amount="${a}">
-            +${a}
+            ${isDeduct ? "-" : "+"}${a}
           </button>
         `).join("")}
       </div>
       <input class="admin-input" type="number" min="1" placeholder="Custom amount" value="${award.customAmount}" data-award-custom />
 
       <label class="admin-field-label">Reason</label>
-      <input class="admin-input" type="text" placeholder="e.g. Won Garba competition" value="${award.reason}" data-award-reason />
+      <input class="admin-input" type="text" placeholder="${isDeduct ? "e.g. Correction, penalty" : "e.g. Won Garba competition"}" value="${award.reason}" data-award-reason />
 
-      <button class="admin-submit-btn" data-award-submit>Award Miles</button>
+      <button class="admin-submit-btn ${isDeduct ? "admin-submit-btn--deduct" : ""}" data-award-submit>
+        ${isDeduct ? "Deduct Miles ⚠" : "Award Miles ✈"}
+      </button>
     </section>
   `;
 }
@@ -186,7 +195,10 @@ function guestRow(state, entry) {
               </div>
             `).join("") || `<p class="muted">No transactions yet.</p>`}
           </div>
-          <button class="admin-shortcut-btn" data-award-shortcut="${guest.id}">+ Miles</button>
+          <div class="guest-row__actions">
+            <button class="admin-shortcut-btn" data-award-shortcut="${guest.id}">+ Miles</button>
+            <button class="admin-reverse-btn" data-reverse-last="${guest.id}">↩ Reverse Last</button>
+          </div>
         </div>
       ` : ""}
     </div>

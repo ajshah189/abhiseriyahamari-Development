@@ -67,7 +67,7 @@ function isAuthed() {
 function createInitialState() {
   return {
     section:       "overview",
-    award:         { search: "", selectedGuestId: null, amount: null, customAmount: "", reason: "" },
+    award:         { search: "", selectedGuestId: null, amount: null, customAmount: "", reason: "", mode: "award" },
     guests:        { search: "", tierFilter: "all", expandedGuestId: null },
     scanner:       { passportInput: "", recentCheckins: [], active: false },
     announcements: { message: "", priority: "normal" },
@@ -176,32 +176,48 @@ function bindAwardEvents() {
     renderPage({ selector: "[data-award-reason]", cursor: e.target.selectionStart });
   });
 
+  container.querySelectorAll("[data-award-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.award.mode = btn.dataset.awardMode;
+      state.award.amount = null;
+      state.award.customAmount = "";
+      renderPage();
+    });
+  });
+
   container.querySelector("[data-award-submit]")?.addEventListener("click", submitAward);
 }
 
 function submitAward() {
-  const { selectedGuestId, amount, customAmount, reason } = state.award;
+  const { selectedGuestId, amount, customAmount, reason, mode } = state.award;
+  const isDeduct = mode === "deduct";
   const finalAmount = customAmount ? Number(customAmount) : amount;
 
-  if (!selectedGuestId) {
-    showToast("Select a guest first");
-    return;
-  }
-  if (!finalAmount || finalAmount <= 0) {
-    showToast("Enter a valid amount");
-    return;
-  }
-  if (!reason.trim()) {
-    showToast("Add a reason for the award");
-    return;
-  }
+  if (!selectedGuestId) { showToast("Select a guest first"); return; }
+  if (!finalAmount || finalAmount <= 0) { showToast("Enter a valid amount"); return; }
+  if (!reason.trim()) { showToast(`Add a reason for the ${isDeduct ? "deduction" : "award"}`); return; }
 
   const guest = PassengerService.getPassengerById(selectedGuestId);
-  MilesService.earn(selectedGuestId, finalAmount, reason.trim(), "AWARD_MANUAL");
 
-  showToast(`${finalAmount} AR Miles awarded to ${guest?.displayName || "guest"}`);
+  if (isDeduct) {
+    const currentBalance = MilesService.getBalance(selectedGuestId);
+    if (finalAmount > currentBalance) {
+      showToast(`⚠ Cannot deduct ${finalAmount} — only ${currentBalance} miles available`);
+      return;
+    }
+    try {
+      MilesService.spend(selectedGuestId, finalAmount, reason.trim(), "DEDUCT_MANUAL");
+    } catch (e) {
+      showToast(`⚠ ${e.message}`);
+      return;
+    }
+    showToast(`⚠ ${finalAmount} AR Miles deducted from ${guest?.displayName || "guest"}`);
+  } else {
+    MilesService.earn(selectedGuestId, finalAmount, reason.trim(), "AWARD_MANUAL");
+    showToast(`✅ ${finalAmount} AR Miles awarded to ${guest?.displayName || "guest"}`);
+  }
 
-  state.award = { search: "", selectedGuestId: null, amount: null, customAmount: "", reason: "" };
+  state.award = { search: "", selectedGuestId: null, amount: null, customAmount: "", reason: "", mode: "award" };
   renderPage();
 }
 
@@ -247,6 +263,43 @@ function bindGuestEvents() {
       renderPage();
     });
   });
+
+  container.querySelectorAll("[data-reverse-last]").forEach((btn) => {
+    btn.addEventListener("click", () => reverseLastTransaction(btn.dataset.reverseLast));
+  });
+}
+
+function reverseLastTransaction(guestId) {
+  const transactions = MilesService.getLedger(guestId);
+  if (!transactions.length) { showToast("No transactions to reverse"); return; }
+
+  const lastTx = transactions.find(
+    tx => tx.kind !== "DEDUCT_MANUAL" && tx.kind !== "OPENING_BALANCE"
+  );
+
+  if (!lastTx) { showToast("No reversible transactions found"); return; }
+
+  const guest = PassengerService.getPassengerById(guestId);
+  const sign = lastTx.amount > 0 ? "+" : "";
+  const confirmed = confirm(
+    `Reverse ${sign}${lastTx.amount} AR Miles?\n"${lastTx.reason}"\nAwarded to ${guest?.displayName || guestId}`
+  );
+  if (!confirmed) return;
+
+  const reversalAmount = Math.abs(lastTx.amount);
+  const currentBalance = MilesService.getBalance(guestId);
+  if (reversalAmount > currentBalance) {
+    showToast(`⚠ Cannot reverse — only ${currentBalance} miles available`);
+    return;
+  }
+
+  try {
+    MilesService.spend(guestId, reversalAmount, `Reversal: ${lastTx.reason}`, "DEDUCT_MANUAL");
+    showToast(`↩ Reversed ${reversalAmount} miles for ${guest?.displayName || guestId}`);
+    renderPage();
+  } catch (e) {
+    showToast(`⚠ ${e.message}`);
+  }
 }
 
 // ---------- Redemptions ----------

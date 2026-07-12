@@ -25,6 +25,7 @@ const KIND_ICONS = {
   REDEEM: "🎁",
   ADMIN: "⚙️",
   AWARD_MANUAL: "🏆",
+  DEDUCT_MANUAL: "↩",
   BONUS: "⭐",
   MANUAL: "✨",
 };
@@ -32,6 +33,7 @@ const KIND_ICONS = {
 const KIND_LABELS = {
   OPENING_BALANCE: "Welcome aboard · Opening balance",
   AWARD_MANUAL: "Award from Ground Crew",
+  DEDUCT_MANUAL: "Miles Deducted",
   HUNT_DISCOVERY: "Treasure Hunt discovery",
 };
 
