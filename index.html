@@ -14,28 +14,28 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="src/modules/splash/splash.css?v=1">
-<link rel="stylesheet" href="style.css?v=3">
-<link rel="stylesheet" href="src/utils/utils.css?v=1">
-<link rel="stylesheet" href="src/modules/dashboard/dashboard.css?v=3">
-<link rel="stylesheet" href="src/components/cards/cards.css?v=3">
-<link rel="stylesheet" href="src/components/layout/layout.css?v=3">
-<link rel="stylesheet" href="src/modules/shared/shared.css?v=3">
-<link rel="stylesheet" href="src/modules/events/events.css?v=3">
-<link rel="stylesheet" href="src/modules/journey/journey.css?v=3">
-<link rel="stylesheet" href="src/modules/rewards/rewards.css?v=3">
-<link rel="stylesheet" href="src/modules/profile/profile.css?v=3">
-<link rel="stylesheet" href="src/modules/passport/passport.css?v=3">
-<link rel="stylesheet" href="src/modules/admin/admin.css?v=3">
-<link rel="stylesheet" href="src/modules/onboarding/onboarding.css?v=3">
-<link rel="stylesheet" href="src/modules/pwa/pwa.css?v=3">
-<link rel="stylesheet" href="src/modules/hunt/hunt.css?v=3">
-<link rel="stylesheet" href="src/modules/notifications/notifications.css?v=3">
-<link rel="stylesheet" href="src/modules/map/map.css?v=1">
-<link rel="stylesheet" href="src/modules/directory/directory.css?v=1">
-<link rel="stylesheet" href="src/modules/settings/settings.css?v=1">
-<link rel="stylesheet" href="src/modules/admin/announcements.css?v=1">
-<link rel="stylesheet" href="src/modules/concierge/concierge.css?v=1">
+<link rel="stylesheet" href="src/modules/splash/splash.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="src/utils/utils.css">
+<link rel="stylesheet" href="src/modules/dashboard/dashboard.css">
+<link rel="stylesheet" href="src/components/cards/cards.css">
+<link rel="stylesheet" href="src/components/layout/layout.css">
+<link rel="stylesheet" href="src/modules/shared/shared.css">
+<link rel="stylesheet" href="src/modules/events/events.css">
+<link rel="stylesheet" href="src/modules/journey/journey.css">
+<link rel="stylesheet" href="src/modules/rewards/rewards.css">
+<link rel="stylesheet" href="src/modules/profile/profile.css">
+<link rel="stylesheet" href="src/modules/passport/passport.css">
+<link rel="stylesheet" href="src/modules/admin/admin.css">
+<link rel="stylesheet" href="src/modules/onboarding/onboarding.css">
+<link rel="stylesheet" href="src/modules/pwa/pwa.css">
+<link rel="stylesheet" href="src/modules/hunt/hunt.css">
+<link rel="stylesheet" href="src/modules/notifications/notifications.css">
+<link rel="stylesheet" href="src/modules/map/map.css">
+<link rel="stylesheet" href="src/modules/directory/directory.css">
+<link rel="stylesheet" href="src/modules/settings/settings.css">
+<link rel="stylesheet" href="src/modules/admin/announcements.css">
+<link rel="stylesheet" href="src/modules/concierge/concierge.css">
 </head>
 <body>
 
@@ -227,14 +227,14 @@
 
 </div>
 
-<script src="data.js?v=3"></script>
-<script type="module" src="script.js?v=3"></script>
+<script src="data.js"></script>
+<script type="module" src="script.js"></script>
 
 <!-- PWA: Service Worker Registration -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
         .then(reg => console.log('AR Airways SW registered:', reg.scope))
         .catch(err => console.warn('SW registration failed:', err));
     });
