@@ -160,7 +160,25 @@ async function mount() {
   // Inject shared TopBar — identical to Dashboard, Events, Journey, Rewards, Profile
   container.insertAdjacentHTML("afterbegin", TopBar());
 
-  // Fix 4: Edit Map toggle for admins — injects ✏️ button into TopBar right area
+  // Search toggle — opens #mapSearchBar (defined in the core map HTML)
+  {
+    const topRight = container.querySelector(".top-right");
+    if (topRight) {
+      const searchBtn = document.createElement("button");
+      searchBtn.className = "top-icon";
+      searchBtn.setAttribute("aria-label", "Search map");
+      searchBtn.textContent = "🔍";
+      topRight.insertBefore(searchBtn, topRight.firstChild);
+      searchBtn.addEventListener("click", () => {
+        const bar = document.getElementById("mapSearchBar");
+        if (!bar) return;
+        bar.hidden = !bar.hidden;
+        if (!bar.hidden) document.getElementById("searchInput")?.focus();
+      });
+    }
+  }
+
+  // Edit Map toggle for admins — injects ✏️ button into TopBar right area
   if (sessionStorage.getItem("ar_admin_auth") === "true") {
     const topRight = container.querySelector(".top-right");
     if (topRight) {

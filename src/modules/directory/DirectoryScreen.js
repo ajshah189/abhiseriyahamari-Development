@@ -4,8 +4,8 @@ import Router from "../../router.js";
 let container = null;
 
 function wireEvents() {
-  container.querySelector("[data-route]")?.addEventListener("click", (e) => {
-    Router.go(e.currentTarget.dataset.route);
+  container.querySelectorAll("[data-route]").forEach(btn => {
+    btn.addEventListener("click", () => Router.go(btn.dataset.route));
   });
 
   const search = container.querySelector("#directorySearch");

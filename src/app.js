@@ -8,6 +8,7 @@
  */
 
 import Router from "./router.js";
+import AppStore from "./store/appStore.js";
 import { initMilesStore } from "./store/milesStore.js";
 import AuthService from "./services/authService.js";
 import FirebaseService from "./services/firebaseService.js";
@@ -107,8 +108,11 @@ class App {
 
         initInstallPrompt();
 
-        // Inject floating concierge bell (logged-in guests only)
+        // Inject floating concierge bell (logged-in guests only).
+        // Also re-checked on every route:changed so the bell appears
+        // after first-time login via onboarding (which hits return above).
         injectConciergeButton();
+        AppStore.on("route:changed", injectConciergeButton);
 
         // Subscribe to Firebase announcements (replaces 60s localStorage polling)
         initAnnouncementListener();

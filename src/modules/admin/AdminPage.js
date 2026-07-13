@@ -149,7 +149,7 @@ function awardSection(state) {
           </button>
         `).join("")}
       </div>
-      <input class="admin-input" type="number" min="1" placeholder="Custom amount" value="${award.customAmount}" data-award-custom />
+      <input class="admin-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Custom amount" value="${award.customAmount}" data-award-custom />
 
       <label class="admin-field-label">Reason</label>
       <input class="admin-input" type="text" placeholder="${isDeduct ? "e.g. Correction, penalty" : "e.g. Won Garba competition"}" value="${award.reason}" data-award-reason />
