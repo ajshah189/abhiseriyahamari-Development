@@ -28,10 +28,14 @@ import Router from "../../router.js";
 let _scannerStream   = null;
 let _scannerInterval = null;
 
+// Chronicle: file references survive renderPage() re-creates the DOM
+let _chronicleFiles = [];
+
 // Firebase subscriptions — unsubscribed in hide()
-let _unsubCheckins  = null;
-let _unsubRequests  = null;
-let _fbRequests     = null;
+let _unsubCheckins   = null;
+let _unsubRequests   = null;
+let _unsubChronicles = null;
+let _fbRequests      = null;
 
 const AUTH_KEY = "ar_admin_auth";
 const CHECKIN_KEY = "ar_checkins";
@@ -75,6 +79,7 @@ function createInitialState() {
     checkins:      readLocalMap(CHECKIN_KEY),
     fulfilled:     readSessionMap(FULFILLED_KEY),
     import:        { status: "idle", preview: null, result: null },
+    chronicle:     { day: "1", eventName: "", title: "", subtitle: "", highlights: [""], closingLine: "", photoFileNames: [], published: [] },
   };
 }
 
@@ -138,6 +143,7 @@ function bindEvents() {
   bindScannerEvents();
   bindAnnouncementEvents();
   bindRequestEvents();
+  bindChronicleEvents();
 }
 
 // ---------- Award Miles ----------
@@ -748,6 +754,145 @@ function bindRequestEvents() {
   });
 }
 
+// ---------- Chronicle ----------
+
+function bindChronicleEvents() {
+  container.querySelectorAll("[data-chronicle-day]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.chronicle.day = btn.dataset.chronicleDay;
+      renderPage();
+    });
+  });
+
+  const eventNameEl = container.querySelector("[data-chronicle-event-name]");
+  eventNameEl?.addEventListener("input", e => { state.chronicle.eventName = e.target.value; });
+
+  const titleEl = container.querySelector("[data-chronicle-title]");
+  titleEl?.addEventListener("input", e => { state.chronicle.title = e.target.value; });
+
+  const subtitleEl = container.querySelector("[data-chronicle-subtitle]");
+  subtitleEl?.addEventListener("input", e => { state.chronicle.subtitle = e.target.value; });
+
+  const closingEl = container.querySelector("[data-chronicle-closing]");
+  closingEl?.addEventListener("input", e => { state.chronicle.closingLine = e.target.value; });
+
+  // Photo file selection
+  const fileInput = container.querySelector("#chronicleFileInput");
+  container.querySelector("[data-chronicle-browse]")?.addEventListener("click", e => {
+    e.stopPropagation();
+    fileInput?.click();
+  });
+
+  const dropzone = container.querySelector("[data-chronicle-dropzone]");
+  dropzone?.addEventListener("click", e => {
+    if (!e.target.closest("[data-chronicle-browse]")) fileInput?.click();
+  });
+
+  fileInput?.addEventListener("change", e => {
+    const files = Array.from(e.target.files || []).slice(0, 4);
+    _chronicleFiles = files;
+    state.chronicle.photoFileNames = files.map(f => f.name);
+    renderPage();
+  });
+
+  dropzone?.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropzone.classList.add("import-dropzone--dragover");
+  });
+  dropzone?.addEventListener("dragleave", () => dropzone.classList.remove("import-dropzone--dragover"));
+  dropzone?.addEventListener("drop", e => {
+    e.preventDefault();
+    dropzone.classList.remove("import-dropzone--dragover");
+    const files = Array.from(e.dataTransfer.files)
+      .filter(f => f.type.startsWith("image/"))
+      .slice(0, 4);
+    _chronicleFiles = files;
+    state.chronicle.photoFileNames = files.map(f => f.name);
+    renderPage();
+  });
+
+  // Remove individual photo
+  container.querySelectorAll("[data-chronicle-remove-photo]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = Number(btn.dataset.chronicleRemovePhoto);
+      _chronicleFiles.splice(i, 1);
+      state.chronicle.photoFileNames.splice(i, 1);
+      renderPage();
+    });
+  });
+
+  // Highlight inputs — live-update without re-render
+  container.querySelectorAll("[data-chronicle-highlight]").forEach(inp => {
+    inp.addEventListener("input", e => {
+      state.chronicle.highlights[Number(inp.dataset.chronicleHighlight)] = e.target.value;
+    });
+  });
+
+  container.querySelectorAll("[data-chronicle-remove-highlight]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const i = Number(btn.dataset.chronicleRemoveHighlight);
+      state.chronicle.highlights.splice(i, 1);
+      if (state.chronicle.highlights.length === 0) state.chronicle.highlights = [""];
+      renderPage();
+    });
+  });
+
+  container.querySelector("[data-chronicle-add-highlight]")?.addEventListener("click", () => {
+    if (state.chronicle.highlights.length < 6) {
+      state.chronicle.highlights.push("");
+      renderPage();
+    }
+  });
+
+  container.querySelector("[data-chronicle-publish]")?.addEventListener("click", publishChronicle);
+
+  container.querySelectorAll("[data-chronicle-delete]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Delete this chronicle? Guests will no longer see it.")) return;
+      const ok = await FirebaseService.deleteChronicle(btn.dataset.chronicleDelete);
+      showToast(ok ? "Chronicle deleted" : "⚠ Delete failed");
+    });
+  });
+}
+
+const DAY_DATE_LABELS = { "1": "22 January 2027", "2": "23 January 2027", "3": "24 January 2027" };
+
+async function publishChronicle() {
+  const ch = state.chronicle;
+  if (!ch.eventName.trim()) { showToast("Enter an event name"); return; }
+  if (!ch.title.trim())     { showToast("Enter a headline"); return; }
+
+  // Upload photos one-by-one — never blocks UI between uploads
+  const photoUrls = [];
+  for (let i = 0; i < _chronicleFiles.length; i++) {
+    showToast(`Uploading photo ${i + 1} of ${_chronicleFiles.length}…`);
+    const url = await FirebaseService.uploadChroniclePhoto(ch.day, i, _chronicleFiles[i]);
+    if (url) photoUrls.push(url);
+  }
+
+  const data = {
+    title:       ch.title.trim(),
+    subtitle:    ch.subtitle.trim(),
+    eventName:   ch.eventName.trim(),
+    date:        DAY_DATE_LABELS[ch.day] || "",
+    highlights:  ch.highlights.filter(h => h.trim()),
+    closingLine: ch.closingLine.trim(),
+    photos:      photoUrls,
+  };
+
+  const ok = await FirebaseService.publishChronicle(ch.day, data);
+  if (ok) {
+    showToast("✅ Chronicle published — guests can see it now");
+    // Reset form, keep day selection
+    const day = ch.day;
+    state.chronicle = { day, eventName: "", title: "", subtitle: "", highlights: [""], closingLine: "", photoFileNames: [], published: state.chronicle.published };
+    _chronicleFiles = [];
+    renderPage();
+  } else {
+    showToast("⚠ Publish failed — check connection");
+  }
+}
+
 // ---------- Auth gate + Router adapter ----------
 
 function renderGate() {
@@ -788,6 +933,12 @@ function _startFirebaseSubscriptions() {
     _fbRequests = fbReqs;
     if (state.section === "requests") renderPage();
   });
+
+  // Sync published chronicles — re-render if admin is on chronicle section
+  _unsubChronicles = FirebaseService.subscribeToAllChronicles((chronicles) => {
+    state.chronicle.published = chronicles;
+    if (state.section === "chronicle") renderPage();
+  });
 }
 
 function show() {
@@ -802,8 +953,9 @@ function hide() {
   if (_scannerInterval) { clearInterval(_scannerInterval); _scannerInterval = null; }
   if (_scannerStream)   { _scannerStream.getTracks().forEach(t => t.stop()); _scannerStream = null; }
   if (state) state.scanner.active = false;
-  if (_unsubCheckins) { _unsubCheckins(); _unsubCheckins = null; }
-  if (_unsubRequests) { _unsubRequests(); _unsubRequests = null; }
+  if (_unsubCheckins)   { _unsubCheckins();   _unsubCheckins   = null; }
+  if (_unsubRequests)   { _unsubRequests();   _unsubRequests   = null; }
+  if (_unsubChronicles) { _unsubChronicles(); _unsubChronicles = null; }
   _fbRequests = null;
 }
 

@@ -30,6 +30,7 @@ const NAV_ITEMS = [
   { id: "analytics",     label: "📈 Analytics" },
   { id: "announcements", label: "📢 Announce" },
   { id: "requests",      label: "🛎 Requests" },
+  { id: "chronicle",     label: "📰 Chronicle" },
 ];
 
 const ANNOUNCEMENT_TEMPLATES = [
@@ -798,6 +799,108 @@ function requestsSection() {
   `;
 }
 
+// ---------- Morning Chronicle ----------
+
+function formatChrTime(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return d.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+const DAY_LABELS = { "1": "22 Jan", "2": "23 Jan", "3": "24 Jan" };
+
+function chronicleSection(state) {
+  const ch = state.chronicle;
+
+  const fileListHTML = ch.photoFileNames?.length > 0
+    ? `<div class="chronicle-file-list">
+        ${ch.photoFileNames.map((name, i) => `
+          <div class="chronicle-file-item">
+            <span>📷 ${esc(name)}</span>
+            <button class="chronicle-file-remove" data-chronicle-remove-photo="${i}">✕</button>
+          </div>
+        `).join("")}
+       </div>`
+    : "";
+
+  const publishedHTML = ch.published?.length > 0
+    ? `<div class="chronicle-published-list">
+        ${ch.published.map(c => `
+          <div class="chronicle-published-row">
+            <div class="chronicle-published-info">
+              <span>Day ${esc(c._day)} · ${esc(c.title || c.eventName || "")}</span>
+              <span>${(c.photos?.length || 0)} photo${c.photos?.length === 1 ? "" : "s"} · ${formatChrTime(c.publishedAt)}</span>
+            </div>
+            <button class="chronicle-delete-btn" data-chronicle-delete="${esc(c._day)}">Delete</button>
+          </div>
+        `).join("")}
+       </div>`
+    : `<p class="muted">No chronicles published yet.</p>`;
+
+  return `
+    <section class="dashboard-section">
+      <h3>Morning Chronicle</h3>
+      <p class="muted" style="margin-bottom:var(--s-5)">Publish yesterday's event memories. Guests see the Chronicle card on their dashboard.</p>
+
+      <label class="admin-field-label">Day</label>
+      <div class="admin-day-selector">
+        ${["1", "2", "3"].map(d => `
+          <button class="admin-day-btn ${ch.day === d ? "admin-day-btn--active" : ""}"
+                  data-chronicle-day="${d}">
+            Day ${d} (${DAY_LABELS[d]})
+          </button>
+        `).join("")}
+      </div>
+
+      <label class="admin-field-label">Event Name</label>
+      <input class="admin-input" type="text" placeholder="e.g. Garba Night"
+             value="${esc(ch.eventName)}" data-chronicle-event-name />
+
+      <label class="admin-field-label">Headline</label>
+      <input class="admin-input" type="text" placeholder="e.g. A Night in Morocco"
+             value="${esc(ch.title)}" data-chronicle-title />
+
+      <label class="admin-field-label">Subtitle</label>
+      <input class="admin-input" type="text" placeholder="e.g. 500 guests danced until midnight"
+             value="${esc(ch.subtitle)}" data-chronicle-subtitle />
+
+      <label class="admin-field-label">Photos (up to 4)</label>
+      <div class="import-dropzone" data-chronicle-dropzone>
+        <input type="file" id="chronicleFileInput" accept="image/*" multiple hidden />
+        <div class="import-dropzone__icon">📷</div>
+        <div class="import-dropzone__label">
+          Drop photos here or <button class="import-browse-btn" data-chronicle-browse>browse</button>
+        </div>
+        <div class="import-dropzone__hint">Up to 4 photos · JPG, PNG, HEIC</div>
+      </div>
+      ${fileListHTML}
+
+      <label class="admin-field-label">Highlights</label>
+      ${ch.highlights.map((h, i) => `
+        <div class="chronicle-highlight-row">
+          <input class="admin-input" type="text"
+                 placeholder="e.g. Riya and Abhishek's first Garba together"
+                 value="${esc(h)}" data-chronicle-highlight="${i}" />
+          <button class="chronicle-highlight-remove" data-chronicle-remove-highlight="${i}">✕</button>
+        </div>
+      `).join("")}
+      <button class="admin-ghost-btn" style="margin-bottom:var(--s-5)" data-chronicle-add-highlight>+ Add Highlight</button>
+
+      <label class="admin-field-label">Closing Line</label>
+      <input class="admin-input" type="text"
+             placeholder="e.g. Day 2 begins today — Haldi &amp; Sangeet await!"
+             value="${esc(ch.closingLine)}" data-chronicle-closing />
+
+      <button class="admin-submit-btn" data-chronicle-publish>📰 Publish Chronicle</button>
+    </section>
+
+    <section class="dashboard-section" style="margin-top:var(--s-6)">
+      <h3>Published Chronicles</h3>
+      ${publishedHTML}
+    </section>
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
@@ -811,6 +914,7 @@ const SECTION_RENDERERS = {
   analytics:     analyticsSection,
   announcements: announcementsSection,
   requests:      requestsSection,
+  chronicle:     chronicleSection,
 };
 
 export function AdminPage(state) {
