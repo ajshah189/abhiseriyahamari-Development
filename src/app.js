@@ -89,12 +89,10 @@ class App {
             return;
         }
 
-        // Auth routing — every screen is registered by this point, so
-        // this decides only where we land, not what exists.
+        // Auth routing — auto-login as viewer if no auth state exists so guests
+        // land on the dashboard immediately with no friction.
         if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
-            // First time: show onboarding.
-            Router.go("onboarding");
-            return;
+            AuthService.loginAsViewer();
         }
 
         // Handle ?route= shortcuts from PWA manifest shortcuts (Events, Map).

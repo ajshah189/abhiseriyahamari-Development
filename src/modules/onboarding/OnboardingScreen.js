@@ -49,7 +49,9 @@ function bindEvents() {
   });
 
   container.querySelector("[data-board-btn]")?.addEventListener("click", submit);
-  container.querySelector("[data-viewer-btn]")?.addEventListener("click", continueAsViewer);
+  container.querySelectorAll("[data-route]").forEach(btn => {
+    btn.addEventListener("click", () => Router.go(btn.dataset.route));
+  });
 }
 
 function submit() {
@@ -71,11 +73,6 @@ function submit() {
 
   const pendingHunt = sessionStorage.getItem("ar_pending_hunt");
   setTimeout(() => Router.go(pendingHunt ? "hunt-claim" : "home"), SUCCESS_FADE_MS);
-}
-
-function continueAsViewer() {
-  AuthService.loginAsViewer();
-  Router.go("home");
 }
 
 function mount() {

@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-12 July 2026 (Session 16 — FCM Push Notifications + Family Leaderboard Firebase Sync)
+13 July 2026 (Session 17 — UX Simplification + Bug Fixes)
 
 Current Version:
 v0.8
@@ -72,6 +72,7 @@ main
 | Miles Reversal / Deduct | 🟢 Completed | 100% |
 | FCM Push Notifications | 🟢 Completed | 100% |
 | Family Leaderboard Firebase Sync | 🟢 Completed | 100% |
+| UX Simplification (Viewer Default + What's On Now + Quick Actions) | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---

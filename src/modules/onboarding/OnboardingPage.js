@@ -42,26 +42,14 @@ function passportEntry(state) {
   `;
 }
 
-function divider() {
-  return `<div class="onboarding__divider"><span>or</span></div>`;
-}
-
-function viewerAccess() {
-  return `
-    <div class="onboarding__viewer-wrap">
-      <button class="onboarding__viewer" data-viewer-btn>Continue as Guest Viewer</button>
-      <p class="onboarding__viewer-subtitle">Browse the schedule and map · No passport needed</p>
-    </div>
-  `;
-}
-
 export function OnboardingPage(state) {
   return `
     <div class="onboarding ${state.success ? "onboarding--success" : ""}">
       ${hero()}
       ${passportEntry(state)}
-      ${divider()}
-      ${viewerAccess()}
+      <div class="onboarding__later-wrap">
+        <button class="onboarding__later" data-route="home">Maybe later</button>
+      </div>
     </div>
   `;
 }
