@@ -32,6 +32,24 @@ function bindRoutes() {
   container.querySelectorAll("[data-route]").forEach((button) => {
     button.addEventListener("click", () => Router.go(button.dataset.route));
   });
+
+  // Login banner dismiss — store timestamp so it stays hidden for 24h
+  container.querySelector("[data-dismiss-login-banner]")?.addEventListener("click", () => {
+    try { localStorage.setItem("ar_login_banner_dismissed", String(Date.now())); } catch {}
+    container.querySelector(".login-banner")?.remove();
+  });
+
+  // Quick Actions "More / Less" toggle — pure CSS class flip, no routing
+  container.querySelector("[data-qa-toggle]")?.addEventListener("click", () => {
+    const grid = container.querySelector("#qa-more-grid");
+    const btn  = container.querySelector("[data-qa-toggle]");
+    const open = grid?.classList.toggle("expanded");
+    if (btn) {
+      btn.innerHTML = open
+        ? `Less <span class="qa-toggle-chevron">▴</span>`
+        : `More ✈ <span class="qa-toggle-chevron">▾</span>`;
+    }
+  });
 }
 
 function render() {
