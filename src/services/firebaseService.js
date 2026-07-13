@@ -11,7 +11,7 @@
  * /requests/{id}
  */
 
-import { db, ref, push, set, get, onValue } from '../config/firebase.js';
+import { db, ref, push, set, get, onValue, remove } from '../config/firebase.js';
 
 class FirebaseService {
 
@@ -206,6 +206,73 @@ class FirebaseService {
       return [];
     }
   }
+
+  // ─── CHRONICLES ─────────────────────────────────────────────────────────────
+
+  async publishChronicle(day, data) {
+    try {
+      await set(ref(db, `chronicles/day${day}`), {
+        ...data,
+        publishedAt: Date.now(),
+        publishedBy: 'Ground Crew',
+      });
+      return true;
+    } catch (e) {
+      console.warn('Firebase publishChronicle failed:', e.message);
+      return false;
+    }
+  }
+
+  async deleteChronicle(day) {
+    try {
+      await remove(ref(db, `chronicles/day${day}`));
+      return true;
+    } catch (e) {
+      console.warn('Firebase deleteChronicle failed:', e.message);
+      return false;
+    }
+  }
+
+  async uploadChroniclePhoto(day, photoIndex, file) {
+    try {
+      const { storage, storageRef, uploadBytes, getDownloadURL } =
+        await import('../config/firebase.js');
+      const photoRef = storageRef(storage, `chronicles/day${day}/photo${photoIndex}`);
+      const snapshot = await uploadBytes(photoRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      return url;
+    } catch (e) {
+      console.warn('Firebase uploadChroniclePhoto failed:', e.message);
+      return null;
+    }
+  }
+
+  subscribeToLatestChronicle(callback) {
+    const chroniclesRef = ref(db, 'chronicles');
+    return onValue(chroniclesRef, (snapshot) => {
+      if (!snapshot.exists()) { callback(null); return; }
+      const data = snapshot.val();
+      const latest = Object.values(data)
+        .filter(c => c.publishedAt)
+        .sort((a, b) => b.publishedAt - a.publishedAt)[0] || null;
+      callback(latest);
+    });
+  }
+
+  subscribeToAllChronicles(callback) {
+    const chroniclesRef = ref(db, 'chronicles');
+    return onValue(chroniclesRef, (snapshot) => {
+      if (!snapshot.exists()) { callback([]); return; }
+      const data = snapshot.val();
+      const chronicles = Object.entries(data)
+        .map(([key, val]) => ({ ...val, _day: key.replace('day', '') }))
+        .filter(c => c.publishedAt)
+        .sort((a, b) => b.publishedAt - a.publishedAt);
+      callback(chronicles);
+    });
+  }
+
+  // ─── FCM TOKENS (continued) ──────────────────────────────────────────────────
 
   subscribeToGuestRequests(guestId, callback) {
     const requestsRef = ref(db, 'requests');

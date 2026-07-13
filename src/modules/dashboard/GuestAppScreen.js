@@ -20,13 +20,16 @@
 import { HomePage } from "./HomePage.js";
 import AppStore from "../../store/appStore.js";
 import Router from "../../router.js";
+import FirebaseService from "../../services/firebaseService.js";
+import { buildShareText } from "../chronicle/ChroniclePage.js";
 import { pullToRefresh } from "../../utils/pullToRefresh.js";
 import { getUpNextCountdownText, isWeddingWeek } from "./TodaysJourney.js";
 import { getCurrentOrNextEvent, getEventStatus } from "../../data/events.js";
 
-let container     = null;
-let refreshTimer  = null;
+let container      = null;
+let refreshTimer   = null;
 let countdownTimer = null;
+let _latestChronicle = null;
 
 function bindRoutes() {
   container.querySelectorAll("[data-route]").forEach((button) => {
@@ -37,6 +40,13 @@ function bindRoutes() {
   container.querySelector("[data-dismiss-login-banner]")?.addEventListener("click", () => {
     try { localStorage.setItem("ar_login_banner_dismissed", String(Date.now())); } catch {}
     container.querySelector(".login-banner")?.remove();
+  });
+
+  // Chronicle share — opens WhatsApp with formatted text summary
+  container.querySelector("[data-chronicle-share]")?.addEventListener("click", () => {
+    if (!_latestChronicle) return;
+    const text = buildShareText(_latestChronicle);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   });
 
   // Quick Actions "More / Less" toggle — pure CSS class flip, no routing
@@ -53,7 +63,7 @@ function bindRoutes() {
 }
 
 function render() {
-  container.innerHTML = HomePage();
+  container.innerHTML = HomePage(_latestChronicle);
   bindRoutes();
 }
 
@@ -88,6 +98,15 @@ function mount() {
   AppStore.on("miles:changed", () => {
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(render, 80);
+  });
+
+  // Subscribe to latest chronicle once — re-renders dashboard when published/updated.
+  FirebaseService.subscribeToLatestChronicle((chronicle) => {
+    _latestChronicle = chronicle;
+    if (!container.hidden) {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(render, 80);
+    }
   });
 
   pullToRefresh(container, async () => { render(); });

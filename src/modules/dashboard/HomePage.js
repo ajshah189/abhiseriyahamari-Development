@@ -18,6 +18,7 @@ import { ActivityCard } from "../../components/cards/ActivityCard.js";
 import { QuickActions } from "./QuickActions.js";
 import { TodaysJourney } from "./TodaysJourney.js";
 import { WhatsOnNow } from "./WhatsOnNow.js";
+import { ChronicleCard } from "../chronicle/ChroniclePage.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 
@@ -51,12 +52,13 @@ function LoginBanner() {
   `;
 }
 
-export function HomePage() {
+export function HomePage(chronicle = null) {
   const snapshot = PassengerService.getCurrentSnapshot();
 
   return `
     ${TopBar()}
     ${LoginBanner()}
+    ${ChronicleCard(chronicle)}
     <main class="dashboard-page">
       <section class="dashboard-main">
         ${WhatsOnNow()}

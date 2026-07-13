@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-13 July 2026 (Session 17 — UX Simplification + Bug Fixes)
+13 July 2026 (Session 18 — Morning Chronicle)
 
 Current Version:
 v0.8
@@ -73,6 +73,7 @@ main
 | FCM Push Notifications | 🟢 Completed | 100% |
 | Family Leaderboard Firebase Sync | 🟢 Completed | 100% |
 | UX Simplification (Viewer Default + What's On Now + Quick Actions) | 🟢 Completed | 100% |
+| Morning Chronicle (Firebase Storage + Admin publish + Guest card) | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---
