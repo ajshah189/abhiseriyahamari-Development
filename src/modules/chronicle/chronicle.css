@@ -6,6 +6,9 @@
   overflow: hidden;
   border: 1px solid var(--gold-soft);
   margin: 0 var(--s-5) var(--s-4);
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .chronicle-header {
@@ -59,12 +62,13 @@
 
 .chronicle-photo-wrap img {
   width: 100%;
-  height: 220px;
+  height: 200px;
   object-fit: cover;
+  object-position: center top;
   display: block;
 }
 
-.chronicle-photos--1 img { height: 280px; }
+.chronicle-photos--1 img { height: 220px; }
 .chronicle-photos--2 img { height: 160px; }
 .chronicle-photos--3 img { height: 120px; }
 .chronicle-photos--3 .chronicle-photo-wrap:first-child img { height: 242px; }
