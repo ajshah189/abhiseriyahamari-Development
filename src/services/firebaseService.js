@@ -272,6 +272,55 @@ class FirebaseService {
     });
   }
 
+  // ─── SOCIAL CONNECTIONS ──────────────────────────────────────────────────────
+
+  async getConnection(connectionKey) {
+    try {
+      const snap = await get(ref(db, `connections/${connectionKey}`));
+      return snap.exists() ? snap.val() : null;
+    } catch (e) { return null; }
+  }
+
+  async saveConnection(connectionKey, data) {
+    try {
+      await set(ref(db, `connections/${connectionKey}`), data);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async postNotification(guestId, notification) {
+    try {
+      await push(ref(db, `notifications/${guestId}`), notification);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  subscribeToNotifications(guestId, callback) {
+    const notifRef = ref(db, `notifications/${guestId}`);
+    return onValue(notifRef, (snap) => {
+      if (!snap.exists()) { callback([]); return; }
+      const notifs = Object.entries(snap.val())
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => b.timestamp - a.timestamp);
+      callback(notifs);
+    });
+  }
+
+  // ─── EVENT ATTENDANCE ────────────────────────────────────────────────────────
+
+  async markEventAttendance(guestId, eventId, data) {
+    try {
+      await set(ref(db, `attendance/${guestId}/${eventId}`), data);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  subscribeToAllAttendance(callback) {
+    return onValue(ref(db, 'attendance'), (snap) => {
+      callback(snap.exists() ? snap.val() : {});
+    });
+  }
+
   // ─── FCM TOKENS (continued) ──────────────────────────────────────────────────
 
   subscribeToGuestRequests(guestId, callback) {

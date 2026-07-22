@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: “ar-airways-v{N}”.
  */
 
-const CACHE_NAME = “ar-airways-v30”;
+const CACHE_NAME = “ar-airways-v31”;
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -120,6 +120,8 @@ const APP_SHELL = [
   // Chronicle
   "/src/modules/chronicle/ChroniclePage.js",
   "/src/modules/chronicle/chronicle.css",
+  "/src/modules/social/SocialClaimScreen.js",
+  "/src/modules/social/social.css",
 
   // Dashboard
   "/src/modules/dashboard/HomePage.js",

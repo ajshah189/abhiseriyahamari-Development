@@ -1,7 +1,7 @@
 # AR Airways – Master Progress
 
 Last Updated:
-13 July 2026 (Session 18 — Morning Chronicle)
+22 July 2026 (Session 19 — QR System)
 
 Current Version:
 v0.8
@@ -74,6 +74,7 @@ main
 | Family Leaderboard Firebase Sync | 🟢 Completed | 100% |
 | UX Simplification (Viewer Default + What's On Now + Quick Actions) | 🟢 Completed | 100% |
 | Morning Chronicle (Firebase Storage + Admin publish + Guest card) | 🟢 Completed | 100% |
+| QR System (Social scanning + Event gate check-in + Hunt URL fix) | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---

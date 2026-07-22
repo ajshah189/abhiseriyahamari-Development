@@ -66,6 +66,16 @@ export function clearAll() {
 }
 
 /**
+ * Add a notification from an external source (e.g. Firebase social connection)
+ * to the local history and refresh the bell badge.
+ */
+export function addExternalNotification(title, body) {
+  _addHistory({ title, body, tag: `ext_${Date.now()}`, ts: Date.now() });
+  _refreshBadge();
+  _refreshPanel();
+}
+
+/**
  * Return the stored notification history (newest first, max 10).
  */
 export function getHistory() {

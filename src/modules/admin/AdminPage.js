@@ -31,6 +31,7 @@ const NAV_ITEMS = [
   { id: "announcements", label: "📢 Announce" },
   { id: "requests",      label: "🛎 Requests" },
   { id: "chronicle",     label: "📰 Chronicle" },
+  { id: "event-checkin", label: "📅 Event Check-in" },
 ];
 
 const ANNOUNCEMENT_TEMPLATES = [
@@ -66,6 +67,10 @@ function overviewSection(state) {
   const rewardsRedeemed = RewardService.getAllRedemptions().length;
   const topTen = LeaderboardService.getOverall().slice(0, 10);
 
+  const attendance = state.attendance || {};
+  const totalAttendance = Object.values(attendance).reduce((sum, evs) => sum + Object.keys(evs).length, 0);
+  const totalConnections = Object.keys(state.connections || {}).length;
+
   return `
     <div class="admin-stat-grid">
       <div class="admin-stat-card">
@@ -83,6 +88,14 @@ function overviewSection(state) {
       <div class="admin-stat-card">
         <div class="admin-stat-card__value">${rewardsRedeemed}</div>
         <div class="admin-stat-card__label">Rewards Redeemed</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-card__value">${totalAttendance}</div>
+        <div class="admin-stat-card__label">Event Check-ins</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-card__value">${totalConnections}</div>
+        <div class="admin-stat-card__label">Guest Connections</div>
       </div>
     </div>
 
@@ -293,7 +306,7 @@ function redemptionsSection(state) {
 
 // ---------- QR Codes ----------
 
-const BASE_URL = "https://abhiseriyahamari.in";
+const BASE_URL = "https://abhiseriyahamari-development.pages.dev";
 
 function qrCodesSection() {
   return `
@@ -318,7 +331,8 @@ function qrCodesSection() {
                   data-qr-name="${loc.name.replace(/"/g, "&quot;")}"
                   data-qr-url="${url}"
                   data-qr-icon="${loc.icon}"
-                  data-qr-reward="${loc.milesReward}">
+                  data-qr-reward="${loc.milesReward}"
+                  data-qr-hint="${(loc.hint || '').replace(/"/g, '&quot;')}">
                   Print
                 </button>
               </div>
@@ -901,20 +915,108 @@ function chronicleSection(state) {
   `;
 }
 
+// ---------- Event Check-in ----------
+
+function eventCheckinSection(state) {
+  const ec = state.eventCheckin;
+  const attendance = state.attendance || {};
+
+  return `
+    <section class="dashboard-section">
+      <h3>Event Check-in</h3>
+      <p class="muted" style="margin-bottom:var(--s-4)">Scan a guest's boarding pass at an event gate. On-time guests earn miles. Arrivals within 60 minutes of start time are on time.</p>
+
+      <label class="admin-field-label">Select Event</label>
+      <div class="admin-day-selector" style="flex-wrap:wrap">
+        ${EVENTS.map(ev => `
+          <button
+            class="admin-day-btn ${ec.selectedEventId === ev.id ? "admin-day-btn--active" : ""}"
+            data-event-checkin-select="${ev.id}">
+            ${ev.icon} ${ev.name}
+          </button>
+        `).join("")}
+      </div>
+
+      ${ec.selectedEventId ? (() => {
+        const ev = EVENTS.find(e => e.id === ec.selectedEventId);
+        const evAttendance = Object.entries(attendance)
+          .flatMap(([guestId, evs]) => evs[ec.selectedEventId] ? [{ guestId, ...evs[ec.selectedEventId] }] : []);
+        const onTimeCount = evAttendance.filter(a => a.onTime).length;
+        const lateCount = evAttendance.filter(a => !a.onTime).length;
+
+        return `
+          <div class="admin-stat-grid" style="margin:var(--s-4) 0">
+            <div class="admin-stat-card">
+              <div class="admin-stat-card__value">${evAttendance.length}</div>
+              <div class="admin-stat-card__label">Checked In</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-card__value">${onTimeCount}</div>
+              <div class="admin-stat-card__label">On Time (+${ev?.milesReward || 0} ✈)</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-card__value">${lateCount}</div>
+              <div class="admin-stat-card__label">Late (0 ✈)</div>
+            </div>
+          </div>
+
+          <div class="scanner-viewfinder-wrap" id="event-scanner-viewfinder-wrap" ${ec.active ? "" : "style=\"display:none\""}>
+            <div class="scanner-viewfinder-placeholder" id="event-scanner-placeholder">
+              <div class="scanner-viewfinder-placeholder__icon">📷</div>
+              <div class="scanner-viewfinder-placeholder__text">Camera initializing…</div>
+            </div>
+          </div>
+
+          ${ec.active
+            ? `<button class="admin-ghost-btn" style="margin-bottom:var(--s-4)" data-event-scanner-stop>✕ Stop Scanner</button>`
+            : `<button class="admin-submit-btn" style="margin-bottom:var(--s-4)" data-event-scanner-start>📷 Start Scanner</button>`}
+
+          <div class="scanner-divider">— OR —</div>
+
+          <label class="admin-field-label">Manual Entry</label>
+          <div class="scanner-manual-row">
+            <input
+              class="admin-input scanner-manual-input"
+              type="text"
+              placeholder="e.g. AR-501-S"
+              value="${ec.passportInput}"
+              data-event-scanner-input />
+            <button class="admin-submit-btn scanner-manual-btn" data-event-checkin-submit>Check In</button>
+          </div>
+
+          ${ec.recentScans.length > 0 ? `
+            <label class="admin-field-label" style="margin-top:var(--s-5)">Recent Scans</label>
+            <div class="scanner-recent">
+              ${ec.recentScans.map(c => `
+                <div class="scanner-recent-item">
+                  <span class="scanner-recent-icon">${c.onTime ? "✅" : "🕐"}</span>
+                  <span class="scanner-recent-name">${esc(c.name)}</span>
+                  <span class="scanner-recent-time">${c.onTime ? `+${c.miles} ✈` : "Late — 0 ✈"}</span>
+                </div>
+              `).join("")}
+            </div>
+          ` : ""}
+        `;
+      })() : `<p class="muted" style="margin-top:var(--s-4)">Select an event above to begin check-in.</p>`}
+    </section>
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
-  overview:      overviewSection,
-  award:         awardSection,
-  scanner:       scannerSection,
-  guests:        guestsSection,
-  redemptions:   redemptionsSection,
-  qrcodes:       qrCodesSection,
-  import:        importSection,
-  analytics:     analyticsSection,
-  announcements: announcementsSection,
-  requests:      requestsSection,
-  chronicle:     chronicleSection,
+  overview:       overviewSection,
+  award:          awardSection,
+  scanner:        scannerSection,
+  guests:         guestsSection,
+  redemptions:    redemptionsSection,
+  qrcodes:        qrCodesSection,
+  import:         importSection,
+  analytics:      analyticsSection,
+  announcements:  announcementsSection,
+  requests:       requestsSection,
+  chronicle:      chronicleSection,
+  "event-checkin": eventCheckinSection,
 };
 
 export function AdminPage(state) {

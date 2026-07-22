@@ -28,6 +28,8 @@ const KIND_ICONS = {
   DEDUCT_MANUAL: "↩",
   BONUS: "⭐",
   MANUAL: "✨",
+  SOCIAL_CONNECTION: "🤝",
+  EVENT_ATTENDANCE: "🎉",
 };
 
 const KIND_LABELS = {

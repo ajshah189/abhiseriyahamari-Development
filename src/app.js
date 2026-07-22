@@ -24,10 +24,11 @@ import { PassportScreen } from "./modules/passport/PassportScreen.js";
 import { AdminScreen } from "./modules/admin/AdminScreen.js";
 import { HuntScreen } from "./modules/hunt/HuntScreen.js";
 import { HuntClaimScreen } from "./modules/hunt/HuntClaimScreen.js";
+import { SocialClaimScreen } from "./modules/social/SocialClaimScreen.js";
 import { DirectoryScreen } from "./modules/directory/DirectoryScreen.js";
 import { SettingsScreen } from "./modules/settings/SettingsScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
-import { initBell } from "./modules/notifications/NotificationService.js";
+import { initBell, addExternalNotification } from "./modules/notifications/NotificationService.js";
 import { ConciergeScreen } from "./modules/concierge/ConciergeScreen.js";
 
 const UPCOMING_ROUTES = {};
@@ -54,6 +55,7 @@ class App {
         Router.register("admin", AdminScreen);
         Router.register("hunt", HuntScreen);
         Router.register("hunt-claim", HuntClaimScreen);
+        Router.register("social-claim", SocialClaimScreen);
         Router.register("directory", DirectoryScreen);
         Router.register("concierge", ConciergeScreen);
 
@@ -89,6 +91,22 @@ class App {
             return;
         }
 
+        // ?social= from guest boarding pass QR — store the scanned passport and
+        // route to the social claim screen. Viewers are redirected to onboarding
+        // first; the pending passport survives through login.
+        const socialPassport = urlParams.get("social");
+        if (socialPassport) {
+            sessionStorage.setItem("ar_pending_social", socialPassport);
+            if (!AuthService.isLoggedIn()) {
+                Router.go("onboarding");
+                initInstallPrompt();
+                return;
+            }
+            Router.go("social-claim");
+            initInstallPrompt();
+            return;
+        }
+
         // Auth routing — auto-login as viewer if no auth state exists so guests
         // land on the dashboard immediately with no friction.
         if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
@@ -114,6 +132,10 @@ class App {
 
         // Subscribe to Firebase announcements (replaces 60s localStorage polling)
         initAnnouncementListener();
+
+        // Subscribe to Firebase notifications for the logged-in guest and
+        // surface them via the notification bell.
+        initNotificationListener();
 
     }
 
@@ -191,6 +213,25 @@ function initAnnouncementListener() {
 
     readIds.push(latest.id);
     try { localStorage.setItem(READ_KEY, JSON.stringify(readIds)); } catch {}
+  });
+}
+
+// ── Firebase notification listener ───────────────────────────────────────────
+
+let _notifUnsub = null;
+let _seenNotifIds = new Set();
+
+function initNotificationListener() {
+  const guest = AuthService.getCurrentGuest();
+  if (!guest) return;
+
+  _notifUnsub = FirebaseService.subscribeToNotifications(guest.id, (notifs) => {
+    for (const n of notifs) {
+      if (!_seenNotifIds.has(n.id)) {
+        _seenNotifIds.add(n.id);
+        addExternalNotification("AR Airways", n.message || "You have a new notification");
+      }
+    }
   });
 }
 

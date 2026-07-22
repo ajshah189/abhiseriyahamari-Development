@@ -23,19 +23,22 @@ import GuestDatabaseService from "../../services/guestDatabaseService.js";
 import FirebaseService from "../../services/firebaseService.js";
 import FCMService from "../../services/fcmService.js";
 import Router from "../../router.js";
+import { EVENTS } from "../../data/events.js";
 
 // Scanner: module-level so video/stream survive renderPage() calls
-let _scannerStream   = null;
-let _scannerInterval = null;
+let _scannerStream    = null;
+let _scannerInterval  = null;
+let _scannerForSection = "scanner"; // "scanner" | "event-checkin"
 
 // Chronicle: file references survive renderPage() re-creates the DOM
 let _chronicleFiles = [];
 
 // Firebase subscriptions — unsubscribed in hide()
-let _unsubCheckins   = null;
-let _unsubRequests   = null;
-let _unsubChronicles = null;
-let _fbRequests      = null;
+let _unsubCheckins    = null;
+let _unsubRequests    = null;
+let _unsubChronicles  = null;
+let _unsubAttendance  = null;
+let _fbRequests       = null;
 
 const AUTH_KEY = "ar_admin_auth";
 const CHECKIN_KEY = "ar_checkins";
@@ -80,6 +83,9 @@ function createInitialState() {
     fulfilled:     readSessionMap(FULFILLED_KEY),
     import:        { status: "idle", preview: null, result: null },
     chronicle:     { day: "1", eventName: "", title: "", subtitle: "", highlights: [""], closingLine: "", photoFileNames: [], published: [] },
+    eventCheckin:  { selectedEventId: null, passportInput: "", recentScans: [], active: false },
+    attendance:    {},
+    connections:   {},
   };
 }
 
@@ -110,6 +116,9 @@ function renderPage(focus) {
   // Re-attach live camera feed after re-render if scanner is active
   if (state.section === "scanner" && state.scanner.active && _scannerStream) {
     _attachScannerVideo();
+  }
+  if (state.section === "event-checkin" && state.eventCheckin.active && _scannerStream) {
+    _attachEventScannerVideo();
   }
 
   if (focus?.selector) {
@@ -144,6 +153,7 @@ function bindEvents() {
   bindAnnouncementEvents();
   bindRequestEvents();
   bindChronicleEvents();
+  bindEventCheckinEvents();
 }
 
 // ---------- Award Miles ----------
@@ -327,8 +337,8 @@ function bindRedemptionEvents() {
 function bindQrEvents() {
   container.querySelectorAll("[data-qr-print]").forEach(btn => {
     btn.addEventListener("click", () => {
-      const { qrName, qrUrl, qrIcon, qrReward } = btn.dataset;
-      const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrUrl)}`;
+      const { qrName, qrUrl, qrIcon, qrReward, qrHint } = btn.dataset;
+      const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrUrl)}`;
 
       const printWin = window.open("", "_blank");
       if (!printWin) return;
@@ -342,6 +352,7 @@ function bindQrEvents() {
     .brand { font-size: 11px; letter-spacing: 3px; color: #d4af6a; text-transform: uppercase; margin-bottom: 8px; }
     h1 { font-size: 28px; margin: 12px 0 6px; }
     p { font-size: 15px; color: #555; margin: 4px 0; }
+    .hint { font-style: italic; color: #777; font-size: 14px; margin: 8px 0; }
     img { margin: 20px auto; display: block; }
     .url { font-size: 11px; color: #aaa; margin-top: 12px; font-family: monospace; }
   </style>
@@ -350,7 +361,8 @@ function bindQrEvents() {
   <div class="brand">AR Airways · Treasure Hunt</div>
   <h1>${qrIcon} ${qrName}</h1>
   <p>Scan to discover this location and earn <strong>+${qrReward} AR Miles</strong></p>
-  <img src="${qrSrc}" width="400" height="400" />
+  ${qrHint ? `<p class="hint">Hint: ${qrHint}</p>` : ""}
+  <img src="${qrSrc}" width="300" height="300" />
   <p class="url">${qrUrl}</p>
   <script>window.onload = function() { window.print(); }<\/script>
 </body>
@@ -563,7 +575,11 @@ async function startScanner() {
 function stopScanner() {
   if (_scannerInterval) { clearInterval(_scannerInterval); _scannerInterval = null; }
   if (_scannerStream)   { _scannerStream.getTracks().forEach(t => t.stop()); _scannerStream = null; }
-  state.scanner.active = false;
+  if (_scannerForSection === "event-checkin") {
+    state.eventCheckin.active = false;
+  } else {
+    state.scanner.active = false;
+  }
   renderPage();
 }
 
@@ -893,6 +909,133 @@ async function publishChronicle() {
   }
 }
 
+// ---------- Event Check-in ----------
+
+function _attachEventScannerVideo() {
+  const wrap = container.querySelector("#event-scanner-viewfinder-wrap");
+  if (!wrap || !_scannerStream) return;
+  wrap.style.display = "";
+  const ph = wrap.querySelector("#event-scanner-placeholder");
+  if (ph) ph.remove();
+  if (!wrap.querySelector("video")) {
+    const video = document.createElement("video");
+    video.srcObject = _scannerStream;
+    video.className = "scanner-video";
+    video.muted = true;
+    video.playsInline = true;
+    video.play().catch(() => {});
+    wrap.appendChild(video);
+  }
+}
+
+async function startEventScanner() {
+  if (!("BarcodeDetector" in window)) {
+    showToast("Camera scanning not supported — use manual entry");
+    return;
+  }
+  try {
+    _scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+    });
+  } catch {
+    showToast("Camera access denied — use manual entry");
+    return;
+  }
+
+  _scannerForSection = "event-checkin";
+  const detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+  const video = document.createElement("video");
+  video.srcObject = _scannerStream;
+  video.muted = true;
+  video.playsInline = true;
+  video.play().catch(() => {});
+
+  state.eventCheckin.active = true;
+  renderPage();
+  _attachEventScannerVideo();
+
+  _scannerInterval = setInterval(async () => {
+    try {
+      const barcodes = await detector.detect(video);
+      if (barcodes.length > 0) {
+        stopScanner();
+        processEventCheckin(barcodes[0].rawValue);
+      }
+    } catch {}
+  }, 500);
+}
+
+async function processEventCheckin(passportNumber) {
+  if (!passportNumber) { showToast("Enter a passport number"); return; }
+  const { selectedEventId } = state.eventCheckin;
+  if (!selectedEventId) { showToast("Select an event first"); return; }
+
+  const pn    = String(passportNumber).trim().toUpperCase();
+  const guest = GuestDatabaseService.getByPassport(pn);
+  if (!guest) { showToast(`❌ Passport not found: ${pn}`); return; }
+
+  const ev = EVENTS.find(e => e.id === selectedEventId);
+  if (!ev) { showToast("Event not found"); return; }
+
+  // Duplicate guard
+  const existing = state.attendance[guest.id]?.[selectedEventId];
+  if (existing) {
+    showToast(`⚠ ${guest.displayName} already checked in to this event`);
+    return;
+  }
+
+  // On-time check: within 60 minutes of event start (IST)
+  const startMs = new Date(`${ev.date}T${ev.startTime}:00+05:30`).getTime();
+  const graceMs = startMs + 60 * 60 * 1000;
+  const onTime  = Date.now() <= graceMs;
+  const miles   = onTime ? (ev.milesReward || 0) : 0;
+
+  await FirebaseService.markEventAttendance(guest.id, selectedEventId, {
+    checkedInAt: Date.now(),
+    onTime,
+    milesAwarded: miles,
+  });
+
+  if (miles > 0) {
+    MilesService.earn(guest.id, miles, `${ev.icon} ${ev.name} attendance`, "EVENT_ATTENDANCE");
+  }
+
+  const toast = onTime
+    ? `✅ ${guest.displayName} · +${miles} ✈`
+    : `🕐 ${guest.displayName} arrived late — 0 ✈`;
+  showToast(toast);
+
+  state.eventCheckin.recentScans.unshift({ name: guest.displayName, onTime, miles });
+  if (state.eventCheckin.recentScans.length > 10) state.eventCheckin.recentScans.length = 10;
+  state.eventCheckin.passportInput = "";
+  renderPage();
+}
+
+function bindEventCheckinEvents() {
+  container.querySelectorAll("[data-event-checkin-select]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.eventCheckin.selectedEventId = btn.dataset.eventCheckinSelect;
+      state.eventCheckin.passportInput   = "";
+      state.eventCheckin.recentScans     = [];
+      renderPage();
+    });
+  });
+
+  container.querySelector("[data-event-scanner-start]")?.addEventListener("click", startEventScanner);
+  container.querySelector("[data-event-scanner-stop]")?.addEventListener("click",  stopScanner);
+
+  const input = container.querySelector("[data-event-scanner-input]");
+  input?.addEventListener("input", e => { state.eventCheckin.passportInput = e.target.value; });
+  input?.addEventListener("keydown", e => {
+    if (e.key === "Enter") processEventCheckin(state.eventCheckin.passportInput);
+  });
+
+  container.querySelector("[data-event-checkin-submit]")?.addEventListener("click", () => {
+    processEventCheckin(state.eventCheckin.passportInput);
+  });
+}
+
 // ---------- Auth gate + Router adapter ----------
 
 function renderGate() {
@@ -939,6 +1082,12 @@ function _startFirebaseSubscriptions() {
     state.chronicle.published = chronicles;
     if (state.section === "chronicle") renderPage();
   });
+
+  // Sync event attendance — re-render if on event-checkin or overview section
+  _unsubAttendance = FirebaseService.subscribeToAllAttendance((attendance) => {
+    state.attendance = attendance;
+    if (state.section === "event-checkin" || state.section === "overview") renderPage();
+  });
 }
 
 function show() {
@@ -956,6 +1105,7 @@ function hide() {
   if (_unsubCheckins)   { _unsubCheckins();   _unsubCheckins   = null; }
   if (_unsubRequests)   { _unsubRequests();   _unsubRequests   = null; }
   if (_unsubChronicles) { _unsubChronicles(); _unsubChronicles = null; }
+  if (_unsubAttendance) { _unsubAttendance(); _unsubAttendance = null; }
   _fbRequests = null;
 }
 
