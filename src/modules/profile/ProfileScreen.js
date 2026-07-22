@@ -8,8 +8,10 @@
 
 import { ProfilePage } from "./ProfilePage.js";
 import AuthService from "../../services/authService.js";
+import PassengerService from "../../services/passengerService.js";
 import Router from "../../router.js";
 import { clearAll as clearNotifications } from "../notifications/NotificationService.js";
+import { buildJourneyStats, showJourneyCompleteCard } from "../journey/JourneyCompleteCard.js";
 
 let container = null;
 
@@ -50,6 +52,17 @@ function bindEvents() {
 
   bindAdminTrigger();
   bindSignOut();
+  bindJourneySummary();
+}
+
+function bindJourneySummary() {
+  container.querySelector("[data-journey-summary]")?.addEventListener("click", () => {
+    const snapshot = PassengerService.getCurrentSnapshot();
+    const guestId  = snapshot?.profile?.id;
+    if (!guestId) return;
+    const stats = buildJourneyStats(guestId);
+    showJourneyCompleteCard(snapshot, stats);
+  });
 }
 
 function render() {

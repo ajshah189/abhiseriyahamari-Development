@@ -21,15 +21,22 @@ import { HomePage } from "./HomePage.js";
 import AppStore from "../../store/appStore.js";
 import Router from "../../router.js";
 import FirebaseService from "../../services/firebaseService.js";
+import AuthService from "../../services/authService.js";
+import PassengerService from "../../services/passengerService.js";
+import MilesService from "../../services/milesService.js";
 import { buildShareText } from "../chronicle/ChroniclePage.js";
 import { pullToRefresh } from "../../utils/pullToRefresh.js";
 import { getUpNextCountdownText, isWeddingWeek } from "./TodaysJourney.js";
 import { getCurrentOrNextEvent, getEventStatus } from "../../data/events.js";
+import { isJourneyComplete, buildJourneyStats, showJourneyCompleteCard } from "../journey/JourneyCompleteCard.js";
 
-let container      = null;
-let refreshTimer   = null;
-let countdownTimer = null;
+let container        = null;
+let refreshTimer     = null;
+let countdownTimer   = null;
 let _latestChronicle = null;
+let _activeChallenge = null;
+let _unsubChallenges = null;
+let _challengeTimer  = null;
 
 function bindRoutes() {
   container.querySelectorAll("[data-route]").forEach((button) => {
@@ -62,9 +69,59 @@ function bindRoutes() {
   });
 }
 
+function showDashboardToast(msg) {
+  const t = document.createElement("div");
+  t.className = "admin-toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2500);
+}
+
 function render() {
-  container.innerHTML = HomePage(_latestChronicle);
+  container.innerHTML = HomePage(_latestChronicle, _activeChallenge);
   bindRoutes();
+  bindChallengeFound();
+}
+
+function bindChallengeFound() {
+  const btn = container.querySelector("[data-challenge-found]");
+  if (!btn || btn.disabled) return;
+
+  btn.addEventListener("click", async () => {
+    if (!AuthService.isLoggedIn()) { Router.go("onboarding"); return; }
+
+    const banner = container.querySelector("[data-challenge-id]");
+    const challengeId = banner?.dataset?.challengeId;
+    if (!challengeId || !_activeChallenge) return;
+
+    const title = _activeChallenge.title || "Daily Challenge";
+    if (!confirm(`Have you found it? This is on your honour.\n\n${title}`)) return;
+
+    btn.disabled = true;
+    btn.textContent = "Claiming…";
+
+    const snapshot = PassengerService.getCurrentSnapshot();
+    const guestId  = snapshot?.profile?.id;
+    if (!guestId) { btn.disabled = false; btn.textContent = "I Found It!"; return; }
+
+    const ok = await FirebaseService.completeChallenge(challengeId, guestId, {});
+    if (!ok) { btn.disabled = false; btn.textContent = "I Found It!"; return; }
+
+    const miles = _activeChallenge.miles || 0;
+    if (miles > 0) {
+      MilesService.earn(guestId, miles, `🎯 Challenge: ${title}`, "CHALLENGE");
+    }
+
+    if (_activeChallenge.type === "Speed Rush" && _activeChallenge.limit) {
+      const completions = await FirebaseService.getChallengeCompletions(challengeId);
+      if (completions.length >= _activeChallenge.limit) {
+        FirebaseService.endChallenge(challengeId).catch(() => {});
+      }
+    }
+
+    showDashboardToast(`🎯 Challenge complete! +${miles} AR Miles`);
+    btn.textContent = "Claimed ✓";
+  });
 }
 
 function tickCountdown() {
@@ -116,11 +173,45 @@ function show() {
   render();
   container.hidden = false;
   startCountdown();
+  _startChallengeSubscription();
+  _maybeShowJourneyCard();
+}
+
+function _startChallengeSubscription() {
+  if (_unsubChallenges) { _unsubChallenges(); _unsubChallenges = null; }
+  _unsubChallenges = FirebaseService.subscribeToActiveChallenges((active) => {
+    const next = active[0] || null;
+    _activeChallenge = next;
+    if (!container.hidden) render();
+    // For Timed challenges, start a 1-min refresh so the countdown stays current
+    if (_challengeTimer) { clearInterval(_challengeTimer); _challengeTimer = null; }
+    if (next?.type === "Timed" && next.expiresAt) {
+      _challengeTimer = setInterval(() => { if (!container.hidden) render(); }, 60_000);
+    }
+  });
+}
+
+function _maybeShowJourneyCard() {
+  if (!isJourneyComplete()) return;
+  if (!AuthService.isLoggedIn()) return;
+  if (sessionStorage.getItem("ar_journey_card_shown")) return;
+  sessionStorage.setItem("ar_journey_card_shown", "1");
+
+  const snapshot = PassengerService.getCurrentSnapshot();
+  const guestId  = snapshot?.profile?.id;
+  if (!guestId) return;
+
+  setTimeout(() => {
+    const stats = buildJourneyStats(guestId);
+    showJourneyCompleteCard(snapshot, stats);
+  }, 1500);
 }
 
 function hide() {
   container.hidden = true;
   stopCountdown();
+  if (_unsubChallenges) { _unsubChallenges(); _unsubChallenges = null; }
+  if (_challengeTimer)  { clearInterval(_challengeTimer); _challengeTimer = null; }
 }
 
 export const GuestAppScreen = { mount, show, hide };

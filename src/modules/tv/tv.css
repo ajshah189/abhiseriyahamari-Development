@@ -1,0 +1,171 @@
+/* TV Leaderboard — fullscreen 1920×1080 projector display */
+
+#screen-leaderboard-tv {
+  position: fixed;
+  inset: 0;
+  background: #0a0a14;
+  color: #f0e6cc;
+  font-family: Inter, sans-serif;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.tv-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 40px 56px 32px;
+  box-sizing: border-box;
+  gap: 28px;
+}
+
+/* ── Header ─────────────────────────────────────── */
+
+.tv-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-shrink: 0;
+}
+
+.tv-logo {
+  flex: 1;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 44px;
+  font-weight: 700;
+  color: #d4af6a;
+  letter-spacing: 0.06em;
+}
+
+.tv-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #22c55e;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 8px 22px;
+  border-radius: 8px;
+}
+
+.tv-live-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: tv-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tv-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(0.8); }
+}
+
+.tv-clock {
+  font-size: 32px;
+  color: rgba(240, 230, 204, 0.45);
+  font-variant-numeric: tabular-nums;
+  min-width: 110px;
+  text-align: right;
+}
+
+/* ── Body ────────────────────────────────────────── */
+
+.tv-body {
+  display: flex;
+  gap: 56px;
+  flex: 1;
+  min-height: 0;
+}
+
+.tv-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.tv-panel-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: #d4af6a;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid rgba(212, 175, 106, 0.2);
+  padding-bottom: 14px;
+  flex-shrink: 0;
+}
+
+/* ── List ────────────────────────────────────────── */
+
+.tv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.tv-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.tv-row--medal {
+  background: rgba(212, 175, 106, 0.07);
+  border: 1px solid rgba(212, 175, 106, 0.15);
+}
+
+.tv-row--top {
+  background: rgba(212, 175, 106, 0.13);
+  border: 1px solid rgba(212, 175, 106, 0.32);
+}
+
+.tv-rank {
+  font-size: 28px;
+  width: 54px;
+  text-align: center;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  color: rgba(240, 230, 204, 0.45);
+}
+
+.tv-name {
+  flex: 1;
+  font-size: 26px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tv-miles {
+  font-size: 26px;
+  color: #d4af6a;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.tv-empty {
+  font-size: 26px;
+  color: rgba(240, 230, 204, 0.28);
+  padding: 32px 0;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+
+.tv-footer {
+  font-size: 20px;
+  color: rgba(240, 230, 204, 0.22);
+  text-align: center;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}

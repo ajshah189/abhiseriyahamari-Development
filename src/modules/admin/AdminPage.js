@@ -32,6 +32,7 @@ const NAV_ITEMS = [
   { id: "requests",      label: "🛎 Requests" },
   { id: "chronicle",     label: "📰 Chronicle" },
   { id: "event-checkin", label: "📅 Event Check-in" },
+  { id: "challenges",   label: "🎯 Challenges" },
 ];
 
 const ANNOUNCEMENT_TEMPLATES = [
@@ -1002,6 +1003,93 @@ function eventCheckinSection(state) {
   `;
 }
 
+// ---------- Daily Challenges ----------
+
+function challengesSection(state) {
+  const ch = state.challenges;
+  const active = ch.active || [];
+
+  return `
+    <section class="dashboard-section">
+      <h3>Daily Challenges</h3>
+      <p class="muted" style="margin-bottom:var(--s-5)">Launch a surprise challenge — guests see it as a banner on their dashboard and tap "I Found It!" to claim miles.</p>
+
+      <label class="admin-field-label">Type</label>
+      <div class="admin-day-selector">
+        ${["Speed Rush", "Timed", "Open"].map(t => `
+          <button class="admin-day-btn ${ch.type === t ? "admin-day-btn--active" : ""}"
+                  data-challenge-type="${t}">${t}</button>
+        `).join("")}
+      </div>
+      <p class="muted" style="margin:var(--s-2) 0 var(--s-4);font-size:12px">
+        ${ch.type === "Speed Rush" ? "First N guests to tap win · Firebase handles the race condition" :
+          ch.type === "Timed"     ? "Active until the timer expires · everyone who taps wins" :
+                                    "No limit or timer · stays open until you end it manually"}
+      </p>
+
+      <label class="admin-field-label">Challenge Title</label>
+      <input class="admin-input" type="text"
+             placeholder="e.g. Find the golden envelope"
+             value="${esc(ch.title)}" data-challenge-title />
+
+      <label class="admin-field-label">Clue / Description</label>
+      <input class="admin-input" type="text"
+             placeholder="e.g. Hidden somewhere near the Palace entrance…"
+             value="${esc(ch.description)}" data-challenge-desc />
+
+      <label class="admin-field-label">Miles Reward per Winner</label>
+      <div class="admin-amount-presets">
+        ${[50, 100, 200, 500].map(a => `
+          <button class="admin-amount-chip ${ch.miles === a ? "admin-amount-chip--selected" : ""}"
+                  data-challenge-miles="${a}">+${a}</button>
+        `).join("")}
+      </div>
+
+      ${ch.type === "Speed Rush" ? `
+        <label class="admin-field-label">Max Winners</label>
+        <input class="admin-input" type="number" min="1" max="50"
+               value="${ch.limit}" data-challenge-limit />
+      ` : ""}
+
+      ${ch.type === "Timed" ? `
+        <label class="admin-field-label">Expires in (minutes)</label>
+        <input class="admin-input" type="number" min="1" max="240"
+               value="${ch.expiryMins}" data-challenge-expiry />
+      ` : ""}
+
+      <button class="admin-submit-btn" style="margin-top:var(--s-4)" data-challenge-launch>
+        🎯 Launch Challenge
+      </button>
+    </section>
+
+    ${active.length > 0 ? `
+      <section class="dashboard-section" style="margin-top:var(--s-5)">
+        <h3>Active Challenges</h3>
+        ${active.map(c => {
+          const completionCount = Object.keys(c.completions || {}).length;
+          return `
+            <div class="admin-request-row" style="margin-bottom:var(--s-3)">
+              <div class="admin-request-row__info">
+                <div class="admin-request-row__guest">${esc(c.title || "Untitled")} · ${esc(c.type || "Open")}</div>
+                <div class="admin-request-row__type">
+                  +${c.miles || 0} ✈ · ${completionCount} completion${completionCount !== 1 ? "s" : ""}
+                  ${c.type === "Speed Rush" ? ` / ${c.limit || "?"} max` : ""}
+                </div>
+                ${c.description ? `<div class="admin-request-row__note">${esc(c.description)}</div>` : ""}
+              </div>
+              <button class="admin-ghost-btn" style="flex-shrink:0" data-challenge-end="${esc(c.id)}">End</button>
+            </div>
+          `;
+        }).join("")}
+      </section>
+    ` : `
+      <section class="dashboard-section" style="margin-top:var(--s-5)">
+        <p class="muted">No active challenges right now.</p>
+      </section>
+    `}
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
@@ -1017,6 +1105,7 @@ const SECTION_RENDERERS = {
   requests:       requestsSection,
   chronicle:      chronicleSection,
   "event-checkin": eventCheckinSection,
+  challenges:      challengesSection,
 };
 
 export function AdminPage(state) {

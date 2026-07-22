@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-22 July 2026 (Session 19 — QR System)
+22 July 2026 (Session 20 — TV Leaderboard + Journey Complete + Daily Challenges)
 
 Current Version:
-v0.8
+v0.9
 
 Current Phase:
 Phase 1 – Foundation
@@ -75,6 +75,9 @@ main
 | UX Simplification (Viewer Default + What's On Now + Quick Actions) | 🟢 Completed | 100% |
 | Morning Chronicle (Firebase Storage + Admin publish + Guest card) | 🟢 Completed | 100% |
 | QR System (Social scanning + Event gate check-in + Hunt URL fix) | 🟢 Completed | 100% |
+| TV Leaderboard (fullscreen projector mode at /leaderboard-tv) | 🟢 Completed | 100% |
+| Journey Complete Card (end-of-trip stats + WhatsApp share) | 🟢 Completed | 100% |
+| Daily Challenges (admin launch + guest banner + I Found It! flow) | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---

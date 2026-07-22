@@ -38,6 +38,7 @@ let _unsubCheckins    = null;
 let _unsubRequests    = null;
 let _unsubChronicles  = null;
 let _unsubAttendance  = null;
+let _unsubChallenges  = null;
 let _fbRequests       = null;
 
 const AUTH_KEY = "ar_admin_auth";
@@ -86,6 +87,7 @@ function createInitialState() {
     eventCheckin:  { selectedEventId: null, passportInput: "", recentScans: [], active: false },
     attendance:    {},
     connections:   {},
+    challenges:    { type: "Speed Rush", title: "", description: "", miles: 100, limit: 5, expiryMins: 30, active: [] },
   };
 }
 
@@ -154,6 +156,7 @@ function bindEvents() {
   bindRequestEvents();
   bindChronicleEvents();
   bindEventCheckinEvents();
+  bindChallengeEvents();
 }
 
 // ---------- Award Miles ----------
@@ -1036,6 +1039,65 @@ function bindEventCheckinEvents() {
   });
 }
 
+// ---------- Challenges ----------
+
+function bindChallengeEvents() {
+  container.querySelectorAll("[data-challenge-type]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.challenges.type = btn.dataset.challengeType;
+      renderPage();
+    });
+  });
+
+  container.querySelectorAll("[data-challenge-miles]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.challenges.miles = Number(btn.dataset.challengeMiles);
+      renderPage();
+    });
+  });
+
+  const titleEl = container.querySelector("[data-challenge-title]");
+  titleEl?.addEventListener("input", e => { state.challenges.title = e.target.value; });
+
+  const descEl = container.querySelector("[data-challenge-desc]");
+  descEl?.addEventListener("input", e => { state.challenges.description = e.target.value; });
+
+  const limitEl = container.querySelector("[data-challenge-limit]");
+  limitEl?.addEventListener("input", e => { state.challenges.limit = Number(e.target.value) || 5; });
+
+  const expiryEl = container.querySelector("[data-challenge-expiry]");
+  expiryEl?.addEventListener("input", e => { state.challenges.expiryMins = Number(e.target.value) || 30; });
+
+  container.querySelector("[data-challenge-launch]")?.addEventListener("click", launchChallenge);
+
+  container.querySelectorAll("[data-challenge-end]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.challengeEnd;
+      if (!confirm("End this challenge? Guests will no longer see it.")) return;
+      const ok = await FirebaseService.endChallenge(id);
+      showToast(ok ? "Challenge ended" : "⚠ Failed to end challenge");
+    });
+  });
+}
+
+async function launchChallenge() {
+  const { type, title, description, miles, limit, expiryMins } = state.challenges;
+  if (!title.trim()) { showToast("Enter a challenge title"); return; }
+
+  const data = { type, title: title.trim(), description: description.trim(), miles };
+  if (type === "Speed Rush") data.limit = limit;
+  if (type === "Timed") data.expiresAt = Date.now() + expiryMins * 60_000;
+
+  const ok = await FirebaseService.launchChallenge(data);
+  if (ok) {
+    showToast("🎯 Challenge launched — guests see it now");
+    state.challenges = { ...state.challenges, title: "", description: "" };
+    renderPage();
+  } else {
+    showToast("⚠ Launch failed — check connection");
+  }
+}
+
 // ---------- Auth gate + Router adapter ----------
 
 function renderGate() {
@@ -1088,6 +1150,12 @@ function _startFirebaseSubscriptions() {
     state.attendance = attendance;
     if (state.section === "event-checkin" || state.section === "overview") renderPage();
   });
+
+  // Sync active challenges — re-render if on challenges section
+  _unsubChallenges = FirebaseService.subscribeToActiveChallenges((active) => {
+    state.challenges.active = active;
+    if (state.section === "challenges") renderPage();
+  });
 }
 
 function show() {
@@ -1105,7 +1173,8 @@ function hide() {
   if (_unsubCheckins)   { _unsubCheckins();   _unsubCheckins   = null; }
   if (_unsubRequests)   { _unsubRequests();   _unsubRequests   = null; }
   if (_unsubChronicles) { _unsubChronicles(); _unsubChronicles = null; }
-  if (_unsubAttendance) { _unsubAttendance(); _unsubAttendance = null; }
+  if (_unsubAttendance)  { _unsubAttendance();  _unsubAttendance  = null; }
+  if (_unsubChallenges)  { _unsubChallenges();  _unsubChallenges  = null; }
   _fbRequests = null;
 }
 

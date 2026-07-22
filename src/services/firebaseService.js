@@ -321,6 +321,51 @@ class FirebaseService {
     });
   }
 
+  // ─── DAILY CHALLENGES ────────────────────────────────────────────────────────
+
+  async launchChallenge(data) {
+    try {
+      await push(ref(db, 'challenges'), { ...data, active: true, launchedAt: Date.now() });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async completeChallenge(challengeId, guestId, completionData) {
+    try {
+      await push(ref(db, `challenges/${challengeId}/completions`), {
+        guestId,
+        ...completionData,
+        completedAt: Date.now(),
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  subscribeToActiveChallenges(callback) {
+    return onValue(ref(db, 'challenges'), (snap) => {
+      if (!snap.exists()) { callback([]); return; }
+      const active = Object.entries(snap.val())
+        .map(([id, data]) => ({ id, ...data }))
+        .filter(c => c.active);
+      callback(active);
+    });
+  }
+
+  async endChallenge(challengeId) {
+    try {
+      await set(ref(db, `challenges/${challengeId}/active`), false);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async getChallengeCompletions(challengeId) {
+    try {
+      const snap = await get(ref(db, `challenges/${challengeId}/completions`));
+      if (!snap.exists()) return [];
+      return Object.entries(snap.val()).map(([id, data]) => ({ id, ...data }));
+    } catch (e) { return []; }
+  }
+
   // ─── FCM TOKENS (continued) ──────────────────────────────────────────────────
 
   subscribeToGuestRequests(guestId, callback) {

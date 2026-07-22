@@ -30,12 +30,20 @@ import { SettingsScreen } from "./modules/settings/SettingsScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
 import { initBell, addExternalNotification } from "./modules/notifications/NotificationService.js";
 import { ConciergeScreen } from "./modules/concierge/ConciergeScreen.js";
+import { TVLeaderboardScreen } from "./modules/tv/TVLeaderboardScreen.js";
 
 const UPCOMING_ROUTES = {};
 
 class App {
 
     start() {
+
+        // Fast path for TV leaderboard — no auth, no shell setup
+        if (window.location.pathname === '/leaderboard-tv') {
+            Router.register('leaderboard-tv', TVLeaderboardScreen);
+            Router.go('leaderboard-tv');
+            return;
+        }
 
         initMilesStore();
         initOfflineBanner();

@@ -18,6 +18,7 @@ import { EVENTS, getEventStatus } from "../../data/events.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 import { initials, colorFromName } from "../leaderboard/LeaderboardCard.js";
+import { isJourneyComplete } from "../journey/JourneyCompleteCard.js";
 
 function getJourneyStats(balance) {
   const landedEvents = EVENTS.filter(e => getEventStatus(e) === "landed");
@@ -155,6 +156,17 @@ function loggedOutState() {
   `;
 }
 
+function journeySummaryButton() {
+  return `
+    <section class="dashboard-section">
+      <button class="btn-ghost" data-journey-summary
+              style="width:100%;padding:var(--s-3) var(--s-4);text-align:center;">
+        My Journey Summary ✈
+      </button>
+    </section>
+  `;
+}
+
 function directoryLink() {
   return `
     <section class="dashboard-section">
@@ -198,6 +210,7 @@ export function ProfilePage() {
       ${transactionHistory(guestId)}
       ${myRewards(guestId)}
       ${quickInfo(snapshot)}
+      ${isJourneyComplete() ? journeySummaryButton() : ""}
       ${directoryLink()}
       ${signOut()}
     </main>

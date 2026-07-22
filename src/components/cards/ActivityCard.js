@@ -30,6 +30,7 @@ const KIND_ICONS = {
   MANUAL: "✨",
   SOCIAL_CONNECTION: "🤝",
   EVENT_ATTENDANCE: "🎉",
+  CHALLENGE: "🎯",
 };
 
 const KIND_LABELS = {
