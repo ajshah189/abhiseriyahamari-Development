@@ -145,7 +145,12 @@ function autoFillNavFrom() {
     return;
   }
 
-  const locId = findNavLocId(room.name);
+  // Try room number first, then block name, then zone name as fallbacks.
+  // Pure-numeric room numbers (e.g. "501") have no letter prefix so the
+  // prefix-regex in findNavLocId never fires — block/zone catch those cases.
+  const locId = findNavLocId(room.name)
+             || findNavLocId(room.block)
+             || findNavLocId(room.zone);
   if (locId) {
     navFromSelect.value = locId;
     if (autoFillLabel) autoFillLabel.hidden = false;
@@ -308,6 +313,13 @@ async function mount() {
       }
     }
   }, true); // capture phase: fires before core's bubbling listener
+
+  // Close the nav panel after the route starts drawing (bubbling phase, so it
+  // fires after the core engine's handler). stopImmediatePropagation in the
+  // capture handler above prevents this from running when the route is blocked.
+  document.getElementById("navGoBtn")?.addEventListener("click", () => {
+    navPanel?.classList.add("hidden");
+  });
 
   // ── BottomNav ────────────────────────────────────────────────────────────
   const navWrapper = document.createElement("div");
