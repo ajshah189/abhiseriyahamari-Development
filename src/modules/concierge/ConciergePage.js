@@ -42,7 +42,7 @@ function getMyRequests(guestId) {
 
 export function ConciergePage(state, liveRequests = null) {
   const snapshot  = PassengerService.getCurrentSnapshot();
-  const guestId   = snapshot?.guestId;
+  const guestId   = snapshot?.profile?.id;
   const profile   = snapshot?.profile;
   const cottage   = profile?.roomCottage || profile?.room || "";
   const zone      = profile?.roomZone    || "";

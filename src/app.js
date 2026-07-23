@@ -137,6 +137,7 @@ class App {
         // after first-time login via onboarding (which hits return above).
         injectConciergeButton();
         AppStore.on("route:changed", injectConciergeButton);
+        AppStore.on("route:changed", _syncNotificationListener);
 
         // Subscribe to Firebase announcements (replaces 60s localStorage polling)
         initAnnouncementListener();
@@ -189,8 +190,11 @@ function initOfflineBanner() {
 // ── Concierge bell ────────────────────────────────────────────────────────────
 
 function injectConciergeButton() {
+  if (!AuthService.isLoggedIn()) {
+    document.getElementById("concierge-btn")?.remove();
+    return;
+  }
   if (document.getElementById("concierge-btn")) return;
-  if (!AuthService.isLoggedIn()) return;
 
   const btn = document.createElement("button");
   btn.id   = "concierge-btn";
@@ -243,25 +247,18 @@ function initNotificationListener() {
   });
 }
 
-// ── Announcement banner ───────────────────────────────────────────────────────
-
-function checkAnnouncements() {
-  let announcements;
-  try {
-    announcements = JSON.parse(localStorage.getItem("ar_announcements") || "[]");
-  } catch { return; }
-
-  const unread = announcements.filter(a => !a.read);
-  if (unread.length === 0) return;
-
-  const latest = unread[0];
-
-  // Mark as read immediately so it doesn't re-show on the 60s tick
-  announcements.forEach(a => { if (a.id === latest.id) a.read = true; });
-  try { localStorage.setItem("ar_announcements", JSON.stringify(announcements)); } catch {}
-
-  showAnnouncementBanner(latest);
+function _syncNotificationListener() {
+  const isLoggedIn = AuthService.isLoggedIn();
+  if (isLoggedIn && !_notifUnsub) {
+    initNotificationListener();
+  } else if (!isLoggedIn && _notifUnsub) {
+    _notifUnsub();
+    _notifUnsub = null;
+    _seenNotifIds.clear();
+  }
 }
+
+// ── Announcement banner ───────────────────────────────────────────────────────
 
 function showAnnouncementBanner(announcement) {
   // Don't stack banners

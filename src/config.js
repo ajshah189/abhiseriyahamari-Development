@@ -152,8 +152,8 @@ export const APP_CONFIG = {
   // PWA
   // ===========================
   pwa: {
-    cacheName: "ar-airways-v1",
-    cacheVersion: 1,
+    cacheName: "ar-airways-v33",
+    cacheVersion: 33,
     installDismissedKey: "ar_install_dismissed",
   },
 
@@ -162,13 +162,13 @@ export const APP_CONFIG = {
   // ===========================
   features: {
     dashboard: true,
-    passport: false,
-    boardingPass: false,
-    arMiles: false,
-    rewards: false,
-    leaderboard: false,
-    treasureHunt: false,
-    notifications: false,
+    passport: true,
+    boardingPass: true,
+    arMiles: true,
+    rewards: true,
+    leaderboard: true,
+    treasureHunt: true,
+    notifications: true,
     adminPanel: true,
   },
 };

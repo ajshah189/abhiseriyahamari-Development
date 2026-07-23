@@ -56,7 +56,7 @@ function renderFamilyList(families) {
       <div class="tv-row ${i === 0 ? "tv-row--top" : ""}">
         <div class="tv-rank">${i === 0 ? "🏆" : i + 1}</div>
         <div class="tv-name">${esc(f.name || "")}</div>
-        <div class="tv-miles">${fmtMiles(f.total)} ✈</div>
+        <div class="tv-miles">${fmtMiles(f.totalBalance)} ✈</div>
       </div>
     `).join("")}
   </div>`;
