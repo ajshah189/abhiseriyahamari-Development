@@ -2,6 +2,52 @@ import PassengerService from "../../services/passengerService.js";
 import { initials, colorFromName } from "../../modules/leaderboard/LeaderboardCard.js";
 import { getHistory } from "../../modules/notifications/NotificationService.js";
 
+// ── Weather ──────────────────────────────────────────────────────────────────
+// Fetched once on first TopBar render, refreshed every 30 minutes.
+// Cached module-level so subsequent TopBar re-renders use the latest value
+// synchronously without a layout jump.
+
+let _weatherText = "🌤️ --°C";
+let _weatherTimer = null;
+
+function getWeatherEmoji(code) {
+  if (code === 0)  return "☀️";
+  if (code <= 3)   return "⛅";
+  if (code <= 48)  return "🌫️";
+  if (code <= 67)  return "🌧️";
+  if (code <= 77)  return "❄️";
+  if (code <= 82)  return "🌦️";
+  if (code <= 99)  return "⛈️";
+  return "🌤️";
+}
+
+async function fetchWeather() {
+  try {
+    const res = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=18.9667&longitude=73.1167&current=temperature_2m,weather_code"
+    );
+    const data = await res.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const code = data.current.weather_code;
+    return `${getWeatherEmoji(code)} ${temp}°C`;
+  } catch {
+    return "🌤️ --°C";
+  }
+}
+
+function _updateWeatherEl(text) {
+  _weatherText = text;
+  document.querySelectorAll(".topbar-weather").forEach(el => { el.textContent = text; });
+}
+
+function initWeatherUpdater() {
+  if (_weatherTimer !== null) return;
+  fetchWeather().then(_updateWeatherEl);
+  _weatherTimer = setInterval(() => fetchWeather().then(_updateWeatherEl), 30 * 60 * 1000);
+}
+
+// ── Wedding pill ──────────────────────────────────────────────────────────────
+
 function getWeddingPill() {
   const now   = new Date();
   const day1  = new Date("2027-01-22T00:00:00+05:30");
@@ -18,7 +64,11 @@ function getWeddingPill() {
   return `🎉 Wedding in ${days} day${days !== 1 ? "s" : ""}`;
 }
 
+// ── TopBar ────────────────────────────────────────────────────────────────────
+
 export function TopBar() {
+  initWeatherUpdater();
+
   const now = new Date();
   const greeting =
     now.getHours() < 12 ? "Good Morning" :
@@ -51,7 +101,7 @@ export function TopBar() {
   </div>
 
   <div class="top-center">
-    <div class="weather">☀️ 29°C</div>
+    <div class="weather topbar-weather">${_weatherText}</div>
     <div class="countdown">${getWeddingPill()}</div>
   </div>
 
