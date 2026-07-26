@@ -20,9 +20,11 @@ let _currentRitualId = null;
 export const RitualsScreen = {
   mount() {
     _container = document.getElementById(CONTAINER_ID);
+    console.log('[Rituals] mount — container:', _container);
   },
 
   show(params = {}) {
+    console.log('[Rituals] show — params:', params);
     _currentRitualId = params?.ritualId || null;
     _render();
   },
