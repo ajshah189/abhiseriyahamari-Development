@@ -82,13 +82,9 @@ document.body.appendChild(splash);
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
 
-console.log('1 - script.js loaded');
-
 try {
-  console.log('2 - calling App.start()');
   const { default: App } = await import('./src/app.js');
   App.start();
-  console.log('3 - App.start() returned');
   // Small delay so first screen renders visibly before splash fades
   setTimeout(hideSplash, 300);
 } catch (e) {

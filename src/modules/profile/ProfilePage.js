@@ -18,6 +18,7 @@ import { EVENTS, getEventStatus } from "../../data/events.js";
 import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 import { initials, colorFromName } from "../leaderboard/LeaderboardCard.js";
+import { isJourneyComplete } from "../journey/JourneyCompleteCard.js";
 
 function getJourneyStats(balance) {
   const landedEvents = EVENTS.filter(e => getEventStatus(e) === "landed");
@@ -118,7 +119,6 @@ function myRewards(guestId) {
 }
 
 function quickInfo(snapshot) {
-  const diet = snapshot?.profile?.dietPreference || "Not specified";
   const emergency = snapshot?.profile?.emergencyContact || "Not specified";
   const checkedIn = snapshot?.profile?.checkedIn;
 
@@ -126,10 +126,6 @@ function quickInfo(snapshot) {
     <section class="dashboard-section">
       <h3>Quick Info</h3>
       <div class="quick-info-list">
-        <div class="quick-info-row">
-          <span>Diet Preference</span>
-          <strong>${diet}</strong>
-        </div>
         <div class="quick-info-row">
           <span>Emergency Contact</span>
           <strong>${emergency}</strong>
@@ -151,6 +147,17 @@ function loggedOutState() {
       <h1 class="profile-name">Not Logged In</h1>
       <p class="profile-family">Log in with your passport number to see your profile</p>
       <button class="access-locked__cta" data-route="onboarding">Enter Passport →</button>
+    </section>
+  `;
+}
+
+function journeySummaryButton() {
+  return `
+    <section class="dashboard-section">
+      <button class="btn-ghost" data-journey-summary
+              style="width:100%;padding:var(--s-3) var(--s-4);text-align:center;">
+        My Journey Summary ✈
+      </button>
     </section>
   `;
 }
@@ -198,6 +205,7 @@ export function ProfilePage() {
       ${transactionHistory(guestId)}
       ${myRewards(guestId)}
       ${quickInfo(snapshot)}
+      ${isJourneyComplete() ? journeySummaryButton() : ""}
       ${directoryLink()}
       ${signOut()}
     </main>

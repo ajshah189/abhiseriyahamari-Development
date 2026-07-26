@@ -8,7 +8,7 @@
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#d4af6a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="AR Airways">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -37,6 +37,9 @@
 <link rel="stylesheet" href="src/modules/admin/announcements.css">
 <link rel="stylesheet" href="src/modules/concierge/concierge.css">
 <link rel="stylesheet" href="src/modules/chronicle/chronicle.css">
+<link rel="stylesheet" href="src/modules/social/social.css">
+<link rel="stylesheet" href="src/modules/tv/tv.css">
+<link rel="stylesheet" href="src/modules/rituals/rituals.css">
 </head>
 <body>
 
@@ -66,6 +69,10 @@
 
 <!-- TREASURE HUNT CLAIM — shown after scanning a QR code -->
 <div id="screen-hunt-claim" hidden></div>
+<div id="screen-social-claim" hidden></div>
+
+<!-- TV LEADERBOARD — fullscreen projector mode at /leaderboard-tv -->
+<div id="screen-leaderboard-tv" hidden></div>
 
 <!-- EVENTS SCREEN — departures board -->
 <div id="screen-events" hidden></div>
@@ -81,6 +88,9 @@
 
 <!-- CONCIERGE / GUEST SERVICES -->
 <div id="screen-concierge" hidden></div>
+
+<!-- WEDDING RITUALS -->
+<div id="screen-rituals" hidden></div>
 
 <!-- RESORT MAP SCREEN -->
 <div id="screen-map" hidden>

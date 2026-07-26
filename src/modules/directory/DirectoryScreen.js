@@ -12,18 +12,22 @@ function wireEvents() {
   const list = container.querySelector("#guestList");
   const empty = container.querySelector("#directoryEmpty");
 
+  let _searchTimer;
   search?.addEventListener("input", () => {
-    const q = search.value.trim().toLowerCase();
-    let visible = 0;
-    list?.querySelectorAll(".guest-card").forEach(card => {
-      const matches = !q
-        || card.dataset.name?.includes(q)
-        || card.dataset.family?.includes(q)
-        || card.dataset.room?.includes(q);
-      card.hidden = !matches;
-      if (matches) visible++;
-    });
-    empty?.classList.toggle("hidden", visible > 0);
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => {
+      const q = search.value.trim().toLowerCase();
+      let visible = 0;
+      list?.querySelectorAll(".guest-card").forEach(card => {
+        const matches = !q
+          || card.dataset.name?.includes(q)
+          || card.dataset.family?.includes(q)
+          || card.dataset.room?.includes(q);
+        card.hidden = !matches;
+        if (matches) visible++;
+      });
+      empty?.classList.toggle("hidden", visible > 0);
+    }, 200);
   });
 
   container.querySelectorAll("[data-map-room]").forEach(btn => {

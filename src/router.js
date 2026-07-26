@@ -111,6 +111,10 @@ class Router {
       next.mounted = true;
     }
 
+    // ── Scroll new screen to top ──────────────────────────────────────
+    const _scrollId = CONTAINER_IDS[name] ?? `screen-${name}`;
+    document.getElementById(_scrollId)?.scrollTo?.({ top: 0 });
+
     // ── Fade in next ──────────────────────────────────────────────────
     if (!skipAnim) {
       const id = CONTAINER_IDS[name] ?? `screen-${name}`;

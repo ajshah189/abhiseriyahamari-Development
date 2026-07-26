@@ -3,65 +3,37 @@ export const guests = [
     id: "G001",
     firstName: "Abhishek",
     lastName: "Shah",
-
     displayName: "Abhishek Shah",
-
     familyId: "F001",
-
-    roomId: "R101",
-
+    roomId: "501",
     passportId: "P001",
-
     boardingPassId: "B001",
-
     passportNumber: "AR-501-S",
-
     arMiles: 1250,
-
     status: "Explorer",
-
     profilePhoto: "assets/guests/abhishek.jpg",
-
     checkedIn: true,
-
     dietPreference: "Vegetarian",
-
     emergencyContact: "Nikita Shah · +91 98765 43210",
-
     role: "GUEST"
   },
 
   {
     id: "G002",
-
     firstName: "Riya",
-
     lastName: "Shah",
-
     displayName: "Riya Shah",
-
     familyId: "F001",
-
-    roomId: "R101",
-
+    roomId: "501",
     passportId: "P002",
-
     boardingPassId: "B002",
-
     passportNumber: "AR-501-R",
-
     arMiles: 1180,
-
     status: "Explorer",
-
     profilePhoto: "assets/guests/riya.jpg",
-
     checkedIn: true,
-
     dietPreference: "Vegetarian",
-
     emergencyContact: "Abhishek Shah · +91 98765 43210",
-
     role: "GUEST"
   },
 
@@ -71,7 +43,7 @@ export const guests = [
     lastName: "Shah",
     displayName: "Nikita Shah",
     familyId: "F001",
-    roomId: "R102",
+    roomId: "502",
     passportId: "P003",
     boardingPassId: "B003",
     passportNumber: "AR-502-S",
@@ -90,7 +62,7 @@ export const guests = [
     lastName: "Shah",
     displayName: "Kiran Shah",
     familyId: "F001",
-    roomId: "R103",
+    roomId: "503",
     passportId: "P004",
     boardingPassId: "B004",
     passportNumber: "AR-503-S",
@@ -109,7 +81,7 @@ export const guests = [
     lastName: "Mehta",
     displayName: "Rohan Mehta",
     familyId: "F002",
-    roomId: "R104",
+    roomId: "E-1",
     passportId: "P005",
     boardingPassId: "B005",
     passportNumber: "AR-504-M",
@@ -128,7 +100,7 @@ export const guests = [
     lastName: "Mehta",
     displayName: "Priya Mehta",
     familyId: "F002",
-    roomId: "R104",
+    roomId: "E-1",
     passportId: "P006",
     boardingPassId: "B006",
     passportNumber: "AR-504-M2",
@@ -147,7 +119,7 @@ export const guests = [
     lastName: "Mehta",
     displayName: "Sameer Mehta",
     familyId: "F002",
-    roomId: "R105",
+    roomId: "E-2",
     passportId: "P007",
     boardingPassId: "B007",
     passportNumber: "AR-505-M",
@@ -166,7 +138,7 @@ export const guests = [
     lastName: "Mehta",
     displayName: "Anjali Mehta",
     familyId: "F002",
-    roomId: "R105",
+    roomId: "E-2",
     passportId: "P008",
     boardingPassId: "B008",
     passportNumber: "AR-505-M2",
@@ -185,7 +157,7 @@ export const guests = [
     lastName: "Jain",
     displayName: "Neel Jain",
     familyId: "F003",
-    roomId: "R107",
+    roomId: "C-15",
     passportId: "P009",
     boardingPassId: "B009",
     passportNumber: "AR-507-J",
@@ -204,7 +176,7 @@ export const guests = [
     lastName: "Jain",
     displayName: "Kavya Jain",
     familyId: "F003",
-    roomId: "R107",
+    roomId: "C-15",
     passportId: "P010",
     boardingPassId: "B010",
     passportNumber: "AR-507-J2",
@@ -223,7 +195,7 @@ export const guests = [
     lastName: "Jain",
     displayName: "Dev Jain",
     familyId: "F003",
-    roomId: "R108",
+    roomId: "C-16",
     passportId: "P011",
     boardingPassId: "B011",
     passportNumber: "AR-508-J",
@@ -242,7 +214,7 @@ export const guests = [
     lastName: "Jain",
     displayName: "Meera Jain",
     familyId: "F003",
-    roomId: "R108",
+    roomId: "C-16",
     passportId: "P012",
     boardingPassId: "B012",
     passportNumber: "AR-508-J2",
@@ -261,7 +233,7 @@ export const guests = [
     lastName: "Desai",
     displayName: "Aarav Desai",
     familyId: "F004",
-    roomId: "R110",
+    roomId: "C-25",
     passportId: "P013",
     boardingPassId: "B013",
     passportNumber: "AR-510-D",
@@ -280,7 +252,7 @@ export const guests = [
     lastName: "Desai",
     displayName: "Ishita Desai",
     familyId: "F004",
-    roomId: "R110",
+    roomId: "C-25",
     passportId: "P014",
     boardingPassId: "B014",
     passportNumber: "AR-510-D2",
@@ -299,7 +271,7 @@ export const guests = [
     lastName: "Desai",
     displayName: "Yash Desai",
     familyId: "F004",
-    roomId: "R111",
+    roomId: "C-25",
     passportId: "P015",
     boardingPassId: "B015",
     passportNumber: "AR-511-D",
@@ -318,7 +290,7 @@ export const guests = [
     lastName: "Kothari",
     displayName: "Vivaan Kothari",
     familyId: "F005",
-    roomId: "R112",
+    roomId: "N201",
     passportId: "P016",
     boardingPassId: "B016",
     passportNumber: "AR-512-K",
@@ -337,7 +309,7 @@ export const guests = [
     lastName: "Kothari",
     displayName: "Diya Kothari",
     familyId: "F005",
-    roomId: "R112",
+    roomId: "N201",
     passportId: "P017",
     boardingPassId: "B017",
     passportNumber: "AR-512-K2",
@@ -356,7 +328,7 @@ export const guests = [
     lastName: "Kothari",
     displayName: "Arjun Kothari",
     familyId: "F005",
-    roomId: "R106",
+    roomId: "N202",
     passportId: "P018",
     boardingPassId: "B018",
     passportNumber: "AR-506-K",

@@ -23,6 +23,47 @@ import { TopBar } from "../../components/layout/TopBar.js";
 import { BottomNav } from "../../components/layout/BottomNav.js";
 
 const BANNER_KEY = "ar_login_banner_dismissed";
+
+function esc(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function ChallengeBanner(challenge) {
+  if (!challenge) return "";
+
+  const completionCount = Object.keys(challenge.completions || {}).length;
+  const metaParts = [`+${challenge.miles || 0} ✈`];
+
+  if (challenge.type === "Speed Rush") {
+    const remaining = Math.max(0, (challenge.limit || 5) - completionCount);
+    metaParts.push(remaining > 0 ? `${remaining} spot${remaining !== 1 ? "s" : ""} left` : "All spots filled");
+  } else if (challenge.type === "Timed" && challenge.expiresAt) {
+    const minsLeft = Math.max(0, Math.floor((challenge.expiresAt - Date.now()) / 60_000));
+    metaParts.push(`${minsLeft}m remaining`);
+  } else if (challenge.type === "Open") {
+    metaParts.push("Everyone who finds it wins");
+  }
+
+  const isFull = challenge.type === "Speed Rush" &&
+    completionCount >= (challenge.limit || 5);
+
+  return `
+    <div class="challenge-banner" data-challenge-id="${esc(challenge.id)}">
+      <div class="challenge-banner__icon">🎯</div>
+      <div class="challenge-banner__body">
+        <div class="challenge-banner__title">${esc(challenge.title || "Daily Challenge")}</div>
+        ${challenge.description ? `<div class="challenge-banner__desc">${esc(challenge.description)}</div>` : ""}
+        <div class="challenge-banner__meta">${metaParts.join(" · ")}</div>
+      </div>
+      <button class="challenge-banner__cta" data-challenge-found ${isFull ? "disabled" : ""}>
+        ${isFull ? "Full" : "I Found It!"}
+      </button>
+    </div>
+  `;
+}
 const BANNER_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 function isBannerDismissed() {
@@ -52,12 +93,13 @@ function LoginBanner() {
   `;
 }
 
-export function HomePage(chronicle = null) {
+export function HomePage(chronicle = null, challenge = null) {
   const snapshot = PassengerService.getCurrentSnapshot();
 
   return `
     ${TopBar()}
     ${LoginBanner()}
+    ${ChallengeBanner(challenge)}
     ${ChronicleCard(chronicle)}
     <main class="dashboard-page">
       <section class="dashboard-main">

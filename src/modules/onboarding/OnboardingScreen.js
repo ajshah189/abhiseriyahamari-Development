@@ -71,8 +71,9 @@ function submit() {
   // Request notification permission after login — non-blocking.
   requestPermission();
 
-  const pendingHunt = sessionStorage.getItem("ar_pending_hunt");
-  setTimeout(() => Router.go(pendingHunt ? "hunt-claim" : "home"), SUCCESS_FADE_MS);
+  const pendingHunt   = sessionStorage.getItem("ar_pending_hunt");
+  const pendingSocial = sessionStorage.getItem("ar_pending_social");
+  setTimeout(() => Router.go(pendingHunt ? "hunt-claim" : pendingSocial ? "social-claim" : "home"), SUCCESS_FADE_MS);
 }
 
 function mount() {

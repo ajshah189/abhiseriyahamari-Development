@@ -50,7 +50,7 @@ function sendRequest() {
   if (!selectedType) return;
 
   const profile   = snapshot.profile;
-  const guestId   = snapshot.guestId;
+  const guestId   = snapshot.profile?.id;
   const guestName = profile?.passengerName || [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Guest";
   const cottage   = profile?.roomCottage || profile?.room || "";
   const zone      = profile?.roomZone    || "";
@@ -115,7 +115,7 @@ function _startRequestsSubscription() {
   if (_unsubRequests) { _unsubRequests(); _unsubRequests = null; }
   const snapshot = PassengerService.getCurrentSnapshot();
   if (!snapshot || snapshot.isViewer) return;
-  _unsubRequests = FirebaseService.subscribeToGuestRequests(snapshot.guestId, (fbRequests) => {
+  _unsubRequests = FirebaseService.subscribeToGuestRequests(snapshot.profile?.id, (fbRequests) => {
     _liveRequests = fbRequests;
     renderPage();
   });

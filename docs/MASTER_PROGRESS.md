@@ -1,10 +1,10 @@
 # AR Airways – Master Progress
 
 Last Updated:
-13 July 2026 (Session 18 — Morning Chronicle)
+26 July 2026 (Session 23 — Journey Fix + Chronicle Delete + Rituals)
 
 Current Version:
-v0.8
+v0.9
 
 Current Phase:
 Phase 1 – Foundation
@@ -74,6 +74,13 @@ main
 | Family Leaderboard Firebase Sync | 🟢 Completed | 100% |
 | UX Simplification (Viewer Default + What's On Now + Quick Actions) | 🟢 Completed | 100% |
 | Morning Chronicle (Firebase Storage + Admin publish + Guest card) | 🟢 Completed | 100% |
+| QR System (Social scanning + Event gate check-in + Hunt URL fix) | 🟢 Completed | 100% |
+| TV Leaderboard (fullscreen projector mode at /leaderboard-tv) | 🟢 Completed | 100% |
+| Journey Complete Card (end-of-trip stats + WhatsApp share) | 🟢 Completed | 100% |
+| Daily Challenges (admin launch + guest banner + I Found It! flow) | 🟢 Completed | 100% |
+| Full Codebase Audit + Bug Fixes (S21) | 🟢 Completed | 100% |
+| Polish Pass (S22) | 🟢 Completed | 100% |
+| Journey Fix + Chronicle Delete + Diet Removal + Wedding Rituals (S23) | 🟢 Completed | 100% |
 | Final QA | ⚪ Not Started | 0% |
 
 ---

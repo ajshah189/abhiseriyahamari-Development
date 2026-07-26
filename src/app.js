@@ -24,17 +24,27 @@ import { PassportScreen } from "./modules/passport/PassportScreen.js";
 import { AdminScreen } from "./modules/admin/AdminScreen.js";
 import { HuntScreen } from "./modules/hunt/HuntScreen.js";
 import { HuntClaimScreen } from "./modules/hunt/HuntClaimScreen.js";
+import { SocialClaimScreen } from "./modules/social/SocialClaimScreen.js";
 import { DirectoryScreen } from "./modules/directory/DirectoryScreen.js";
 import { SettingsScreen } from "./modules/settings/SettingsScreen.js";
 import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
-import { initBell } from "./modules/notifications/NotificationService.js";
+import { initBell, addExternalNotification } from "./modules/notifications/NotificationService.js";
 import { ConciergeScreen } from "./modules/concierge/ConciergeScreen.js";
+import { TVLeaderboardScreen } from "./modules/tv/TVLeaderboardScreen.js";
+import { RitualsScreen } from "./modules/rituals/RitualsScreen.js";
 
 const UPCOMING_ROUTES = {};
 
 class App {
 
     start() {
+
+        // Fast path for TV leaderboard — no auth, no shell setup
+        if (window.location.pathname === '/leaderboard-tv') {
+            Router.register('leaderboard-tv', TVLeaderboardScreen);
+            Router.go('leaderboard-tv');
+            return;
+        }
 
         initMilesStore();
         initOfflineBanner();
@@ -54,8 +64,10 @@ class App {
         Router.register("admin", AdminScreen);
         Router.register("hunt", HuntScreen);
         Router.register("hunt-claim", HuntClaimScreen);
+        Router.register("social-claim", SocialClaimScreen);
         Router.register("directory", DirectoryScreen);
         Router.register("concierge", ConciergeScreen);
+        Router.register("rituals", RitualsScreen);
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
@@ -89,6 +101,33 @@ class App {
             return;
         }
 
+        // ?social= from guest boarding pass QR — store the scanned passport and
+        // route to the social claim screen. Viewers are redirected to onboarding
+        // first; the pending passport survives through login.
+        const socialPassport = urlParams.get("social");
+        if (socialPassport) {
+            sessionStorage.setItem("ar_pending_social", socialPassport);
+            if (!AuthService.isLoggedIn()) {
+                Router.go("onboarding");
+                initInstallPrompt();
+                return;
+            }
+            Router.go("social-claim");
+            initInstallPrompt();
+            return;
+        }
+
+        // ?ritual= from announcement banner — route to that ritual's detail view.
+        const ritualId = urlParams.get("ritual");
+        if (ritualId) {
+            if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
+                AuthService.loginAsViewer();
+            }
+            Router.go("rituals", { ritualId });
+            initInstallPrompt();
+            return;
+        }
+
         // Auth routing — auto-login as viewer if no auth state exists so guests
         // land on the dashboard immediately with no friction.
         if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
@@ -111,9 +150,14 @@ class App {
         // after first-time login via onboarding (which hits return above).
         injectConciergeButton();
         AppStore.on("route:changed", injectConciergeButton);
+        AppStore.on("route:changed", _syncNotificationListener);
 
         // Subscribe to Firebase announcements (replaces 60s localStorage polling)
         initAnnouncementListener();
+
+        // Subscribe to Firebase notifications for the logged-in guest and
+        // surface them via the notification bell.
+        initNotificationListener();
 
     }
 
@@ -159,8 +203,11 @@ function initOfflineBanner() {
 // ── Concierge bell ────────────────────────────────────────────────────────────
 
 function injectConciergeButton() {
+  if (!AuthService.isLoggedIn()) {
+    document.getElementById("concierge-btn")?.remove();
+    return;
+  }
   if (document.getElementById("concierge-btn")) return;
-  if (!AuthService.isLoggedIn()) return;
 
   const btn = document.createElement("button");
   btn.id   = "concierge-btn";
@@ -194,39 +241,61 @@ function initAnnouncementListener() {
   });
 }
 
-// ── Announcement banner ───────────────────────────────────────────────────────
+// ── Firebase notification listener ───────────────────────────────────────────
 
-function checkAnnouncements() {
-  let announcements;
-  try {
-    announcements = JSON.parse(localStorage.getItem("ar_announcements") || "[]");
-  } catch { return; }
+let _notifUnsub = null;
+let _seenNotifIds = new Set();
 
-  const unread = announcements.filter(a => !a.read);
-  if (unread.length === 0) return;
+function initNotificationListener() {
+  const guest = AuthService.getCurrentGuest();
+  if (!guest) return;
 
-  const latest = unread[0];
-
-  // Mark as read immediately so it doesn't re-show on the 60s tick
-  announcements.forEach(a => { if (a.id === latest.id) a.read = true; });
-  try { localStorage.setItem("ar_announcements", JSON.stringify(announcements)); } catch {}
-
-  showAnnouncementBanner(latest);
+  _notifUnsub = FirebaseService.subscribeToNotifications(guest.id, (notifs) => {
+    for (const n of notifs) {
+      if (!_seenNotifIds.has(n.id)) {
+        _seenNotifIds.add(n.id);
+        addExternalNotification("AR Airways", n.message || "You have a new notification");
+      }
+    }
+  });
 }
+
+function _syncNotificationListener() {
+  const isLoggedIn = AuthService.isLoggedIn();
+  if (isLoggedIn && !_notifUnsub) {
+    initNotificationListener();
+  } else if (!isLoggedIn && _notifUnsub) {
+    _notifUnsub();
+    _notifUnsub = null;
+    _seenNotifIds.clear();
+  }
+}
+
+// ── Announcement banner ───────────────────────────────────────────────────────
 
 function showAnnouncementBanner(announcement) {
   // Don't stack banners
   document.querySelector(".announcement-banner")?.remove();
 
   const urgent = announcement.priority === "urgent";
+  const ritualId = announcement.ritualId || null;
   const banner = document.createElement("div");
-  banner.className = `announcement-banner${urgent ? " announcement-banner--urgent" : ""}`;
+  banner.className = `announcement-banner${urgent ? " announcement-banner--urgent" : ""}${ritualId ? " announcement-banner--clickable" : ""}`;
   banner.innerHTML = `
     <div class="announcement-banner__icon">${urgent ? "📢" : "ℹ️"}</div>
-    <div class="announcement-banner__text">${_esc(announcement.message)}</div>
+    <div class="announcement-banner__text">${_esc(announcement.message)}${ritualId ? ` <span class="announcement-banner__link">View ritual →</span>` : ""}</div>
     <button class="announcement-banner__close" aria-label="Close">×</button>
   `;
-  banner.querySelector(".announcement-banner__close").addEventListener("click", () => banner.remove());
+  banner.querySelector(".announcement-banner__close").addEventListener("click", (e) => {
+    e.stopPropagation();
+    banner.remove();
+  });
+  if (ritualId) {
+    banner.addEventListener("click", () => {
+      banner.remove();
+      Router.go("rituals", { ritualId });
+    });
+  }
   document.body.appendChild(banner);
 
   if (!urgent) setTimeout(() => banner.remove(), 8000);

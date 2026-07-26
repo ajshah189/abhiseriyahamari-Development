@@ -1,0 +1,223 @@
+/* ── Rituals Page ─────────────────────────────────────────────────── */
+
+.rituals-page {
+  padding: var(--s-4) var(--s-4) calc(var(--s-10) + env(safe-area-inset-bottom));
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── List ── */
+
+.rituals-header {
+  text-align: center;
+  padding: var(--s-6) 0 var(--s-4);
+}
+
+.rituals-header__icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--s-2);
+}
+
+.rituals-header__title {
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  color: var(--gold);
+  margin: 0 0 var(--s-1);
+}
+
+.rituals-header__subtitle {
+  font-size: 0.85rem;
+  color: var(--cream-dim);
+  margin: 0;
+}
+
+.ritual-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  padding: var(--s-4);
+  background: var(--night2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: var(--s-3);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ritual-card:hover,
+.ritual-card:active {
+  border-color: var(--gold);
+  background: var(--night3);
+}
+
+.ritual-card__icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--night3);
+  border-radius: 10px;
+}
+
+.ritual-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ritual-card__name {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--cream);
+  margin: 0 0 2px;
+}
+
+.ritual-card__tagline {
+  font-size: 0.8rem;
+  color: var(--cream-dim);
+  margin: 0 0 var(--s-1);
+}
+
+.ritual-card__meta {
+  font-size: 0.75rem;
+  color: var(--gold);
+  margin: 0;
+}
+
+.ritual-card__chevron {
+  color: var(--cream-dim);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ── Detail ── */
+
+.ritual-detail {
+  padding-bottom: var(--s-8);
+}
+
+.ritual-detail__back {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: var(--s-3) 0 var(--s-4);
+}
+
+.ritual-detail__hero {
+  text-align: center;
+  padding: var(--s-4) 0 var(--s-6);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--s-5);
+}
+
+.ritual-detail__hero-icon {
+  font-size: 3.5rem;
+  margin-bottom: var(--s-3);
+}
+
+.ritual-detail__name {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  color: var(--gold);
+  margin: 0 0 var(--s-1);
+}
+
+.ritual-detail__tagline {
+  font-size: 0.9rem;
+  color: var(--cream-dim);
+  font-style: italic;
+  margin: 0 0 var(--s-4);
+}
+
+.ritual-detail__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+}
+
+.ritual-detail__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--cream-dim);
+  background: var(--night2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 12px;
+}
+
+.ritual-detail__section {
+  margin-bottom: var(--s-5);
+}
+
+.ritual-detail__section-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--gold);
+  margin: 0 0 var(--s-2);
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.ritual-detail__description {
+  font-size: 0.9rem;
+  color: var(--cream-dim);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.ritual-detail__expect-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.ritual-detail__expect-item {
+  display: flex;
+  gap: var(--s-2);
+  font-size: 0.875rem;
+  color: var(--cream-dim);
+  line-height: 1.5;
+}
+
+.ritual-detail__expect-item::before {
+  content: "✈";
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ritual-detail__dresscode {
+  background: var(--night2);
+  border: 1px solid var(--gold-soft, rgba(212,175,106,0.25));
+  border-radius: 10px;
+  padding: var(--s-3) var(--s-4);
+  font-size: 0.875rem;
+  color: var(--cream-dim);
+}
+
+.ritual-detail__dresscode strong {
+  color: var(--gold);
+}
+
+@media (prefers-color-scheme: light) {
+  .ritual-card { background: #fff; }
+  .ritual-card:hover { background: #f9f6ef; }
+  .ritual-card__icon { background: #f3ede0; }
+  .ritual-detail__meta-item { background: #f3ede0; }
+  .ritual-detail__dresscode { background: #f9f6ef; }
+}

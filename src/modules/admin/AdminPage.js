@@ -18,6 +18,7 @@ import { EVENTS } from "../../data/events.js";
 import { families } from "../../data/families.js";
 import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
 import { HUNT_LOCATIONS, getFoundLocations } from "../../data/treasureHunt.js";
+import { RITUALS } from "../../data/rituals.js";
 
 const NAV_ITEMS = [
   { id: "overview",      label: "📊 Overview" },
@@ -31,6 +32,8 @@ const NAV_ITEMS = [
   { id: "announcements", label: "📢 Announce" },
   { id: "requests",      label: "🛎 Requests" },
   { id: "chronicle",     label: "📰 Chronicle" },
+  { id: "event-checkin", label: "📅 Event Check-in" },
+  { id: "challenges",   label: "🎯 Challenges" },
 ];
 
 const ANNOUNCEMENT_TEMPLATES = [
@@ -66,6 +69,10 @@ function overviewSection(state) {
   const rewardsRedeemed = RewardService.getAllRedemptions().length;
   const topTen = LeaderboardService.getOverall().slice(0, 10);
 
+  const attendance = state.attendance || {};
+  const totalAttendance = Object.values(attendance).reduce((sum, evs) => sum + Object.keys(evs).length, 0);
+  const totalConnections = Object.keys(state.connections || {}).length;
+
   return `
     <div class="admin-stat-grid">
       <div class="admin-stat-card">
@@ -83,6 +90,14 @@ function overviewSection(state) {
       <div class="admin-stat-card">
         <div class="admin-stat-card__value">${rewardsRedeemed}</div>
         <div class="admin-stat-card__label">Rewards Redeemed</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-card__value">${totalAttendance}</div>
+        <div class="admin-stat-card__label">Event Check-ins</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-card__value">${totalConnections}</div>
+        <div class="admin-stat-card__label">Guest Connections</div>
       </div>
     </div>
 
@@ -293,16 +308,15 @@ function redemptionsSection(state) {
 
 // ---------- QR Codes ----------
 
-const BASE_URL = "https://abhiseriyahamari.in";
-
 function qrCodesSection() {
+  const baseUrl = window.location.origin;
   return `
     <section class="dashboard-section">
       <h3>QR Codes</h3>
       <p class="muted" style="margin-bottom:var(--s-5)">Print and hide these at each location. Guests scan to earn AR Miles.</p>
       <div class="admin-qr-grid">
         ${HUNT_LOCATIONS.map(loc => {
-          const url = `${BASE_URL}/?hunt=${loc.id}`;
+          const url = `${baseUrl}/?hunt=${loc.id}`;
           const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
           return `
             <div class="admin-qr-card">
@@ -318,7 +332,8 @@ function qrCodesSection() {
                   data-qr-name="${loc.name.replace(/"/g, "&quot;")}"
                   data-qr-url="${url}"
                   data-qr-icon="${loc.icon}"
-                  data-qr-reward="${loc.milesReward}">
+                  data-qr-reward="${loc.milesReward}"
+                  data-qr-hint="${(loc.hint || '').replace(/"/g, '&quot;')}">
                   Print
                 </button>
               </div>
@@ -716,6 +731,12 @@ function announcementsSection(state) {
         </label>
       </div>
 
+      <label class="admin-field-label">Link to Ritual (optional)</label>
+      <select class="admin-input" data-ann-ritual>
+        <option value="">— No ritual link —</option>
+        ${RITUALS.map(r => `<option value="${esc(r.id)}" ${ann.ritualId === r.id ? "selected" : ""}>${r.icon} ${esc(r.name)}</option>`).join("")}
+      </select>
+
       <button class="admin-submit-btn" data-ann-send>📢 Broadcast to All Guests</button>
 
       ${history.length > 0 ? `
@@ -901,20 +922,196 @@ function chronicleSection(state) {
   `;
 }
 
+// ---------- Event Check-in ----------
+
+function eventCheckinSection(state) {
+  const ec = state.eventCheckin;
+  const attendance = state.attendance || {};
+
+  return `
+    <section class="dashboard-section">
+      <h3>Event Check-in</h3>
+      <p class="muted" style="margin-bottom:var(--s-4)">Scan a guest's boarding pass at an event gate. On-time guests earn miles. Arrivals within 60 minutes of start time are on time.</p>
+
+      <label class="admin-field-label">Select Event</label>
+      <div class="admin-day-selector" style="flex-wrap:wrap">
+        ${EVENTS.map(ev => `
+          <button
+            class="admin-day-btn ${ec.selectedEventId === ev.id ? "admin-day-btn--active" : ""}"
+            data-event-checkin-select="${ev.id}">
+            ${ev.icon} ${ev.name}
+          </button>
+        `).join("")}
+      </div>
+
+      ${ec.selectedEventId ? (() => {
+        const ev = EVENTS.find(e => e.id === ec.selectedEventId);
+        const evAttendance = Object.entries(attendance)
+          .flatMap(([guestId, evs]) => evs[ec.selectedEventId] ? [{ guestId, ...evs[ec.selectedEventId] }] : []);
+        const onTimeCount = evAttendance.filter(a => a.onTime).length;
+        const lateCount = evAttendance.filter(a => !a.onTime).length;
+
+        return `
+          <div class="admin-stat-grid" style="margin:var(--s-4) 0">
+            <div class="admin-stat-card">
+              <div class="admin-stat-card__value">${evAttendance.length}</div>
+              <div class="admin-stat-card__label">Checked In</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-card__value">${onTimeCount}</div>
+              <div class="admin-stat-card__label">On Time (+${ev?.milesReward || 0} ✈)</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-card__value">${lateCount}</div>
+              <div class="admin-stat-card__label">Late (0 ✈)</div>
+            </div>
+          </div>
+
+          <div class="scanner-viewfinder-wrap" id="event-scanner-viewfinder-wrap" ${ec.active ? "" : "style=\"display:none\""}>
+            <div class="scanner-viewfinder-placeholder" id="event-scanner-placeholder">
+              <div class="scanner-viewfinder-placeholder__icon">📷</div>
+              <div class="scanner-viewfinder-placeholder__text">Camera initializing…</div>
+            </div>
+          </div>
+
+          ${ec.active
+            ? `<button class="admin-ghost-btn" style="margin-bottom:var(--s-4)" data-event-scanner-stop>✕ Stop Scanner</button>`
+            : `<button class="admin-submit-btn" style="margin-bottom:var(--s-4)" data-event-scanner-start>📷 Start Scanner</button>`}
+
+          <div class="scanner-divider">— OR —</div>
+
+          <label class="admin-field-label">Manual Entry</label>
+          <div class="scanner-manual-row">
+            <input
+              class="admin-input scanner-manual-input"
+              type="text"
+              placeholder="e.g. AR-501-S"
+              value="${ec.passportInput}"
+              data-event-scanner-input />
+            <button class="admin-submit-btn scanner-manual-btn" data-event-checkin-submit>Check In</button>
+          </div>
+
+          ${ec.recentScans.length > 0 ? `
+            <label class="admin-field-label" style="margin-top:var(--s-5)">Recent Scans</label>
+            <div class="scanner-recent">
+              ${ec.recentScans.map(c => `
+                <div class="scanner-recent-item">
+                  <span class="scanner-recent-icon">${c.onTime ? "✅" : "🕐"}</span>
+                  <span class="scanner-recent-name">${esc(c.name)}</span>
+                  <span class="scanner-recent-time">${c.onTime ? `+${c.miles} ✈` : "Late — 0 ✈"}</span>
+                </div>
+              `).join("")}
+            </div>
+          ` : ""}
+        `;
+      })() : `<p class="muted" style="margin-top:var(--s-4)">Select an event above to begin check-in.</p>`}
+    </section>
+  `;
+}
+
+// ---------- Daily Challenges ----------
+
+function challengesSection(state) {
+  const ch = state.challenges;
+  const active = ch.active || [];
+
+  return `
+    <section class="dashboard-section">
+      <h3>Daily Challenges</h3>
+      <p class="muted" style="margin-bottom:var(--s-5)">Launch a surprise challenge — guests see it as a banner on their dashboard and tap "I Found It!" to claim miles.</p>
+
+      <label class="admin-field-label">Type</label>
+      <div class="admin-day-selector">
+        ${["Speed Rush", "Timed", "Open"].map(t => `
+          <button class="admin-day-btn ${ch.type === t ? "admin-day-btn--active" : ""}"
+                  data-challenge-type="${t}">${t}</button>
+        `).join("")}
+      </div>
+      <p class="muted" style="margin:var(--s-2) 0 var(--s-4);font-size:12px">
+        ${ch.type === "Speed Rush" ? "First N guests to tap win · Firebase handles the race condition" :
+          ch.type === "Timed"     ? "Active until the timer expires · everyone who taps wins" :
+                                    "No limit or timer · stays open until you end it manually"}
+      </p>
+
+      <label class="admin-field-label">Challenge Title</label>
+      <input class="admin-input" type="text"
+             placeholder="e.g. Find the golden envelope"
+             value="${esc(ch.title)}" data-challenge-title />
+
+      <label class="admin-field-label">Clue / Description</label>
+      <input class="admin-input" type="text"
+             placeholder="e.g. Hidden somewhere near the Palace entrance…"
+             value="${esc(ch.description)}" data-challenge-desc />
+
+      <label class="admin-field-label">Miles Reward per Winner</label>
+      <div class="admin-amount-presets">
+        ${[50, 100, 200, 500].map(a => `
+          <button class="admin-amount-chip ${ch.miles === a ? "admin-amount-chip--selected" : ""}"
+                  data-challenge-miles="${a}">+${a}</button>
+        `).join("")}
+      </div>
+
+      ${ch.type === "Speed Rush" ? `
+        <label class="admin-field-label">Max Winners</label>
+        <input class="admin-input" type="number" min="1" max="50"
+               value="${ch.limit}" data-challenge-limit />
+      ` : ""}
+
+      ${ch.type === "Timed" ? `
+        <label class="admin-field-label">Expires in (minutes)</label>
+        <input class="admin-input" type="number" min="1" max="240"
+               value="${ch.expiryMins}" data-challenge-expiry />
+      ` : ""}
+
+      <button class="admin-submit-btn" style="margin-top:var(--s-4)" data-challenge-launch>
+        🎯 Launch Challenge
+      </button>
+    </section>
+
+    ${active.length > 0 ? `
+      <section class="dashboard-section" style="margin-top:var(--s-5)">
+        <h3>Active Challenges</h3>
+        ${active.map(c => {
+          const completionCount = Object.keys(c.completions || {}).length;
+          return `
+            <div class="admin-request-row" style="margin-bottom:var(--s-3)">
+              <div class="admin-request-row__info">
+                <div class="admin-request-row__guest">${esc(c.title || "Untitled")} · ${esc(c.type || "Open")}</div>
+                <div class="admin-request-row__type">
+                  +${c.miles || 0} ✈ · ${completionCount} completion${completionCount !== 1 ? "s" : ""}
+                  ${c.type === "Speed Rush" ? ` / ${c.limit || "?"} max` : ""}
+                </div>
+                ${c.description ? `<div class="admin-request-row__note">${esc(c.description)}</div>` : ""}
+              </div>
+              <button class="admin-ghost-btn" style="flex-shrink:0" data-challenge-end="${esc(c.id)}">End</button>
+            </div>
+          `;
+        }).join("")}
+      </section>
+    ` : `
+      <section class="dashboard-section" style="margin-top:var(--s-5)">
+        <p class="muted">No active challenges right now.</p>
+      </section>
+    `}
+  `;
+}
+
 // ---------- Shell ----------
 
 const SECTION_RENDERERS = {
-  overview:      overviewSection,
-  award:         awardSection,
-  scanner:       scannerSection,
-  guests:        guestsSection,
-  redemptions:   redemptionsSection,
-  qrcodes:       qrCodesSection,
-  import:        importSection,
-  analytics:     analyticsSection,
-  announcements: announcementsSection,
-  requests:      requestsSection,
-  chronicle:     chronicleSection,
+  overview:       overviewSection,
+  award:          awardSection,
+  scanner:        scannerSection,
+  guests:         guestsSection,
+  redemptions:    redemptionsSection,
+  qrcodes:        qrCodesSection,
+  import:         importSection,
+  analytics:      analyticsSection,
+  announcements:  announcementsSection,
+  requests:       requestsSection,
+  chronicle:      chronicleSection,
+  "event-checkin": eventCheckinSection,
+  challenges:      challengesSection,
 };
 
 export function AdminPage(state) {

@@ -1,0 +1,153 @@
+/* Social Scanning — guest-to-guest connection claim screen */
+
+.social-claim {
+  position: fixed;
+  inset: 0;
+  background: var(--night);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  text-align: center;
+  padding: var(--s-6);
+}
+
+.social-claim__spinner {
+  font-size: 48px;
+  display: inline-block;
+  animation: social-spin 1.5s ease-in-out infinite;
+  margin-bottom: var(--s-4);
+}
+
+@keyframes social-spin {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50%       { transform: rotate(15deg) scale(1.1); }
+}
+
+.social-claim__status {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--cream-dim);
+  letter-spacing: 0.06em;
+}
+
+/* ---------- Success state ---------- */
+
+.social-claim__plane {
+  font-size: 64px;
+  animation: social-float 2s ease-in-out infinite;
+  margin-bottom: var(--s-4);
+}
+
+@keyframes social-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-8px) rotate(5deg); }
+}
+
+.social-claim__label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: var(--s-3);
+}
+
+.social-claim__name {
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--cream);
+  line-height: 1.2;
+  margin-bottom: var(--s-3);
+}
+
+.social-claim__miles {
+  font-family: var(--font-body);
+  font-size: 28px;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin-bottom: var(--s-5);
+}
+
+/* ---------- Error / info states ---------- */
+
+.social-claim__icon {
+  font-size: 56px;
+  margin-bottom: var(--s-4);
+}
+
+.social-claim__msg {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--cream);
+  margin-bottom: var(--s-3);
+  line-height: 1.2;
+}
+
+.social-claim__sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--cream-dim);
+  max-width: 280px;
+  line-height: 1.6;
+  margin-bottom: var(--s-5);
+}
+
+/* ---------- CTA button ---------- */
+
+.social-claim__btn {
+  background: var(--gold);
+  color: var(--night);
+  border: none;
+  border-radius: var(--r-pill);
+  padding: var(--s-3) var(--s-6);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity var(--t-fast) var(--ease-out);
+  min-height: 48px;
+}
+
+.social-claim__btn:hover { opacity: 0.88; }
+
+.social-claim__btn--ghost {
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--cream-dim);
+  border-radius: var(--r-pill);
+  padding: var(--s-3) var(--s-5);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: var(--s-3);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.social-claim__btn--ghost:hover { border-color: var(--gold-soft); }
+
+/* ---------- Confetti ---------- */
+
+.social-confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 201;
+}
+
+.social-confetti__piece {
+  position: absolute;
+  top: -10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: social-confetti-fall var(--duration, 2.5s) var(--delay, 0s) ease-in forwards;
+}
+
+@keyframes social-confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg);    opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}

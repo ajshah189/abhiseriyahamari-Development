@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: “ar-airways-v{N}”.
  */
 
-const CACHE_NAME = “ar-airways-v30”;
+const CACHE_NAME = “ar-airways-v35”;
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -77,6 +77,7 @@ const APP_SHELL = [
   "/src/data/rooms.js",
   "/src/data/rewards.js",
   "/src/data/passport.js",
+  "/src/data/treasureHunt.js",
 
   // Models
   "/src/models/Transaction.js",
@@ -120,6 +121,15 @@ const APP_SHELL = [
   // Chronicle
   "/src/modules/chronicle/ChroniclePage.js",
   "/src/modules/chronicle/chronicle.css",
+  "/src/modules/social/SocialClaimScreen.js",
+  "/src/modules/social/social.css",
+
+  // TV Leaderboard
+  "/src/modules/tv/TVLeaderboardScreen.js",
+  "/src/modules/tv/tv.css",
+
+  // Journey Complete
+  "/src/modules/journey/JourneyCompleteCard.js",
 
   // Dashboard
   "/src/modules/dashboard/HomePage.js",
@@ -223,6 +233,18 @@ const APP_SHELL = [
 
   // Admin broadcast
   "/src/modules/admin/announcements.css",
+
+  // Treasure Hunt
+  "/src/modules/hunt/HuntPage.js",
+  "/src/modules/hunt/HuntScreen.js",
+  "/src/modules/hunt/HuntClaimScreen.js",
+  "/src/modules/hunt/hunt.css",
+
+  // Wedding Rituals
+  "/src/data/rituals.js",
+  "/src/modules/rituals/RitualsPage.js",
+  "/src/modules/rituals/RitualsScreen.js",
+  "/src/modules/rituals/rituals.css",
 ];
 
 // â”€â”€â”€ Install â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

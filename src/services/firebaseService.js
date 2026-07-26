@@ -116,15 +116,12 @@ class FirebaseService {
 
   // ─── ANNOUNCEMENTS ──────────────────────────────────────────────────────────
 
-  async postAnnouncement(message, priority = 'normal', sentBy = 'Ground Crew') {
+  async postAnnouncement(message, priority = 'normal', sentBy = 'Ground Crew', ritualId = null) {
     try {
       const announcementsRef = ref(db, 'announcements');
-      await push(announcementsRef, {
-        message,
-        priority,
-        sentBy,
-        timestamp: Date.now(),
-      });
+      const payload = { message, priority, sentBy, timestamp: Date.now() };
+      if (ritualId) payload.ritualId = ritualId;
+      await push(announcementsRef, payload);
       return true;
     } catch (e) {
       console.warn('Firebase announcement failed:', e.message);
@@ -233,6 +230,20 @@ class FirebaseService {
     }
   }
 
+  async deleteChroniclePhotos(day) {
+    try {
+      const { storage, storageRef, listAll, deleteObject } =
+        await import('../config/firebase.js');
+      const folderRef = storageRef(storage, `chronicles/day${day}`);
+      const result = await listAll(folderRef);
+      await Promise.all(result.items.map(item => deleteObject(item)));
+      return true;
+    } catch (e) {
+      console.warn('Firebase deleteChroniclePhotos failed:', e.message);
+      return false;
+    }
+  }
+
   async uploadChroniclePhoto(day, photoIndex, file) {
     try {
       const { storage, storageRef, uploadBytes, getDownloadURL } =
@@ -270,6 +281,100 @@ class FirebaseService {
         .sort((a, b) => b.publishedAt - a.publishedAt);
       callback(chronicles);
     });
+  }
+
+  // ─── SOCIAL CONNECTIONS ──────────────────────────────────────────────────────
+
+  async getConnection(connectionKey) {
+    try {
+      const snap = await get(ref(db, `connections/${connectionKey}`));
+      return snap.exists() ? snap.val() : null;
+    } catch (e) { return null; }
+  }
+
+  async saveConnection(connectionKey, data) {
+    try {
+      await set(ref(db, `connections/${connectionKey}`), data);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async postNotification(guestId, notification) {
+    try {
+      await push(ref(db, `notifications/${guestId}`), notification);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  subscribeToNotifications(guestId, callback) {
+    const notifRef = ref(db, `notifications/${guestId}`);
+    return onValue(notifRef, (snap) => {
+      if (!snap.exists()) { callback([]); return; }
+      const notifs = Object.entries(snap.val())
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => b.timestamp - a.timestamp);
+      callback(notifs);
+    });
+  }
+
+  // ─── EVENT ATTENDANCE ────────────────────────────────────────────────────────
+
+  async markEventAttendance(guestId, eventId, data) {
+    try {
+      await set(ref(db, `attendance/${guestId}/${eventId}`), data);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  subscribeToAllAttendance(callback) {
+    return onValue(ref(db, 'attendance'), (snap) => {
+      callback(snap.exists() ? snap.val() : {});
+    });
+  }
+
+  // ─── DAILY CHALLENGES ────────────────────────────────────────────────────────
+
+  async launchChallenge(data) {
+    try {
+      await push(ref(db, 'challenges'), { ...data, active: true, launchedAt: Date.now() });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async completeChallenge(challengeId, guestId, completionData) {
+    try {
+      await push(ref(db, `challenges/${challengeId}/completions`), {
+        guestId,
+        ...completionData,
+        completedAt: Date.now(),
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  subscribeToActiveChallenges(callback) {
+    return onValue(ref(db, 'challenges'), (snap) => {
+      if (!snap.exists()) { callback([]); return; }
+      const active = Object.entries(snap.val())
+        .map(([id, data]) => ({ id, ...data }))
+        .filter(c => c.active);
+      callback(active);
+    });
+  }
+
+  async endChallenge(challengeId) {
+    try {
+      await set(ref(db, `challenges/${challengeId}/active`), false);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  async getChallengeCompletions(challengeId) {
+    try {
+      const snap = await get(ref(db, `challenges/${challengeId}/completions`));
+      if (!snap.exists()) return [];
+      return Object.entries(snap.val()).map(([id, data]) => ({ id, ...data }));
+    } catch (e) { return []; }
   }
 
   // ─── FCM TOKENS (continued) ──────────────────────────────────────────────────
