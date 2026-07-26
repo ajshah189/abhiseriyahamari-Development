@@ -159,6 +159,26 @@ function autoFillNavFrom() {
   }
 }
 
+// Inject (or no-op) the ✏️ edit toggle in the TopBar right area.
+// Idempotent — safe to call on every show().
+function applyAdminVisibility() {
+  if (sessionStorage.getItem("ar_admin_auth") !== "true") return;
+  const topRight = container?.querySelector(".top-right");
+  if (!topRight) return;
+  if (topRight.querySelector(".map-edit-btn")) return; // already injected
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "top-icon map-edit-btn";
+  editBtn.title = "Toggle map editor";
+  editBtn.textContent = "✏️";
+  topRight.insertBefore(editBtn, topRight.firstChild);
+  editBtn.addEventListener("click", () => {
+    const tools = document.getElementById("editorTools");
+    if (!tools) return;
+    tools.hidden = !tools.hidden;
+  });
+}
+
 async function mount() {
   container = document.getElementById("screen-map");
 
@@ -183,22 +203,9 @@ async function mount() {
     }
   }
 
-  // Edit Map toggle for admins — injects ✏️ button into TopBar right area
-  if (sessionStorage.getItem("ar_admin_auth") === "true") {
-    const topRight = container.querySelector(".top-right");
-    if (topRight) {
-      const editBtn = document.createElement("button");
-      editBtn.className = "top-icon";
-      editBtn.title = "Toggle map editor";
-      editBtn.textContent = "✏️";
-      topRight.insertBefore(editBtn, topRight.firstChild);
-      editBtn.addEventListener("click", () => {
-        const tools = document.getElementById("editorTools");
-        if (!tools) return;
-        tools.hidden = !tools.hidden;
-      });
-    }
-  }
+  // Edit Map toggle for admins — checked again on every show() so it appears
+  // even when the user authenticates after the map has already been mounted.
+  applyAdminVisibility();
 
   // Reveal the container before the core map modules run — they measure
   // #viewport's live layout size to compute the initial zoom-to-fit
@@ -460,6 +467,10 @@ async function mount() {
 function show() {
   container.hidden = false;
   document.body.style.overflow = "hidden";
+
+  // Re-check admin auth on every show — user may have authenticated after
+  // the map was first mounted, so mount()'s check would have been false.
+  applyAdminVisibility();
 
   // ── "Find on Map" highlight from Guest Directory ─────────────────────────
   // DirectoryPage sets ar_map_highlight = room.name (e.g. "Bali").
