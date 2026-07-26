@@ -16,7 +16,7 @@
  * are evicted on next activate. Format: “ar-airways-v{N}”.
  */
 
-const CACHE_NAME = “ar-airways-v34”;
+const CACHE_NAME = “ar-airways-v35”;
 
 // Every file listed here must return HTTP 200 â€” a single 404 will cause
 // the install to fail and the SW to stay in "waiting" state.
@@ -239,6 +239,12 @@ const APP_SHELL = [
   "/src/modules/hunt/HuntScreen.js",
   "/src/modules/hunt/HuntClaimScreen.js",
   "/src/modules/hunt/hunt.css",
+
+  // Wedding Rituals
+  "/src/data/rituals.js",
+  "/src/modules/rituals/RitualsPage.js",
+  "/src/modules/rituals/RitualsScreen.js",
+  "/src/modules/rituals/rituals.css",
 ];
 
 // â”€â”€â”€ Install â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

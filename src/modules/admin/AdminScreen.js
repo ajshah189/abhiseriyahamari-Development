@@ -79,7 +79,7 @@ function createInitialState() {
     award:         { search: "", selectedGuestId: null, amount: null, customAmount: "", reason: "", mode: "award" },
     guests:        { search: "", tierFilter: "all", expandedGuestId: null },
     scanner:       { passportInput: "", recentCheckins: [], active: false },
-    announcements: { message: "", priority: "normal" },
+    announcements: { message: "", priority: "normal", ritualId: "" },
     checkins:      readLocalMap(CHECKIN_KEY),
     fulfilled:     readSessionMap(FULFILLED_KEY),
     import:        { status: "idle", preview: null, result: null },
@@ -663,6 +663,10 @@ function bindAnnouncementEvents() {
     el.addEventListener("change", () => { state.announcements.priority = el.value; });
   });
 
+  container.querySelector("[data-ann-ritual]")?.addEventListener("change", e => {
+    state.announcements.ritualId = e.target.value;
+  });
+
   container.querySelector("[data-ann-send]")?.addEventListener("click", broadcastAnnouncement);
 
   container.querySelectorAll("[data-ann-delete]").forEach(btn => {
@@ -678,16 +682,16 @@ function bindAnnouncementEvents() {
 }
 
 async function broadcastAnnouncement() {
-  const { message, priority } = state.announcements;
+  const { message, priority, ritualId } = state.announcements;
   if (!message.trim()) { showToast("Write a message first"); return; }
 
   // Push to Firebase — delivers to all open app tabs via onValue subscription
-  const success = await FirebaseService.postAnnouncement(message.trim(), priority);
+  const success = await FirebaseService.postAnnouncement(message.trim(), priority, "Ground Crew", ritualId || null);
 
   // localStorage fallback for offline + local display
   try {
     const all = JSON.parse(localStorage.getItem("ar_announcements") || "[]");
-    all.unshift({ id: Date.now(), message: message.trim(), priority, timestamp: new Date().toISOString(), sentBy: "Ground Crew", read: false });
+    all.unshift({ id: Date.now(), message: message.trim(), priority, ritualId: ritualId || null, timestamp: new Date().toISOString(), sentBy: "Ground Crew", read: false });
     localStorage.setItem("ar_announcements", JSON.stringify(all.slice(0, 20)));
   } catch {}
 
@@ -697,6 +701,7 @@ async function broadcastAnnouncement() {
   showToast(success ? `📢 Broadcast sent to all guests` : `📢 Sent (offline mode)`);
   state.announcements.message = "";
   state.announcements.priority = "normal";
+  state.announcements.ritualId = "";
   renderPage();
 }
 
@@ -867,9 +872,15 @@ function bindChronicleEvents() {
 
   container.querySelectorAll("[data-chronicle-delete]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      if (!confirm("Delete this chronicle? Guests will no longer see it.")) return;
-      const ok = await FirebaseService.deleteChronicle(btn.dataset.chronicleDelete);
-      showToast(ok ? "Chronicle deleted" : "⚠ Delete failed");
+      const day = btn.dataset.chronicleDelete;
+      if (!confirm(`Delete Day ${day} chronicle? This cannot be undone.`)) return;
+      showToast("Deleting…");
+      const [dbOk] = await Promise.all([
+        FirebaseService.deleteChronicle(day),
+        FirebaseService.deleteChroniclePhotos(day),
+      ]);
+      showToast(dbOk ? "✅ Chronicle deleted" : "⚠ Delete failed");
+      renderPage();
     });
   });
 }

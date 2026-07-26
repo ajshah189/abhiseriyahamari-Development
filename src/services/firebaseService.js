@@ -116,15 +116,12 @@ class FirebaseService {
 
   // ─── ANNOUNCEMENTS ──────────────────────────────────────────────────────────
 
-  async postAnnouncement(message, priority = 'normal', sentBy = 'Ground Crew') {
+  async postAnnouncement(message, priority = 'normal', sentBy = 'Ground Crew', ritualId = null) {
     try {
       const announcementsRef = ref(db, 'announcements');
-      await push(announcementsRef, {
-        message,
-        priority,
-        sentBy,
-        timestamp: Date.now(),
-      });
+      const payload = { message, priority, sentBy, timestamp: Date.now() };
+      if (ritualId) payload.ritualId = ritualId;
+      await push(announcementsRef, payload);
       return true;
     } catch (e) {
       console.warn('Firebase announcement failed:', e.message);
@@ -229,6 +226,20 @@ class FirebaseService {
       return true;
     } catch (e) {
       console.warn('Firebase deleteChronicle failed:', e.message);
+      return false;
+    }
+  }
+
+  async deleteChroniclePhotos(day) {
+    try {
+      const { storage, storageRef, listAll, deleteObject } =
+        await import('../config/firebase.js');
+      const folderRef = storageRef(storage, `chronicles/day${day}`);
+      const result = await listAll(folderRef);
+      await Promise.all(result.items.map(item => deleteObject(item)));
+      return true;
+    } catch (e) {
+      console.warn('Firebase deleteChroniclePhotos failed:', e.message);
       return false;
     }
   }

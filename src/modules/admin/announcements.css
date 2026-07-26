@@ -24,6 +24,17 @@
   background: linear-gradient(135deg, rgba(212,175,106,0.12), var(--panel-solid));
 }
 
+.announcement-banner--clickable {
+  cursor: pointer;
+}
+
+.announcement-banner__link {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
 .announcement-banner__icon {
   font-size: 20px;
   flex-shrink: 0;

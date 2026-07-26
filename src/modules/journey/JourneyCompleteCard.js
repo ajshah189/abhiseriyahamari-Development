@@ -10,7 +10,7 @@ import { EVENTS } from "../../data/events.js";
 import { getFoundLocations } from "../../data/treasureHunt.js";
 
 const JOURNEY_END_MS = new Date("2027-01-24T18:00:00+05:30").getTime();
-const IS_DEV = true;
+const IS_DEV = false;
 
 export function isJourneyComplete() {
   return IS_DEV || Date.now() >= JOURNEY_END_MS;

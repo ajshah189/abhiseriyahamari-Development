@@ -18,6 +18,7 @@ import { EVENTS } from "../../data/events.js";
 import { families } from "../../data/families.js";
 import { LeaderboardRow } from "../leaderboard/LeaderboardCard.js";
 import { HUNT_LOCATIONS, getFoundLocations } from "../../data/treasureHunt.js";
+import { RITUALS } from "../../data/rituals.js";
 
 const NAV_ITEMS = [
   { id: "overview",      label: "📊 Overview" },
@@ -729,6 +730,12 @@ function announcementsSection(state) {
           🔴 Urgent
         </label>
       </div>
+
+      <label class="admin-field-label">Link to Ritual (optional)</label>
+      <select class="admin-input" data-ann-ritual>
+        <option value="">— No ritual link —</option>
+        ${RITUALS.map(r => `<option value="${esc(r.id)}" ${ann.ritualId === r.id ? "selected" : ""}>${r.icon} ${esc(r.name)}</option>`).join("")}
+      </select>
 
       <button class="admin-submit-btn" data-ann-send>📢 Broadcast to All Guests</button>
 

@@ -6,6 +6,7 @@ const PRIMARY_ACTIONS = [
 ];
 
 const MORE_ACTIONS = [
+  { icon: "🙏", label: "Rituals",          route: "rituals" },
   { icon: "🗺️", label: "Treasure Hunt",   route: "hunt" },
   { icon: "🎁", label: "Rewards",          route: "rewards" },
   { icon: "📘", label: "Passport",         route: "passport" },

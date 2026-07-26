@@ -9,7 +9,7 @@ import {
   onValue, query, orderByChild, limitToLast, remove
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, listAll } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBNSRwju-YBwkLG70D93bXJeqNT_Ew5rUo",
@@ -32,5 +32,5 @@ const VAPID_KEY = 'BL_PGI0-mbOhcln5XIuUTgZ2kdONWKMtZBTuAIVDxlNj_hSU3gZRCF4bJe5z0
 export {
   db, ref, push, set, get, onValue, query, orderByChild, limitToLast, remove,
   messaging, getToken, onMessage, VAPID_KEY,
-  storage, storageRef, uploadBytes, getDownloadURL, listAll,
+  storage, storageRef, uploadBytes, getDownloadURL, listAll, deleteObject,
 };

@@ -31,6 +31,7 @@ import { createComingSoonScreen } from "./modules/shared/ComingSoonScreen.js";
 import { initBell, addExternalNotification } from "./modules/notifications/NotificationService.js";
 import { ConciergeScreen } from "./modules/concierge/ConciergeScreen.js";
 import { TVLeaderboardScreen } from "./modules/tv/TVLeaderboardScreen.js";
+import { RitualsScreen } from "./modules/rituals/RitualsScreen.js";
 
 const UPCOMING_ROUTES = {};
 
@@ -66,6 +67,7 @@ class App {
         Router.register("social-claim", SocialClaimScreen);
         Router.register("directory", DirectoryScreen);
         Router.register("concierge", ConciergeScreen);
+        Router.register("rituals", RitualsScreen);
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));
@@ -111,6 +113,17 @@ class App {
                 return;
             }
             Router.go("social-claim");
+            initInstallPrompt();
+            return;
+        }
+
+        // ?ritual= from announcement banner — route to that ritual's detail view.
+        const ritualId = urlParams.get("ritual");
+        if (ritualId) {
+            if (!AuthService.isLoggedIn() && !AuthService.isViewer()) {
+                AuthService.loginAsViewer();
+            }
+            Router.go("rituals", { ritualId });
             initInstallPrompt();
             return;
         }
@@ -265,14 +278,24 @@ function showAnnouncementBanner(announcement) {
   document.querySelector(".announcement-banner")?.remove();
 
   const urgent = announcement.priority === "urgent";
+  const ritualId = announcement.ritualId || null;
   const banner = document.createElement("div");
-  banner.className = `announcement-banner${urgent ? " announcement-banner--urgent" : ""}`;
+  banner.className = `announcement-banner${urgent ? " announcement-banner--urgent" : ""}${ritualId ? " announcement-banner--clickable" : ""}`;
   banner.innerHTML = `
     <div class="announcement-banner__icon">${urgent ? "📢" : "ℹ️"}</div>
-    <div class="announcement-banner__text">${_esc(announcement.message)}</div>
+    <div class="announcement-banner__text">${_esc(announcement.message)}${ritualId ? ` <span class="announcement-banner__link">View ritual →</span>` : ""}</div>
     <button class="announcement-banner__close" aria-label="Close">×</button>
   `;
-  banner.querySelector(".announcement-banner__close").addEventListener("click", () => banner.remove());
+  banner.querySelector(".announcement-banner__close").addEventListener("click", (e) => {
+    e.stopPropagation();
+    banner.remove();
+  });
+  if (ritualId) {
+    banner.addEventListener("click", () => {
+      banner.remove();
+      Router.go("rituals", { ritualId });
+    });
+  }
   document.body.appendChild(banner);
 
   if (!urgent) setTimeout(() => banner.remove(), 8000);

@@ -119,7 +119,6 @@ function myRewards(guestId) {
 }
 
 function quickInfo(snapshot) {
-  const diet = snapshot?.profile?.dietPreference || "Not specified";
   const emergency = snapshot?.profile?.emergencyContact || "Not specified";
   const checkedIn = snapshot?.profile?.checkedIn;
 
@@ -127,10 +126,6 @@ function quickInfo(snapshot) {
     <section class="dashboard-section">
       <h3>Quick Info</h3>
       <div class="quick-info-list">
-        <div class="quick-info-row">
-          <span>Diet Preference</span>
-          <strong>${diet}</strong>
-        </div>
         <div class="quick-info-row">
           <span>Emergency Contact</span>
           <strong>${emergency}</strong>
