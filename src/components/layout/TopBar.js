@@ -1,6 +1,6 @@
 import PassengerService from "../../services/passengerService.js";
 import { initials, colorFromName } from "../../modules/leaderboard/LeaderboardCard.js";
-import { getHistory } from "../../modules/notifications/NotificationService.js";
+import { getUnreadCount } from "../../modules/notifications/NotificationService.js";
 
 // ── Weather ──────────────────────────────────────────────────────────────────
 // Fetched once on first TopBar render, refreshed every 30 minutes.
@@ -80,7 +80,7 @@ export function TopBar() {
   const avatarLetter = snapshot?.isViewer ? "✈" : initials(name);
   const avatarColor  = snapshot?.isViewer ? "var(--gold)" : colorFromName(name);
 
-  const notifCount = getHistory().length;
+  const notifCount = getUnreadCount();
   const badge = notifCount > 0
     ? `<span class="notif-bell-badge">${notifCount}</span>`
     : "";

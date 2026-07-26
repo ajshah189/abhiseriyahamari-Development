@@ -13,7 +13,14 @@ export function ChronicleCard(chronicle) {
     ? `<div class="chronicle-photos chronicle-photos--${Math.min(chronicle.photos.length, 4)}">
         ${chronicle.photos.slice(0, 4).map((url, i) => `
           <div class="chronicle-photo-wrap">
-            <img src="${url}" alt="${_esc(chronicle.eventName)} photo ${i + 1}" loading="lazy" />
+            <img
+              src="${url}"
+              alt="${_esc(chronicle.eventName)} photo ${i + 1}"
+              loading="lazy"
+              style="opacity:0;transition:opacity 0.3s;"
+              onload="this.style.opacity='1'"
+              onerror="this.parentElement.style.display='none'"
+            />
           </div>
         `).join('')}
        </div>`

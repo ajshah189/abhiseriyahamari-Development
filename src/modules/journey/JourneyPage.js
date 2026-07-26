@@ -68,8 +68,11 @@ function boardingPass(snapshot) {
   const flightClass = isViewer ? "—" : tierName;
   const passportNumber = isViewer ? null : (snapshot?.profile?.passportNumber || null);
 
-  const qrUrl = passportNumber
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(passportNumber)}&bgcolor=faf9f6&color=0a0a0f&margin=8`
+  const socialUrl = passportNumber
+    ? `${window.location.origin}/?social=${passportNumber}`
+    : null;
+  const qrUrl = socialUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(socialUrl)}&bgcolor=faf9f6&color=0a0a0f&margin=8`
     : null;
 
   const barcodeSection = qrUrl

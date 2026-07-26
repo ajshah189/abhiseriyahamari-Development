@@ -21,6 +21,7 @@
 import { EVENTS } from "../../data/events.js";
 
 const HISTORY_KEY = "ar_notification_history";
+const READ_AT_KEY = "ar_notifications_read_at";
 const MAX_HISTORY = 10;
 
 let _timeouts = [];
@@ -73,6 +74,13 @@ export function addExternalNotification(title, body) {
   _addHistory({ title, body, tag: `ext_${Date.now()}`, ts: Date.now() });
   _refreshBadge();
   _refreshPanel();
+}
+
+/**
+ * Return the count of notifications newer than the last panel-open timestamp.
+ */
+export function getUnreadCount() {
+  return _unreadCount();
 }
 
 /**
@@ -141,8 +149,13 @@ export function refreshBadge() {
   _refreshBadge();
 }
 
+function _unreadCount() {
+  const readAt = parseInt(localStorage.getItem(READ_AT_KEY) || "0", 10);
+  return getHistory().filter(n => n.ts > readAt).length;
+}
+
 function _refreshBadge() {
-  const count = getHistory().length;
+  const count = _unreadCount();
   document.querySelectorAll("[data-notif-toggle]").forEach(btn => {
     let badge = btn.querySelector(".notif-bell-badge");
     if (count > 0) {
@@ -191,6 +204,10 @@ function _togglePanel(anchorBtn) {
 
   panel.innerHTML = _renderPanel();
   panel.hidden = false;
+
+  // Mark all current notifications as read
+  localStorage.setItem(READ_AT_KEY, Date.now().toString());
+  _refreshBadge();
 
   // Position below the bell button, flush to the right edge.
   const rect = anchorBtn.getBoundingClientRect();

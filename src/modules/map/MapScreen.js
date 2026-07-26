@@ -455,7 +455,6 @@ async function mount() {
     searchResults?.appendChild(section);
   });
 
-  console.log("AR Airways map initialized — ledger architecture active");
 }
 
 function show() {

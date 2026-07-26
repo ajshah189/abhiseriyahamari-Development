@@ -137,6 +137,7 @@
   transition: color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
   font-size: 13px;
   font-family: var(--font-body);
+  min-height: 44px;
 }
 
 .nav-icon {

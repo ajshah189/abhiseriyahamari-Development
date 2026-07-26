@@ -307,16 +307,15 @@ function redemptionsSection(state) {
 
 // ---------- QR Codes ----------
 
-const BASE_URL = "https://abhiseriyahamari-development.pages.dev";
-
 function qrCodesSection() {
+  const baseUrl = window.location.origin;
   return `
     <section class="dashboard-section">
       <h3>QR Codes</h3>
       <p class="muted" style="margin-bottom:var(--s-5)">Print and hide these at each location. Guests scan to earn AR Miles.</p>
       <div class="admin-qr-grid">
         ${HUNT_LOCATIONS.map(loc => {
-          const url = `${BASE_URL}/?hunt=${loc.id}`;
+          const url = `${baseUrl}/?hunt=${loc.id}`;
           const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
           return `
             <div class="admin-qr-card">
