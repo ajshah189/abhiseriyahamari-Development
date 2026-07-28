@@ -632,7 +632,16 @@ const ROOM_ZONES = [
    get this object's contents, then paste back here.
 ============================================================ */
 const ENTRY_POINT_OVERRIDES = {
-  // "palace-de-shaan": [1050, 700],
+  "palace-de-shaan": [1102, 765],
+  "manwar":          [849,  853],
+  "dhaba":           [829,  563],
+  "palace-lawns":    [1013, 946],
+  "central-lawn":    [594,  421],
+  "reception":       [834,  896],
+  "musical-lounge":  [876,  607],
+  "derasar":         [744,  1068],
+  "parking":         [717,  1086],
+  "pool-upper":      [680,  199],
 };
 
 LOCATIONS.forEach((loc) => {
