@@ -5,6 +5,23 @@ import { clearAll as clearNotifications } from "../notifications/NotificationSer
 
 let container = null;
 
+let _tapCount = 0;
+let _tapTimer = null;
+
+function bindAdminTrigger() {
+  const el = container.querySelector("[data-admin-trigger]");
+  if (!el) return;
+  el.addEventListener("click", () => {
+    _tapCount++;
+    clearTimeout(_tapTimer);
+    _tapTimer = setTimeout(() => { _tapCount = 0; }, 1500);
+    if (_tapCount >= 5) {
+      _tapCount = 0;
+      Router.go("admin");
+    }
+  });
+}
+
 function readNotifPrefs() {
   try {
     return { events: true, miles: true, leaderboard: false,
@@ -93,6 +110,8 @@ function bindEvents() {
     AuthService.logout();
     Router.go("onboarding");
   });
+
+  bindAdminTrigger();
 }
 
 function render() {

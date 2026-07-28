@@ -83,6 +83,9 @@ class App {
           if (e.target.closest("[data-settings-btn]")) Router.go("settings");
         });
 
+        // Weather 5-tap → map access gate (PIN 0001)
+        initWeatherMapGate();
+
         // Parse URL params once — before any routing decision.
         const urlParams = new URLSearchParams(window.location.search);
 
@@ -306,6 +309,30 @@ function _esc(str) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+// ── Weather map gate ──────────────────────────────────────────────────────────
+// 5 taps on the weather widget within 1.5s → PIN prompt → "0001" → admin auth + map
+
+function initWeatherMapGate() {
+  let _wTapCount = 0;
+  let _wTapTimer = null;
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".topbar-weather")) return;
+    _wTapCount++;
+    clearTimeout(_wTapTimer);
+    _wTapTimer = setTimeout(() => { _wTapCount = 0; }, 1500);
+
+    if (_wTapCount >= 5) {
+      _wTapCount = 0;
+      const pin = prompt("Map access code:");
+      if (pin === "0001") {
+        sessionStorage.setItem("ar_admin_auth", "true");
+        Router.go("map");
+      }
+    }
+  });
 }
 
 export default new App();
