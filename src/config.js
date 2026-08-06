@@ -152,8 +152,8 @@ export const APP_CONFIG = {
   // PWA
   // ===========================
   pwa: {
-    cacheName: "ar-airways-v37",
-    cacheVersion: 37,
+    cacheName: "ar-airways-v38",
+    cacheVersion: 38,
     installDismissedKey: "ar_install_dismissed",
   },
 
