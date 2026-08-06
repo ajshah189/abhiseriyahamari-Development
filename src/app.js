@@ -32,6 +32,7 @@ import { initBell, addExternalNotification } from "./modules/notifications/Notif
 import { ConciergeScreen } from "./modules/concierge/ConciergeScreen.js";
 import { TVLeaderboardScreen } from "./modules/tv/TVLeaderboardScreen.js";
 import { RitualsScreen } from "./modules/rituals/RitualsScreen.js";
+import { StoryScreen } from "./modules/story/StoryScreen.js";
 
 const UPCOMING_ROUTES = {};
 
@@ -68,6 +69,7 @@ class App {
         Router.register("directory", DirectoryScreen);
         Router.register("concierge", ConciergeScreen);
         Router.register("rituals", RitualsScreen);
+        Router.register("story", StoryScreen);
 
         for (const [route, meta] of Object.entries(UPCOMING_ROUTES)) {
             Router.register(route, createComingSoonScreen(route, meta));

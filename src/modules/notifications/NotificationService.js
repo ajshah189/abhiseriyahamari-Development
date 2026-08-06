@@ -96,21 +96,82 @@ export function getHistory() {
 
 // ─── Scheduling ─────────────────────────────────────────────────────────────
 
+const WALK_TIMES = {
+  "Palace":               3,
+  "Garden":               5,
+  "Swimming Pool Lower":  4,
+  "Main Gate":            7,
+  "Resort Grounds":       2,
+};
+
+function _buildSmartReminder(ev, minutesUntil) {
+  const walkTime = WALK_TIMES[ev.venue] || 5;
+  const leaveIn  = minutesUntil - walkTime;
+
+  if (minutesUntil <= walkTime + 2) {
+    return {
+      title: `Time to head to ${ev.name}! 🚶`,
+      body:  `${ev.venueLabel} · ${walkTime}-minute walk from your room`,
+    };
+  }
+  if (minutesUntil <= 30) {
+    return {
+      title: `${ev.name} starts in ${minutesUntil} minutes`,
+      body:  `Your room is a ${walkTime}-min walk. Leave in ${leaveIn} min. 📍 ${ev.venueLabel}`,
+    };
+  }
+  if (minutesUntil <= 60) {
+    return {
+      title: `${ev.icon} ${ev.name} in ${minutesUntil} minutes`,
+      body:  `${ev.dresscodeEmoji ?? ""} ${ev.dresscode} · 📍 ${ev.venueLabel}`,
+    };
+  }
+  return {
+    title: `Coming up: ${ev.name}`,
+    body:  `${ev.startTime} · ${ev.venueLabel} · +${ev.milesReward} ✈`,
+  };
+}
+
 function _scheduleAll() {
   const now = Date.now();
 
   for (const ev of EVENTS) {
-    const startMs = new Date(`${ev.date}T${ev.startTime}:00+05:30`).getTime();
-    const warnMs  = startMs - 30 * 60 * 1000;
+    const startMs    = new Date(`${ev.date}T${ev.startTime}:00+05:30`).getTime();
+    const warn30Ms   = startMs - 30 * 60 * 1000;
+    const warn60Ms   = startMs - 60 * 60 * 1000;
+    const warn120Ms  = startMs - 120 * 60 * 1000;
 
-    if (warnMs > now) {
+    // 2-hour dress code reminder for evening events (start ≥ 19:00)
+    const startHour = parseInt(ev.startTime, 10);
+    if (startHour >= 19 && warn120Ms > now) {
       _timeouts.push(setTimeout(() => _fire(
-        `${ev.icon} ${ev.name} boards in 30 minutes`,
-        `Head to ${ev.venueLabel} 🛫`,
-        `${ev.id}-warn`
-      ), warnMs - now));
+        `${ev.dresscodeEmoji ?? "👔"} Dress Code Reminder`,
+        `Tonight's ${ev.name}: ${ev.dresscode}`,
+        `${ev.id}-dresscode`
+      ), warn120Ms - now));
     }
 
+    // 60-minute smart reminder
+    if (warn60Ms > now) {
+      const r60 = _buildSmartReminder(ev, 60);
+      _timeouts.push(setTimeout(() => _fire(r60.title, r60.body, `${ev.id}-warn60`), warn60Ms - now));
+    }
+
+    // 30-minute smart reminder
+    if (warn30Ms > now) {
+      const r30 = _buildSmartReminder(ev, 30);
+      _timeouts.push(setTimeout(() => _fire(r30.title, r30.body, `${ev.id}-warn30`), warn30Ms - now));
+    }
+
+    // Walk-time reminder (walk time before start)
+    const walkTime = WALK_TIMES[ev.venue] || 5;
+    const warnWalkMs = startMs - walkTime * 60 * 1000;
+    if (warnWalkMs > now) {
+      const rWalk = _buildSmartReminder(ev, walkTime);
+      _timeouts.push(setTimeout(() => _fire(rWalk.title, rWalk.body, `${ev.id}-walk`), warnWalkMs - now));
+    }
+
+    // At-start notification
     if (startMs > now) {
       _timeouts.push(setTimeout(() => _fire(
         `${ev.icon} ${ev.name} has begun ✈`,

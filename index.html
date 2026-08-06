@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -40,19 +40,20 @@
 <link rel="stylesheet" href="src/modules/social/social.css">
 <link rel="stylesheet" href="src/modules/tv/tv.css">
 <link rel="stylesheet" href="src/modules/rituals/rituals.css">
+<link rel="stylesheet" href="src/modules/story/story.css">
 </head>
 <body>
 
-<!-- ONBOARDING — first-visit passport gate. No TopBar/BottomNav. -->
+<!-- ONBOARDING â€” first-visit passport gate. No TopBar/BottomNav. -->
 <div id="screen-onboarding" hidden></div>
 
-<!-- GUEST APP SHELL — dashboard and every guest-facing module mount here -->
+<!-- GUEST APP SHELL â€” dashboard and every guest-facing module mount here -->
 <div id="screen-guest" hidden></div>
 
-<!-- JOURNEY HUB — boarding pass + flight schedule preview + passport preview -->
+<!-- JOURNEY HUB â€” boarding pass + flight schedule preview + passport preview -->
 <div id="screen-journey" hidden></div>
 
-<!-- REWARDS HUB — rewards catalogue + leaderboard, toggled client-side -->
+<!-- REWARDS HUB â€” rewards catalogue + leaderboard, toggled client-side -->
 <div id="screen-rewards" hidden></div>
 
 <!-- PROFILE PAGE -->
@@ -61,20 +62,20 @@
 <!-- PASSPORT PAGE -->
 <div id="screen-passport" hidden></div>
 
-<!-- ADMIN (GROUND CREW) — organiser-only, not in BottomNav, PIN-gated -->
+<!-- ADMIN (GROUND CREW) â€” organiser-only, not in BottomNav, PIN-gated -->
 <div id="screen-admin" hidden></div>
 
 <!-- TREASURE HUNT HUB -->
 <div id="screen-hunt" hidden></div>
 
-<!-- TREASURE HUNT CLAIM — shown after scanning a QR code -->
+<!-- TREASURE HUNT CLAIM â€” shown after scanning a QR code -->
 <div id="screen-hunt-claim" hidden></div>
 <div id="screen-social-claim" hidden></div>
 
-<!-- TV LEADERBOARD — fullscreen projector mode at /leaderboard-tv -->
+<!-- TV LEADERBOARD â€” fullscreen projector mode at /leaderboard-tv -->
 <div id="screen-leaderboard-tv" hidden></div>
 
-<!-- EVENTS SCREEN — departures board -->
+<!-- EVENTS SCREEN â€” departures board -->
 <div id="screen-events" hidden></div>
 
 <!-- SHARED "coming soon" screen, reused by every unbuilt route -->
@@ -91,21 +92,22 @@
 
 <!-- WEDDING RITUALS -->
 <div id="screen-rituals" hidden></div>
+<div id="screen-story" hidden></div>
 
 <!-- RESORT MAP SCREEN -->
 <div id="screen-map" hidden>
 
-  <!-- MAP TOPBAR — injected by MapScreen.mount() via TopBar({ map: true }) -->
+  <!-- MAP TOPBAR â€” injected by MapScreen.mount() via TopBar({ map: true }) -->
 
-  <!-- Admin edit toolbar — hidden by default, gear-toggled via initOrganizerToggle -->
+  <!-- Admin edit toolbar â€” hidden by default, gear-toggled via initOrganizerToggle -->
   <div id="editorTools" hidden>
     <button class="btn-ghost btn-editor" id="editModeBtn" title="Edit venue/room shapes">Edit Mode</button>
     <button class="btn-ghost btn-editor" id="editZonesBtn" title="Edit continent zone areas">Edit Zones</button>
-    <button class="btn-ghost btn-editor" id="editRoadsBtn" title="Edit the road network">🛣️ Roads</button>
-    <button class="btn-ghost btn-editor" id="entryPointsBtn" title="Edit entry points">📍 Entries</button>
+    <button class="btn-ghost btn-editor" id="editRoadsBtn" title="Edit the road network">ðŸ›£ï¸ Roads</button>
+    <button class="btn-ghost btn-editor" id="entryPointsBtn" title="Edit entry points">ðŸ“ Entries</button>
   </div>
 
-  <!-- Hidden stubs: core engine holds references to these IDs — keep in DOM -->
+  <!-- Hidden stubs: core engine holds references to these IDs â€” keep in DOM -->
   <span id="editorDivider" hidden></span>
   <button id="labelToggleBtn" hidden aria-hidden="true"></button>
   <button id="worldModeBtn" hidden aria-hidden="true"></button>
@@ -124,32 +126,32 @@
     <button class="filter-chip active" data-cat="building"></button>
   </div>
 
-  <!-- Search bar — slides down from topbar when search icon is tapped -->
+  <!-- Search bar â€” slides down from topbar when search icon is tapped -->
   <div class="map-search-bar" id="mapSearchBar" hidden>
     <div class="search-wrap">
-      <input id="searchInput" type="text" placeholder="Search rooms, venues… (e.g. C7, Palace)" autocomplete="off" />
+      <input id="searchInput" type="text" placeholder="Search rooms, venuesâ€¦ (e.g. C7, Palace)" autocomplete="off" />
       <div id="searchResults" class="search-results hidden"></div>
     </div>
-    <button class="map-search-close" id="mapSearchClose" aria-label="Close search">✕</button>
+    <button class="map-search-close" id="mapSearchClose" aria-label="Close search">âœ•</button>
   </div>
 
-  <!-- Navigate panel — restyled as a bottom-sheet modal -->
+  <!-- Navigate panel â€” restyled as a bottom-sheet modal -->
   <!-- core engine toggles .hidden via navigateBtn.onclick -->
   <div id="navPanel" class="hidden">
     <div class="map-nav-sheet">
       <div class="map-nav-sheet__handle"></div>
       <div class="map-nav-sheet__header">
         <div class="map-nav-sheet__title">Navigate</div>
-        <button class="map-nav-close" id="navPanelClose" aria-label="Close">✕</button>
+        <button class="map-nav-close" id="navPanelClose" aria-label="Close">âœ•</button>
       </div>
       <label class="admin-field-label">My Room</label>
       <select id="navFromSelect"></select>
-      <div id="navFromAutoFill" class="nav-autofill-label" hidden>Your room · auto-filled</div>
+      <div id="navFromAutoFill" class="nav-autofill-label" hidden>Your room Â· auto-filled</div>
       <label class="admin-field-label">Take Me To</label>
       <select id="navToSelect"></select>
       <div id="navEta" class="map-nav-eta"></div>
       <div class="map-nav-actions">
-        <button id="navGoBtn">Find Route ✈</button>
+        <button id="navGoBtn">Find Route âœˆ</button>
         <button id="navClearBtn">Clear</button>
       </div>
     </div>
@@ -163,19 +165,19 @@
       <button id="roadDeleteBtn">Delete Node</button>
       <button id="roadExportBtn">Export All</button>
     </div>
-    <textarea id="roadOutput" readonly placeholder="Selected node / exported network JSON appears here…"></textarea>
+    <textarea id="roadOutput" readonly placeholder="Selected node / exported network JSON appears hereâ€¦"></textarea>
   </aside>
 
   <!-- ENTRY POINTS PANEL -->
   <aside id="entryPanel" class="hidden">
     <div class="legend-title">Entry Points</div>
-    <p class="edit-help">Pick a destination below. Click its road-facing point on the map — click directly on a grey road dot to snap exactly onto that road, or click/drag anywhere else to fine-tune freely.</p>
+    <p class="edit-help">Pick a destination below. Click its road-facing point on the map â€” click directly on a grey road dot to snap exactly onto that road, or click/drag anywhere else to fine-tune freely.</p>
     <select id="entryLocationSelect"></select>
     <div class="edit-buttons">
       <button id="entryResetBtn">Reset to Center</button>
       <button id="entryExportBtn">Export All</button>
     </div>
-    <textarea id="entryOutput" readonly placeholder="Entry point coordinates appear here…"></textarea>
+    <textarea id="entryOutput" readonly placeholder="Entry point coordinates appear hereâ€¦"></textarea>
   </aside>
 
   <!-- MAP VIEWPORT -->
@@ -186,30 +188,30 @@
     </div>
   </main>
 
-  <!-- Navigate FAB — ID preserved; core engine assigns onclick in initNavigation -->
-  <button class="btn-ghost" id="navigateBtn" title="Get directions between two points">🧭 Navigate</button>
+  <!-- Navigate FAB â€” ID preserved; core engine assigns onclick in initNavigation -->
+  <button class="btn-ghost" id="navigateBtn" title="Get directions between two points">ðŸ§­ Navigate</button>
 
   <!-- ZOOM CONTROLS -->
   <div id="zoomControls">
     <button id="zoomIn" title="Zoom in">+</button>
-    <button id="zoomReset" title="Reset view">⤾</button>
-    <button id="zoomOut" title="Zoom out">−</button>
+    <button id="zoomReset" title="Reset view">â¤¾</button>
+    <button id="zoomOut" title="Zoom out">âˆ’</button>
   </div>
 
   <!-- HOVER TOOLTIP -->
   <div id="tooltip" class="hidden"></div>
 
-  <!-- INFO POPUP — restyled as bottom sheet via map.css overrides -->
+  <!-- INFO POPUP â€” restyled as bottom sheet via map.css overrides -->
   <div id="popupOverlay" class="hidden">
     <div id="popupCard">
-      <button id="popupClose" aria-label="Close">✕</button>
+      <button id="popupClose" aria-label="Close">âœ•</button>
       <div id="popupIcon"></div>
       <div id="popupName"></div>
       <div id="popupSubtitle"></div>
       <div id="popupMeta"></div>
       <div id="popupDescription"></div>
       <div id="popupExtra"></div>
-      <button class="map-popup-take-me-there" id="popupTakeMeThereBtn" hidden>Take Me There ✈</button>
+      <button class="map-popup-take-me-there" id="popupTakeMeThereBtn" hidden>Take Me There âœˆ</button>
     </div>
   </div>
 
@@ -233,7 +235,7 @@
       <button id="editCopyBtn">Copy JSON</button>
     </div>
     <button id="editExportAllBtn" style="width:100%;margin-bottom:10px;background:transparent;border:1px solid var(--gold-soft);color:var(--gold);border-radius:6px;padding:8px;font-size:12px;">Export All Shapes (current session)</button>
-    <textarea id="editOutput" readonly placeholder="Traced points will appear here as [x, y] pairs…"></textarea>
+    <textarea id="editOutput" readonly placeholder="Traced points will appear here as [x, y] pairsâ€¦"></textarea>
   </aside>
 
 </div>

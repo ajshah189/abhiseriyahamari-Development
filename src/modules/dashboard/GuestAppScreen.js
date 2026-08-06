@@ -28,6 +28,7 @@ import { buildShareText } from "../chronicle/ChroniclePage.js";
 import { pullToRefresh } from "../../utils/pullToRefresh.js";
 import { getUpNextCountdownText, isWeddingWeek } from "./TodaysJourney.js";
 import { getCurrentOrNextEvent, getEventStatus } from "../../data/events.js";
+import { markMessageSeen } from "../../data/secretMessages.js";
 import { isJourneyComplete, buildJourneyStats, showJourneyCompleteCard } from "../journey/JourneyCompleteCard.js";
 
 let container        = null;
@@ -66,6 +67,14 @@ function bindRoutes() {
         ? `Less <span class="qa-toggle-chevron">▴</span>`
         : `More ✈ <span class="qa-toggle-chevron">▾</span>`;
     }
+  });
+
+  // Secret message dismiss — mark seen, remove card
+  container.querySelector("[data-secret-dismiss]")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.secretDismiss;
+    if (id) markMessageSeen(id);
+    container.querySelector("#secretMessageCard")?.remove();
   });
 }
 
@@ -126,15 +135,35 @@ function bindChallengeFound() {
 
 function tickCountdown() {
   const el = container.querySelector("#up-next-countdown");
-  if (!el) return;
-
-  const text = getUpNextCountdownText();
-  if (text === null) {
-    // Event just started or ended — full re-render to pick up new state.
-    render();
-    return;
+  if (el) {
+    const text = getUpNextCountdownText();
+    if (text === null) {
+      render();
+      return;
+    }
+    el.textContent = text;
   }
-  el.textContent = text;
+
+  // Also tick the boarding-board HH:MM:SS display in WhatsOnNow
+  const hEl = container.querySelector("#won-countdown-hrs");
+  const mEl = container.querySelector("#won-countdown-mins");
+  const sEl = container.querySelector("#won-countdown-secs");
+  if (hEl && mEl && sEl) {
+    const event = getCurrentOrNextEvent();
+    if (event) {
+      const status = getEventStatus(event);
+      if (status === "upcoming" || status === "boarding") {
+        const diff = new Date(`${event.date}T${event.startTime}:00+05:30`) - Date.now();
+        if (diff > 0) {
+          hEl.textContent = String(Math.floor(diff / 3600000)).padStart(2, "0");
+          mEl.textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+          sEl.textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+        } else {
+          render();
+        }
+      }
+    }
+  }
 }
 
 function startCountdown() {

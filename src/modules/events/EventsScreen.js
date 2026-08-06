@@ -36,6 +36,26 @@ function bindEvents() {
   container.querySelectorAll("[data-route]").forEach((button) => {
     button.addEventListener("click", () => Router.go(button.dataset.route));
   });
+
+  // Expand/collapse: click the summary row to toggle
+  container.querySelectorAll("[data-event-card]").forEach((card) => {
+    const summary = card.querySelector(".event-card__summary");
+    if (!summary) return;
+    summary.addEventListener("click", () => {
+      card.classList.toggle("event-card--open");
+      const chevron = card.querySelector(".event-card__chevron");
+      if (chevron) chevron.textContent = card.classList.contains("event-card--open") ? "▴" : "▾";
+    });
+  });
+
+  // Navigate button: pre-fill map highlight and route to map
+  container.querySelectorAll("[data-event-venue]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      sessionStorage.setItem("ar_map_highlight", btn.dataset.eventVenue);
+      Router.go("map");
+    });
+  });
 }
 
 function render() {

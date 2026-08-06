@@ -3,7 +3,8 @@
  *
  * Pure render function. States: live (in-flight), soon (boarding),
  * up-next (upcoming), between events, outside wedding dates.
- * GuestAppScreen refreshes this every 60s via its countdown interval.
+ * GuestAppScreen refreshes this every 60s via its countdown interval,
+ * and also ticks the HH:MM:SS spans every second.
  */
 
 import { EVENTS, getCurrentOrNextEvent, getEventStatus } from "../../data/events.js";
@@ -26,17 +27,36 @@ function minutesSince(event) {
   return Math.floor((Date.now() - start) / 60000);
 }
 
-function minutesUntil(event) {
-  const start = new Date(`${event.date}T${event.startTime}:00+05:30`);
-  return Math.floor((start - Date.now()) / 60000);
+function countdownParts(event) {
+  const diff = new Date(`${event.date}T${event.startTime}:00+05:30`) - Date.now();
+  if (diff <= 0) return { h: "00", m: "00", s: "00" };
+  return {
+    h: String(Math.floor(diff / 3600000)).padStart(2, "0"),
+    m: String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0"),
+    s: String(Math.floor((diff % 60000) / 1000)).padStart(2, "0"),
+  };
 }
 
-function fmtRelTime(mins) {
-  if (mins >= 60) {
-    const h = Math.floor(mins / 60), m = mins % 60;
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  }
-  return `${mins}m`;
+function boardingBoard(event) {
+  const { h, m, s } = countdownParts(event);
+  return `
+    <div class="won-countdown-board">
+      <div class="won-countdown-unit">
+        <span class="won-countdown-num" id="won-countdown-hrs">${h}</span>
+        <span class="won-countdown-label">HRS</span>
+      </div>
+      <span class="won-countdown-sep">:</span>
+      <div class="won-countdown-unit">
+        <span class="won-countdown-num" id="won-countdown-mins">${m}</span>
+        <span class="won-countdown-label">MIN</span>
+      </div>
+      <span class="won-countdown-sep">:</span>
+      <div class="won-countdown-unit">
+        <span class="won-countdown-num" id="won-countdown-secs">${s}</span>
+        <span class="won-countdown-label">SEC</span>
+      </div>
+    </div>
+  `;
 }
 
 function navBtn() {
@@ -44,14 +64,14 @@ function navBtn() {
 }
 
 function upNextCard(event) {
-  const mins = minutesUntil(event);
   return `
     <div class="whats-on-now whats-on-now--next">
       <div class="won-status">
         <span class="won-dot won-dot--next"></span>UP NEXT
       </div>
       <div class="won-event-name">${event.icon} ${event.name}</div>
-      <div class="won-meta">${event.venueLabel || event.venue} · Starts in ${fmtRelTime(mins)}</div>
+      <div class="won-meta">${event.venueLabel || event.venue}</div>
+      ${boardingBoard(event)}
       ${navBtn()}
     </div>
   `;
@@ -91,7 +111,6 @@ export function WhatsOnNow() {
   const status = event ? getEventStatus(event) : "landed";
 
   if (!event || status === "landed") {
-    // Look for a future event (e.g. next day's first event)
     const next = EVENTS.find(e => new Date(`${e.date}T${e.startTime}:00+05:30`) > now);
     if (next) return upNextCard(next);
     return `
@@ -123,14 +142,14 @@ export function WhatsOnNow() {
   }
 
   if (status === "boarding") {
-    const mins = minutesUntil(event);
     return `
       <div class="whats-on-now whats-on-now--soon">
         <div class="won-status won-status--soon">
           <span class="won-dot won-dot--soon"></span>STARTING SOON
         </div>
         <div class="won-event-name">${event.icon} ${event.name}</div>
-        <div class="won-meta">Starts in ${mins} minute${mins !== 1 ? "s" : ""}</div>
+        <div class="won-meta">${event.venueLabel || event.venue}</div>
+        ${boardingBoard(event)}
         ${navBtn()}
       </div>
     `;

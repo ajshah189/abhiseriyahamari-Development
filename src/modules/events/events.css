@@ -56,7 +56,7 @@
   box-shadow: var(--shadow-glow);
 }
 
-/* ---------- Flight Cards ---------- */
+/* ---------- Rich Event Cards ---------- */
 
 .flight-list {
   display: flex;
@@ -64,81 +64,128 @@
   gap: var(--s-4);
 }
 
-.flight-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: var(--s-5);
-  align-items: start;
+/* Card shell */
+.event-card {
   background: var(--panel);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
-  padding: var(--s-5);
+  overflow: hidden;
   box-shadow: var(--shadow-2);
+  transition: border-color var(--t-fast) var(--ease-out);
 }
 
-.flight-time {
+.event-card--landed { opacity: 0.55; }
+
+.event-card--boarding { border-color: rgba(245,158,11,0.4); }
+.event-card--in-flight { border-color: rgba(16,185,129,0.4); }
+
+/* Summary row — always visible, tappable */
+.event-card__summary {
+  display: grid;
+  grid-template-columns: 68px 1fr auto;
+  gap: var(--s-4);
+  align-items: start;
+  padding: var(--s-5);
+  cursor: pointer;
+  user-select: none;
+}
+
+.event-card__summary:hover { background: rgba(212,175,106,0.04); }
+
+/* Time column */
+.event-card__time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  padding-top: 2px;
+}
+
+.event-card__clock {
   font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   font-size: 22px;
   font-weight: 700;
   color: var(--cream);
-  min-width: 62px;
 }
 
-.flight-code {
-  font-size: 11px;
+.event-card__code {
+  font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--cream-faint);
   text-transform: uppercase;
+}
+
+/* Center body */
+.event-card__flag-name {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
   margin-bottom: var(--s-1);
 }
 
-.flight-name {
-  margin: 0 0 var(--s-1);
+.event-card__flag { font-size: 18px; }
+
+.event-card__name {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--cream);
 }
 
-.flight-tagline {
-  margin: 0 0 var(--s-2);
-  color: var(--cream-dim);
-  font-size: 13px;
-}
-
-.flight-country {
+.event-card__tagline {
   font-size: 13px;
   color: var(--cream-dim);
-  margin-bottom: var(--s-1);
+  margin-bottom: var(--s-2);
 }
 
-.flight-venue {
-  font-size: 13px;
-  color: var(--cream-dim);
-  margin-bottom: var(--s-3);
-}
-
-.dresscode-chip {
+.event-card__theme {
   display: inline-block;
   font-size: 11px;
-  color: var(--gold);
-  background: var(--gold-faint);
-  border: 1px solid var(--gold-soft);
+  color: var(--cream-dim);
+  border: 1px solid;
   border-radius: var(--r-pill);
-  padding: var(--s-1) var(--s-3);
+  padding: 3px var(--s-3);
+  margin-bottom: var(--s-2);
 }
 
-.flight-status {
+.event-card__dresscode {
+  font-size: 12px;
+  color: var(--gold);
+  margin-bottom: var(--s-1);
+  font-weight: 500;
+}
+
+.event-card__venue {
+  font-size: 12px;
+  color: var(--cream-dim);
+}
+
+/* Right column */
+.event-card__right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: var(--s-3);
-  text-align: right;
+  gap: var(--s-2);
+  padding-top: 2px;
 }
 
+.event-card__miles {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.event-card__chevron {
+  font-size: 14px;
+  color: var(--cream-faint);
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+/* Status badges */
 .status-badge {
   font-size: 10px;
   font-weight: 700;
@@ -148,28 +195,90 @@
   border-radius: var(--r-pill);
   white-space: nowrap;
 }
+.status-badge.status-upcoming  { color: var(--status-upcoming);  background: rgba(107,114,128,0.15); }
+.status-badge.status-boarding  { color: var(--status-boarding);  background: rgba(245,158,11,0.15); animation: boarding-pulse 1.6s ease-in-out infinite; }
+.status-badge.status-in-flight { color: var(--status-inflight);  background: rgba(16,185,129,0.15); }
+.status-badge.status-landed    { color: var(--status-landed);    background: rgba(107,114,128,0.15); opacity: 0.5; }
 
-.status-badge.status-upcoming {
-  color: var(--status-upcoming);
-  background: rgba(107, 114, 128, 0.15);
+/* Expandable detail — hidden by default */
+.event-card__expanded {
+  display: none;
+  padding: 0 var(--s-5) var(--s-5);
+  border-top: 1px solid var(--line);
 }
 
-.status-badge.status-boarding {
-  color: var(--status-boarding);
-  background: rgba(245, 158, 11, 0.15);
-  animation: boarding-pulse 1.6s ease-in-out infinite;
+.event-card--open .event-card__expanded { display: block; }
+.event-card--open .event-card__chevron  { transform: rotate(180deg); }
+
+/* What to Expect */
+.event-expect { margin-bottom: var(--s-4); }
+
+.event-expect__title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--cream-faint);
+  text-transform: uppercase;
+  margin: var(--s-4) 0 var(--s-2);
 }
 
-.status-badge.status-in-flight {
-  color: var(--status-inflight);
-  background: rgba(16, 185, 129, 0.15);
+.event-expect__item {
+  font-size: 13px;
+  color: var(--cream-dim);
+  padding: var(--s-1) 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.event-expect__item:last-child { border-bottom: none; }
+
+/* Photo spot */
+.event-photo-spot {
+  background: rgba(212,175,106,0.06);
+  border: 1px solid rgba(212,175,106,0.15);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  margin-bottom: var(--s-4);
 }
 
-.status-badge.status-landed {
-  color: var(--status-landed);
-  background: rgba(107, 114, 128, 0.15);
-  opacity: 0.5;
+.event-photo-spot__title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: var(--s-2);
 }
+
+.event-photo-spot__text {
+  font-size: 13px;
+  color: var(--cream);
+  margin-bottom: var(--s-2);
+  line-height: 1.5;
+}
+
+.event-photo-spot__stars {
+  font-size: 16px;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+
+/* Navigate button */
+.event-navigate-btn {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--r-pill);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s-3) var(--s-4);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out);
+}
+.event-navigate-btn:hover { background: rgba(212,175,106,0.1); }
+
+/* Kept for backward compat (EventTimeline) */
+.flight-card { display: none; }
 
 .miles-reward {
   font-size: 15px;
@@ -183,17 +292,13 @@
     padding: var(--s-4) var(--s-4) 140px;
   }
 
-  .flight-card {
-    grid-template-columns: 1fr;
+  .event-card__summary {
+    grid-template-columns: 58px 1fr auto;
     gap: var(--s-3);
   }
 
-  .flight-status {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    text-align: left;
-  }
+  .event-card__clock { font-size: 18px; }
+  .event-card__name  { font-size: 17px; }
 }
 
 /* ---------- Event Timeline (compact, reused on dashboard) ---------- */
