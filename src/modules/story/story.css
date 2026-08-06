@@ -55,8 +55,8 @@
 .story-card__inner {
   background: linear-gradient(
     160deg,
-    rgba(var(--story-color-rgb, 212,175,106), 0.12),
-    rgba(212,175,106,0.04)
+    color-mix(in srgb, var(--story-color) 12%, transparent),
+    color-mix(in srgb, var(--story-color) 4%, transparent)
   );
   border: 1px solid color-mix(in srgb, var(--story-color) 30%, transparent);
   border-radius: 24px;
